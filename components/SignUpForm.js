@@ -1,3 +1,4 @@
+import { doSocialLogin } from "@/app/actions";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -9,22 +10,42 @@ const SignUpForm = () => {
         INSCRIPTION
       </h1>
       
-      <form action="GET" className='space-y-4'>
+      <form  className='space-y-4' action={doSocialLogin}>
         <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3'>
           <div className='mr-3'>
             <Image 
-              src="/username.svg"
-              alt='profil icon' 
+              src="/google.svg"
+              alt='google icon' 
               width={20}
               height={20}
               className='w-5 h-5'
             />
           </div>
-          <input 
-            className='bg-transparent flex-1 outline-none text-white placeholder-white/70'
-            type="text" 
-            placeholder='nom d&apos;utilisateur'
-          />
+          <button 
+            className='bg-transparent flex-1 outline-none text-white text-left'
+            type="submit"
+            name="action"
+            value="google" 
+            >Inscriver avec Google
+          </button>
+        </div>
+        <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3'>
+          <div className='mr-3'>
+            <Image 
+              src="/facebook.svg"
+              alt='facebook icon' 
+              width={20}
+              height={20}
+              className='w-5 h-5'
+            />
+          </div>
+          <button 
+            className='bg-transparent flex-1 outline-none text-white text-left'
+            type="submit"
+            name="action"
+            value="facebook"
+            >Inscriver avec Facebook
+          </button>
         </div>
 
         <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3'>
@@ -45,56 +66,7 @@ const SignUpForm = () => {
           </select>
         </div>
 
-        <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3'>
-          <div className='mr-3'>
-            <Image 
-              src="/email.svg"
-              alt='email icon' 
-              width={20}
-              height={20}
-              className='w-5 h-5'
-            />
-          </div>
-          <input 
-            className='bg-transparent flex-1 outline-none text-white placeholder-white/70'
-            type="email" 
-            placeholder='Email'
-          />
-        </div>
-
-        <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3'>
-          <div className='mr-3'>
-            <Image 
-              src="/lock.svg"
-              alt='lock icon' 
-              width={20}
-              height={20}
-              className='w-5 h-5'
-            />
-          </div>
-          <input 
-            className='bg-transparent flex-1 outline-none text-white placeholder-white/70'
-            type="password" 
-            placeholder='mots de passe'
-          />
-        </div>
-
-        <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3'>
-          <div className='mr-3'>
-            <Image
-              src="/lock.svg"
-              alt='lock icon' 
-              width={20}
-              height={20}
-              className='w-5 h-5'
-            />
-          </div>
-          <input 
-            className='bg-transparent flex-1 outline-none text-white placeholder-white/70'
-            type="password" 
-            placeholder='confirmation de mots de passe'
-          />
-        </div>
+        
 
         <p className='text-center text-gray-600 mt-6 text-sm'>
         En vous inscrivant, vous acceptez nos Conditions d&apos;utilisation et notre Politique de confidentialité.
