@@ -29,24 +29,6 @@ const SignUpForm = () => {
             >Inscriver avec Google
           </button>
         </div>
-        <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3'>
-          <div className='mr-3'>
-            <Image 
-              src="/facebook.svg"
-              alt='facebook icon' 
-              width={20}
-              height={20}
-              className='w-5 h-5'
-            />
-          </div>
-          <button 
-            className='bg-transparent flex-1 outline-none text-white text-left'
-            type="submit"
-            name="action"
-            value="facebook"
-            >Inscriver avec Facebook
-          </button>
-        </div>
 
         <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3'>
           <div className='mr-3'>
