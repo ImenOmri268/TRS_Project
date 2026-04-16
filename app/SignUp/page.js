@@ -1,5 +1,6 @@
-"use client"
-import SignUpForm from "@/components/SignUpForm";
+'use client'
+
+import SignUpForm from "@/components/signIn/SignUpForm";
 import React from "react";
 
 const SignUp = () => {
@@ -15,7 +16,7 @@ const SignUp = () => {
           un compte.
         </h4>
       </div>
-      <SignUpForm/>
+      <SignUpForm></SignUpForm>
     </div>
   )
 };

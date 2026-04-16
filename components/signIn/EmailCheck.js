@@ -35,14 +35,15 @@ const emailcheck = () => {
         </button>
       </form>
       
-        
-      <p className='text-center text-gray-600 mt-6 text-sm'>
+      <div className="flex items-center space-x-1 justify-center mt-3">
+        <p className='text-center text-gray-600 '>
         Retour à la 
-        
-        <Link href="/SignUp" className='text-[#4A72A7] hover:text-[#2c4a73] font-semibold hover:underline'>
+        </p>
+        <Link href="/" className='text-[#4A72A7] hover:text-[#2c4a73] font-semibold hover:underline'>
           Connexion
         </Link>
-      </p>
+      </div>  
+      
     </div>
   )
 };
