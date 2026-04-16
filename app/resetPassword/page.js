@@ -1,4 +1,4 @@
-import ReinitialisationPassword from "@/components/ReinitialisationPassword";
+import ReinitialisationPassword from "@/components/signIn/ReinitialisationPassword";
 import React from "react";
 
 const page = () => {

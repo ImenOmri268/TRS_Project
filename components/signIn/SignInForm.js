@@ -9,7 +9,7 @@ const SignInForm = () => {
         CONNEXION
       </h1>
       
-      <form action="GET" className='space-y-4'>
+      <form  className='space-y-4'>
         <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3'>
           <div className='mr-3'>
             <Image 
@@ -42,6 +42,7 @@ const SignInForm = () => {
             placeholder='mots de passe'
           />
         </div>
+        
 
         <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3'>
           <label className='flex items-center cursor-pointer'>

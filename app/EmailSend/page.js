@@ -1,6 +1,6 @@
 
 import React from "react";
-import EmailCheck from "@/components/EmailCheck";
+import EmailCheck from "@/components/signIn/EmailCheck";
 const page = () => {
   return (
     
