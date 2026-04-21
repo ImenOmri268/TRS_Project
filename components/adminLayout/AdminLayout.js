@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import ResponsiveMenu from './ResponsiveMenu'
 import MenuButton from './MenuButton'
@@ -13,7 +12,7 @@ export default function AdminLayout({ activePage , children}) {
   const [showNotif, setShowNotif] = useState(false)
 
   return (
-    <div className="flex h-screen bg-[#F1F0F0] overflow-hidden">
+    <div className="flex h-screen bg-[#F1F0F0] overflow-hidden  ">
       
        
       <ResponsiveMenu open={open} page={activePage} />

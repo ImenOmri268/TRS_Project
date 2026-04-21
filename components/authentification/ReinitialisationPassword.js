@@ -4,8 +4,8 @@ import React from "react";
 
 const ReinitialisationPassword = () => {
   return (
-    <div className='bg-white rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-lg'>
-      <h1 className='font-semibold text-[#4A72A7] text-center text-3xl mb-6 sm:mb-8'>
+    <div className='bg-white rounded-2xl w-full max-w-md p-6 md:p-8 shadow-lg'>
+      <h1 className='font-semibold text-[#4A72A7] text-center text-3xl mb-8 '>
         NOUVEAU MOT DE PASSE
       </h1>
       
@@ -55,8 +55,8 @@ const ReinitialisationPassword = () => {
       <p className='text-center text-gray-600 mt-6 text-sm'>
         Retour à la 
         
-        <Link href="/SignIn" className='text-[#4A72A7] hover:text-[#2c4a73] font-semibold hover:underline'>
-          Connexion
+        <Link href="/" className='text-[#4A72A7] hover:text-[#2c4a73] font-semibold hover:underline'>
+          &nbsp;Connexion
         </Link>
       </p>
     </div>

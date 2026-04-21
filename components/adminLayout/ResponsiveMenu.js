@@ -1,5 +1,5 @@
-import React, { act } from "react";
-import SignOut from "../signIn/SignOut";
+import React, { useState } from "react";
+import SignOut from "../authentification/SignOut";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -7,8 +7,10 @@ import Link from "next/link";
 
 const ResponsiveMenu = ({ open,page}) => {
     
-    const [activeitem, setctiveitem] = React.useState(page);
+    const [activeitem, setactiveitem] =useState(page);
     
+      
+   
     
   return (
     <AnimatePresence mode="wait">
@@ -18,7 +20,7 @@ const ResponsiveMenu = ({ open,page}) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -300 }}
             transition={{ duration: 0.3 }}
-            className="fixed top-0 left-0 w-1/5 h-full bg-[#0F172A] shadow-xl "
+            className="fixed top-0 left-0 w-1/5  bg-[#0F172A] shadow-xl "
             >
           
                     <div className="text-[#3B82F6] font-serif text-center text-6xl p-2  ">
@@ -28,7 +30,7 @@ const ResponsiveMenu = ({ open,page}) => {
           
                     <div className="grid mt-13  cursor-pointer">
             
-                        <Link href="/Dashboard" className={`flex gap-4 ${activeitem == "Dashboard" ? "bg-[#3B82F6]" : "hover:bg-[#3B82F6]"} p-3`}  setctivetem={"Dashboard"}>
+                        <Link href="/Dashboard" className={`flex gap-4 ${activeitem == "Dashboard" ? "bg-[#3B82F6]" : "hover:bg-[#3B82F6]"} p-3`}  setactiveitem={"Dashboard"}>
                             <div className="flex justify-center gap-4 ">
                                 <Image
                                 src="/dashboard.svg"

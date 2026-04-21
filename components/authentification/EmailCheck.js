@@ -4,8 +4,8 @@ import React from "react";
 
 const emailcheck = () => {
   return (
-    <div className='bg-white rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-lg'>
-      <h1 className='font-semibold text-[#4A72A7] text-center text-3xl mb-6 sm:mb-8'>
+    <div className='bg-white rounded-2xl w-full max-w-md p-6  shadow-lg'>
+      <h1 className='font-semibold text-[#4A72A7] text-center text-2xl  mb-6 '>
         REINITIALISATION DE MOT DE PASSE
       </h1>
       
