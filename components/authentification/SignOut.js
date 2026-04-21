@@ -1,10 +1,15 @@
 
+
+import { doSignOut } from "@/app/actions";
 import Image from "next/image";
 import React from "react";
 
 const SignOut = () => {
+
+  
+
   return (
-    <footer className="grid mt-[25%] rounded-lg cursor-pointer" >
+    <form className="grid mt-[25%] rounded-lg cursor-pointer"  action={doSignOut} >
 
         <hr className="text-gray-500  "  />
 
@@ -18,11 +23,12 @@ const SignOut = () => {
             </Image>
             <button 
             className="text-[#8B8F98] font-inter text-2xl my-0.5 cursor-pointer  " 
+            type="submit"
             >
                   Déconnexion
             </button>
         </div>
-      </footer>
+      </form>
   );
 };
 
