@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken' //lib pour verif token
+import jwt from 'jsonwebtoken' //lib node.js pour verif token
 
 const SECRET = process.env.JWT_SECRET
 
