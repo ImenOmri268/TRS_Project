@@ -38,7 +38,7 @@ const SignInForm = () => {
       }
       
       toast.success('Connexion réussie !');
-
+  
       if (data.mustChangePassword) {
         router.push('/resetPassword');
       }else {

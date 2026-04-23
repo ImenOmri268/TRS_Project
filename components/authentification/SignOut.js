@@ -8,7 +8,7 @@ const SignOut = () => {
   
 
   return (
-    <form className="grid mt-[25%] rounded-lg cursor-pointer"  action={doSignOut} >
+    <form className="grid mt-[25%] rounded-lg cursor-pointer"   >
 
         <hr className="text-gray-500  "  />
 
