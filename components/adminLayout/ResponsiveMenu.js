@@ -20,10 +20,9 @@ const ResponsiveMenu = ({ open,page}) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -300 }}
             transition={{ duration: 0.3 }}
-            className="fixed top-0 left-0 w-1/5  bg-[#0F172A] shadow-xl "
-            >
-          
-                    <div className="text-[#3B82F6] font-serif text-center text-6xl p-2  ">
+            className="relative flex flex-col min-h-screen w-2/5 md:w-1/4  lg:w-1/5   bg-[#0F172A] shadow-xl ">
+                
+                    <div className=" text-[#3B82F6] font-serif text-center text-6xl md:text-5xl p-2  ">
                         ADMIN
                     </div>
                     <hr className="text-gray-500" />
@@ -37,9 +36,10 @@ const ResponsiveMenu = ({ open,page}) => {
                                 alt="dashboard icon"
                                 width={50}
                                 height={50}
+                                className="md:h-[45] md:w-[45]"
                                 >
                                 </Image>
-                                <span  className="text-white font-inter text-2xl my-0.5  ">Dashboard</span>
+                                <span  className="text-white text-left font-inter text-2xl my-0.5  ">Dashboard</span>
                             </div>
                         </Link>
 
@@ -51,6 +51,7 @@ const ResponsiveMenu = ({ open,page}) => {
                                 alt="utilisateur icon"
                                 width={50}
                                 height={50}
+                                className="md:h-[45] md:w-[45]"
                                 >
                                 </Image>
                                 <span  className="text-white font-inter text-2xl my-0.5  ">Utilisateurs</span>
@@ -65,6 +66,7 @@ const ResponsiveMenu = ({ open,page}) => {
                                 alt="dashboard icon"
                                 width={50}
                                 height={50}
+                                className="md:h-[45] md:w-[45] md:mt-0.5 "
                                 >
                                 </Image>
                                 <span className="text-white font-inter text-2xl my-0.5">Ressources</span>
@@ -79,9 +81,10 @@ const ResponsiveMenu = ({ open,page}) => {
                                 alt="dashboard icon"
                                 width={50}
                                 height={50}
+                                className="md:h-[40] md:w-[40] md:mt-3 lg-mt2 "
                                 >
                                 </Image>
-                                <span  className="text-white font-inter text-2xl my-0.5  ">Configuration TRS</span>
+                                <span  className="text-white font-inter text-xl lg:mt-3   ">Configuration TRS</span>
                             </div>
                         </Link>
 
@@ -93,6 +96,7 @@ const ResponsiveMenu = ({ open,page}) => {
                                 alt="dashboard icon"
                                 width={50}
                                 height={50}
+                                className="md:h-[45] md:w-[45] md:mt-0.5"
                                 >
                                 </Image>
                                 <span  className="text-white font-inter text-2xl my-0.5  ">Rapports</span>
@@ -107,23 +111,25 @@ const ResponsiveMenu = ({ open,page}) => {
                                 alt="collecte icon"
                                 width={50}
                                 height={50}
+                                className="md:h-[45] md:w-[45] md:mt-3"
                                 >
                                 </Image>
-                                <span  className="text-white font-inter text-2xl my-0.5  ">Collecte données</span>
+                                <span  className="text-white font-inter text-2xl lg:mt-4   ">Collecte données</span>
                             </div>
                         </Link>
 
 
                         <Link href="/AnalyzeProbs" className={`flex gap-4 ${activeitem == "Analyse de problemes" ? "bg-[#3B82F6]" : "hover:bg-[#3B82F6]"} p-3`} setactiveitem={"Analyse de problemes"}>
-                            <div  className="flex justify-center gap-4   ">
+                            <div  className="flex justify-center gap-4    ">
                                 <Image
                                 src="/analyze.svg"
                                 alt="analyze icon"
                                 width={50}
                                 height={50}
+                                className="md:h-[45] md:w-[45] md:mt-3 lg:mt-0.5"
                                 >
                                 </Image>
-                                <span  className="text-white font-inter text-2xl my-0.5  ">Analyse Probs</span>
+                                <span  className="text-white font-inter text-2xl  lg:mt-2  ">Analyse Probs</span>
                             </div>
                         </Link>
 
