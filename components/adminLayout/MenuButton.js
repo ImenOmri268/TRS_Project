@@ -6,7 +6,7 @@ const MenuButton = ({ open, setOpen }) => {
   return (
     <div 
           className={`fixed top-5 z-50 cursor-pointer transition-all duration-300 ${
-            !open ? 'left-[22%]' : 'left-5'
+            !open ? 'left-[40%] md:left-[28%] lg:left-[22%] ' : 'left-5'
           }`} 
           onClick={() => setOpen(!open)}
           >

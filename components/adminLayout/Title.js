@@ -5,7 +5,7 @@ const Title = ({title}) => {
 
   return (
     <>
-      <span className="text-5xl  text-center  ">{title}</span>
+      <span className=" text-2xl md:text-5xl  text-center  ">{title}</span>
     </>
 )};
 

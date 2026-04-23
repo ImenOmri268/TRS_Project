@@ -8,7 +8,7 @@ const SignOut = () => {
   
 
   return (
-    <form className="grid mt-[25%] rounded-lg cursor-pointer"  action={doSignOut} >
+    <form className="grid mt-auto rounded-lg cursor-pointer"   >
 
         <hr className="text-gray-500  "  />
 
@@ -18,10 +18,11 @@ const SignOut = () => {
             alt="dashboard icon"
             width={45}
             height={45}
+            className="md:h-[35] w-[35]"
             >
             </Image>
             <button 
-            className="text-[#8B8F98] font-inter text-2xl my-0.5 cursor-pointer  " 
+            className="text-[#8B8F98] font-inter md:text-xl lg:text-2xl  my-0.5 cursor-pointer   " 
             type="submit"
             >
                   Déconnexion

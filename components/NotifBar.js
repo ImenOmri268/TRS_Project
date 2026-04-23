@@ -12,7 +12,7 @@ const NotifBar = ({showNotif ,setShowNotif}) => {
           initial={{ opacity: 0, y: -100 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{opacity:0,y:-100}}
-          className="fixed top-[8%] left-[77%] w-1/5 h-[70%] bg-[#fefefe] shadow-2xl "
+          className="absolute top-12 right-5 md:right-5 lg:right-4 w-75 h-125 bg-[#fefefe] shadow-2xl z-[100px] rounded-xl overflow-hidden "
         >
           <div>
                 <div className="flex gap-35 p-5 ">  
@@ -23,13 +23,13 @@ const NotifBar = ({showNotif ,setShowNotif}) => {
                 <div className="flex flex-col justify-center gap-4 p-5">
                     <span className="text-[#3B82F6]  ">RECENT</span>
                 </div>
-                <footer className="py-95 px-7">
-                    <span className=" text-[#df0000] font-medium hover:text-[#f35353] cursor-pointer ">
+                <footer className="py-[95%] px-7">
+                    <span className=" text-[#cd0000] font-medium hover:text-[#f35353] cursor-pointer ">
                         SUPPRIMER LES NOTIFICATIONS
                     </span>
                 </footer>
           </div>      
-                
+
                     
                 
                     
