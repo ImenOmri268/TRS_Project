@@ -7,7 +7,7 @@ export default function Page() {
     <AdminLayout activePage="Liste des utilisateurs">
       <div className="flex flex-col gap-6">
         <div className="flex justify-end">
-          {/* This component handles the client logic for us */}
+          {/* This component handles the add user form  */}
           <AddUserAction /> 
         </div>
         

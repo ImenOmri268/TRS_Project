@@ -1,6 +1,6 @@
 'use client'
 import { useState } from "react";
-import AjoutButton from "./AjoutButton";
+import AjoutButton from "../adminLayout/AjoutButton";
 import AjoutUserForm from "./AjoutUserForm";
 
 export default function AddUserAction() {
@@ -8,8 +8,11 @@ export default function AddUserAction() {
 
   return (
     <>
-      <AjoutButton isOpen={isOpen} setIsOpen={setIsOpen} />
-      <AjoutUserForm isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <AjoutButton setIsOpen={setIsOpen} title="Ajouter un utilisateur" />
+      <AjoutUserForm 
+        isOpen={isOpen} 
+        onClose={() => setIsOpen(false)} 
+      />
     </>
   );
 }

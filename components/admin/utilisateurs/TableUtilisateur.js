@@ -1,8 +1,12 @@
-import React from "react";
+'use client';
+import React, { useState } from "react";
 import { CiSearch } from "react-icons/ci";
 import { FaRegTrashAlt, FaRegEdit } from "react-icons/fa";
+import ModifUtilisateur from "./ModifUtilisateur";
 
 const TableUtilisateur = () => {
+  const [openmodif, setopenmodif] = useState(false);
+
   return (
     <div className="w-full bg-white">
       
@@ -43,9 +47,10 @@ const TableUtilisateur = () => {
               </td>
               <td className="py-4 px-6 text-sm text-slate-600">john@example.com</td>
               <td className="py-4 px-6 text-right space-x-3">
-                <button className="text-slate-400 hover:text-blue-600 transition-colors">
+                <button className="text-slate-400 hover:text-blue-600 transition-colors" onClick={() => setopenmodif(true)}>
                   <FaRegEdit />
                 </button>
+                <ModifUtilisateur openmodif={openmodif} setopenmodif={() => setopenmodif(false)}/>
                 <button className="text-slate-400 hover:text-red-600 transition-colors">
                   <FaRegTrashAlt />
                 </button>

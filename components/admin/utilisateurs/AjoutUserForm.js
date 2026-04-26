@@ -24,9 +24,9 @@ const AjoutUserForm = ({ isOpen, onClose }) => {
 
           {/* form slide-in */}
           <motion.div
-            initial={{ opacity: 0, x: 100 }} // Sliding in like the menu
+            initial={{ opacity: 0, x: 0 }} // Sliding in like the menu
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
+            exit={{ opacity: 0, x: 0 }}
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-100 flex items-center justify-center p-4 "
           >
@@ -53,7 +53,7 @@ const AjoutUserForm = ({ isOpen, onClose }) => {
                   <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Droits d&apos;accès</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {permissions.map((perm) => (
-                      <label key={perm} className="flex items-center gap-3 cursor-pointer group">
+                      <label key={perm} className="flex items-center gap-3 cursor-pointer group hover:bg-slate-50 p-2 rounded-lg ">
                         <input type="checkbox" className="w-5 h-5 accent-[#3B82F6] border-slate-300 rounded" />
                         <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">{perm}</span>
                       </label>

@@ -11,7 +11,7 @@ const ResponsiveMenu = ({ open, page }) => {
     { name: "Dashboard", href: "/admin/Dashboard", icon: "/dashboard.svg" },
     { name: "Les Objectifs", href: "/admin/Objectifs", icon: <GoGoal className="w-5 h-5" /> },
     { name: "Liste des utilisateurs", href: "/admin/Utilisateurs", icon: "/utilisateur.svg" },
-    { name: "Les ressources", href: "/admin/Ressources", icon: "/machine.svg" },
+    { name: "Gestion des Ressources", href: "/admin/Ressources", icon: "/machine.svg" },
     { name: "Suivi-TRS", href: "/admin/Suivi-TRS", icon: <IoIosGitCompare className="w-5 h-5" /> },
     { name: "Traitements", href: "/admin/Traitements", icon: "/pipeline.svg" },
     { name: "Plan d'actions", href: "/admin/Actions", icon: "/plan.svg" },
