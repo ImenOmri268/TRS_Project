@@ -44,23 +44,67 @@ const AjoutRessourceForm = ({ isOpen, onClose }) => {
                   <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Identification</h3>
                   <div className="grid gap-4">
                     <ModalInput icon={MdMemory} label="Nom de la Ressource" placeholder="ex: Machine Laser 05" />
-                    <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 group focus-within:border-[#3B82F6] transition-all">
-                      <MdCategory className="text-2xl text-slate-400" />
-                      <div className="flex-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Type de Collection</label>
-                        <select className="w-full bg-transparent text-slate-900 font-medium focus:outline-none appearance-none cursor-pointer">
-                          <option value="machine">Machine</option>
-                          <option value="employe">Employé</option>
-                          <option value="outil">Outil</option>
-                        </select>
+                    <ModalInput icon={MdCategory} label="Type de Ressource" placeholder="ex: Machine, Outil, Personnel..." /> 
+                  </div>
+                </div>
+                
+                <div >
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Nommez les composants des seuils</h3>
+                  <div className="grid gap-4">
+                    <div className=" bg-slate-50 p-6 rounded-2xl border border-slate-100 ">
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                          *Nommer les champs de taux de disponibilité
+                        </h3>
+                        <div className="grid gap-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <NommerInput  placeholder="ex: Temps_Prévu " />
+                            <NommerInput  placeholder="ex: Temps d'arrêts" />
+                          </div>
+                        </div>
                       </div>
+
+
+                      <div className="py-8">
+                        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                          *Nommer les champs de taux de performance
+                        </h3>
+                        <div className="grid gap-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <NommerInput  placeholder="ex: Qté_Produite_Total" />
+                            <NommerInput  placeholder="ex: Temps_Unitaire_Théorique" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                              <NommerInput  placeholder="ex: Temps_Opération" />
+                          </div>
+                        </div>
+                      </div>
+
+
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                          *Nommer les champs de taux de qualité
+                        </h3>
+                        <div className="grid gap-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <NommerInput  placeholder="ex: Qté_Produite_Total" />
+                            <NommerInput  placeholder="ex: Qté_Rebut" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                              <NommerInput  placeholder="ex: Qté_Réwork" />
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
                 </div>
 
                 {/* Initial Thresholds */}
                 <div>
-                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Seuils Initiaux (%)</h3>
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Seuils Initiaux (%)
+                    <span className="text-xs font-normal text-slate-400 lowercase tracking-tight ml-2">s&apos;il ya des valeurs initials</span>
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <ModalInput icon={MdSettings} label="Disponibilité" placeholder="0" type="number" />
                     <ModalInput icon={MdAnalytics} label="Performance" placeholder="0" type="number" />
@@ -90,13 +134,24 @@ const ModalInput = ({ icon: Icon, label, ...props }) => (
   <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 group focus-within:border-[#3B82F6] transition-all">
     <Icon className="text-2xl text-slate-400" />
     <div className="flex-1">
-      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
       <input 
         className="w-full bg-transparent text-slate-900 font-medium focus:outline-none placeholder:text-slate-300" 
         {...props} 
       />
     </div>
   </div>
+);
+
+
+const NommerInput = ({ label, placeholder }) => (
+    <div className="space-y-1">
+      <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{label}</label>
+      <input 
+        type="text"
+        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-300"
+        placeholder={placeholder}
+      />
+    </div>
 );
 
 export default AjoutRessourceForm;
