@@ -1,14 +1,29 @@
-
-
+'use client'
 import Image from "next/image";
-import React from "react";
+import {useRouter} from "next/navigation";
+import {toast} from "sonner";
 
 const SignOut = () => {
-
-  
+  const router = useRouter();
+  async function handlerLogout(event) {
+    event.preventDefault();
+    try{
+      const res = await fetch ('/api/auth/logout',{
+        method:'POST'
+      });
+      if (res.ok){
+        toast.success('Déconnexion réussie !');
+        router.push('/');
+      }else{
+        toast.error('Erreur lors de la déconnexion');
+      }
+    }catch(error){
+      toast.error('Erreur lors de la déconnexion')
+    }
+  }
 
   return (
-    <form className="grid mt-[25%] rounded-lg cursor-pointer"   >
+    <form className="grid mt-[25%] rounded-lg cursor-pointer"  onSubmit={handlerLogout} >
 
         <hr className="text-gray-500  "  />
 

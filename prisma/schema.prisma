@@ -107,12 +107,15 @@ model RolePermission {
 
 //DEMANDE
 model Demande{
-  id Int @id @default(autoincrement())
-  email String
-  statut StatutDemande
-  date DateTime @default(now())
-
-  adminId Int
+  id          Int           @id @default(autoincrement())
+  nom         String
+  rue         String
+  codePostal  String
+  ville       String
+  telephone   String
+  email       String
+  statut      StatutDemande @default(EN_ATTENTE)
+  date        DateTime      @default(now())
 }
 
 //NOTIFICATION
