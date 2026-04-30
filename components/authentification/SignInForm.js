@@ -1,5 +1,4 @@
 'use client'
-import { doSignIn } from '@/app/actions'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -11,30 +10,46 @@ import { toast } from 'sonner'
 const SignInForm = () => {
 
   const router=useRouter();
-  
+  const [show, setShow] =  useState(true) ;
+  //show(true):mdp masqué --> setShow(false): visible
+  const [loading, setLoading]= useState(false) ;
+  // loading=true → bouton désactivé + texte "Connexion..."
+ // Évite que l'utilisateur clique 2 fois pendant la requête
 
   async function handlerFormSubmit(event){
-    event.preventDefault();
+    event.preventDefault(); 
+    setLoading(true);  //desactiver le btn immediatement
     try{
       const formData = new FormData(event.currentTarget);
-      const response =await doSignIn(formData);
-      if(!!response.error)
+      const email = formData.get('email');
+      const password =formData.get('password');
+
+      const res =await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+
+      const data = await res.json()
+      if(!res.ok)
       {
-        toast.error(response.error);
-      }else{
-        router.push('/Dashboard');
-        toast.success('Logged in!');
+        toast.error(data.message);
+        return
       }
-    }catch(error){
-      toast.error( 'verifiez vos cordoonees');
+      
+      toast.success('Connexion réussie !');
+  
+      if (data.mustChangePassword) {
+        router.push('/resetPassword');
+      }else {
+        router.push('/admin/Dashboard')
+      }
+
+    } catch (error) {
+      toast.error('Erreur de connexion, réessayez.')
+    } finally {
+      setLoading(false)  //remet btn actif
     }
-  }
-
-
-  const [show,setshow]=useState(true);
-
-  function handle(){
-    setshow(!show);
   }
 
   return (
@@ -79,8 +94,8 @@ const SignInForm = () => {
           />
           <span>
             {show?(
-            <FaEye  className='text-white text-lg cursor-pointer hover:text-gray-300' onClick={handle} />)
-            :(<FaEyeSlash className='text-white text-lg cursor-pointer hover:text-gray-300' onClick={handle} />)
+            <FaEye  className='text-white text-lg cursor-pointer hover:text-gray-300' onClick={() => setShow(false)} />)
+            :(<FaEyeSlash className='text-white text-lg cursor-pointer hover:text-gray-300' onClick={() => setShow(true)} />)
             }
           </span>
           
@@ -103,10 +118,10 @@ const SignInForm = () => {
         
         
         <button 
-          type="submit"
-          className='w-full bg-[#4A72A7] hover:bg-[#2c4a73] text-white font-semibold py-3 rounded-2xl transition duration-200'
+          type="submit" disabled={loading}
+          className='w-full bg-[#4A72A7] hover:bg-[#2c4a73] disabled:opacity-60 text-white font-semibold py-3 rounded-2xl transition duration-200'
         >
-          CONNEXION
+          {loading ? 'Connexion...' : 'CONNEXION'}
         </button>
       </form>
       

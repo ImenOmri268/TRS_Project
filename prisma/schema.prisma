@@ -1,0 +1,278 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+ 
+//ENUM
+enum UserType {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum StatutDemande {
+  ACCEPTEE
+  REFUSEE
+  EN_ATTENTE
+}
+
+enum TypeNotification{
+  REUNION
+  RETARD
+  ACTION
+}
+
+enum TRSType{
+  INITIAL
+  FINAL
+}
+
+enum Statut{
+  EN_COURS
+  TERMINE
+  EN_RETARD
+}
+
+enum AnalyseType {
+  BRAINSTORMING
+  PARETO
+  CINQ_POURQUOI
+  ISHIKAWA
+}
+
+
+//User
+model User{
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  password String
+  status Boolean @default(true)
+  type UserType
+
+  mustChangePassword Boolean @default(true)
+  
+  roles UserRole[]
+  notifications Notification[]
+  emails Email[]
+  actions Action[]
+}
+
+
+//ROLE
+model Role {
+  id Int @id @default(autoincrement())
+  name String
+
+  users UserRole[]
+  permissions RolePermission []
+}
+
+model Permission {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  roles RolePermission[]
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId Int
+  permissionId Int
+
+  role Role @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+//DEMANDE
+model Demande{
+  id          Int           @id @default(autoincrement())
+  nom         String
+  rue         String
+  codePostal  String
+  ville       String
+  telephone   String
+  email       String
+  statut      StatutDemande @default(EN_ATTENTE)
+  date        DateTime      @default(now())
+}
+
+//NOTIFICATION
+model Notification{
+  id Int @id @default(autoincrement())
+  message String
+  date DateTime @default(now())
+  type TypeNotification
+  lu Boolean @default(false)
+
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+}
+
+//EMAIL
+model Email {
+  id Int @id @default(autoincrement())
+  contenu String
+  dateEnvoi DateTime @default(now())
+
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+}
+
+//RESSOURCE
+model Ressource{
+  id          Int    @id @default(autoincrement())
+  nom         String
+  type        String
+  description String
+  adminId     Int
+
+  trs         TRS[]
+  workflows   Workflow[]
+  objectifs   Objectif[]    // ← ajoute cette ligne
+}
+
+//TRS
+model TRS{
+  id Int @id @default(autoincrement())
+  type TRSType
+  valeur Float
+
+  ressourceId Int
+  ressource Ressource @relation(fields: [ressourceId], references: [id])
+
+  disponibilite Disponibilite?
+  performance Performance?
+  qualite Qualite?
+}
+
+model Disponibilite {
+  id Int @id @default(autoincrement())
+  valeur Float
+
+  trsId Int @unique
+  trs TRS @relation(fields: [trsId], references: [id])
+}
+
+model Performance {
+  id Int @id @default(autoincrement())
+  valeur Float
+
+  trsId Int @unique
+  trs TRS @relation(fields: [trsId], references: [id])
+}
+
+model Qualite {
+  id Int @id @default(autoincrement())
+  valeur Float
+
+  trsId Int @unique
+  trs TRS @relation(fields: [trsId], references: [id])
+}
+
+//PROCESSUS D'AMELIORATION
+model Workflow {
+  id Int @id @default(autoincrement())
+  dateDebut DateTime
+  dateFin DateTime?
+  statut Statut
+
+  ressourceId Int
+  ressource Ressource @relation(fields: [ressourceId], references: [id])
+
+  analyses Analyse[]
+  planAction PlanAction?
+}
+
+//ANALYSE
+model Analyse{
+  id Int @id @default(autoincrement())
+  type AnalyseType
+  contenu String
+
+  workflowId Int
+  workflow Workflow @relation(fields: [workflowId], references: [id]) 
+}
+
+//PLAN ACTION
+model PlanAction {
+  id Int @id @default(autoincrement())
+  description String
+  statut Statut
+  dateDebut DateTime
+  dateFin DateTime?
+
+  workflowId  Int      @unique
+  workflow    Workflow @relation(fields: [workflowId], references: [id])
+
+  actions     Action[]
+  promptIA    PromptIA?
+  tracking    Tracking[]
+}
+
+//ACTION
+model Action {
+  id Int @id @default(autoincrement())
+  description String
+  statut Statut
+
+  planId Int
+  plan   PlanAction @relation(fields: [planId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+
+//IA
+model PromptIA {
+  id Int @id @default(autoincrement())
+  contenu String
+  reponse String
+
+  planId Int @unique
+  plan PlanAction @relation(fields: [planId], references: [id])
+}
+
+//TRACKING
+model Tracking {
+  id Int @id @default(autoincrement())
+  progression Int
+  commentaire String
+  dateDebut   DateTime
+  dateFin     DateTime?
+
+  planId Int
+  plan PlanAction @relation(fields: [planId], references: [id])
+}
+
+//OBJECTIF TRS
+model Objectif {
+  id          Int      @id @default(autoincrement())
+  valeurCible Float                          // valeur TRS à atteindre ex: 85.0
+  dateDebut   DateTime @default(now())
+  dateFin     DateTime?                      // date limite pour atteindre l'objectif
+
+  ressourceId Int
+  ressource   Ressource @relation(fields: [ressourceId], references: [id])
+}

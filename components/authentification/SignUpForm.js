@@ -1,15 +1,57 @@
+'use client'
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import { useState } from 'react';
+import {toast} from "sonner";
+import { useRouter } from "next/navigation";
 
 const SignUpForm = () => {
+  const router=useRouter();
+  const [loading, setLoading] =  useState(false) ;
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setLoading(true);
+    try{
+      const formData=new FormData(event.currentTarget);
+
+      const nom = formData.get('nom');
+      const rue = formData.get('rue');
+      const codePostal = formData.get('codePostal');
+      const ville = formData.get('ville');
+      const telephone = formData.get('telephone');
+      const email = formData.get('email');
+
+      const res = await fetch('/api/demande',{
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nom,rue,codePostal,ville,telephone,email })
+      })
+
+      const data = await res.json();
+
+      if (!res.ok){
+        toast.error(data.message);
+        return;
+      }
+
+      toast.success('Demande envoyée ! Vérifiez votre email pour vos identifiants.');
+      router.push('/');
+
+    }catch(error){
+      toast.error('Erreur, réessayez.');
+    }finally{
+      setLoading(false);
+    }
+    
+  }
     return(
   <div className='bg-white rounded-2xl w-full max-w-md p-6  shadow-lg'>
       <h1 className='font-semibold text-[#4A72A7] text-center text-3xl mb-6'>
         DEMANDE
       </h1>
       
-      <form  className='space-y-4' >
+      <form  className='space-y-4' onSubmit={handleSubmit}>
         <div className='bg-[#9FB2F0] rounded-2xl flex items-center px-4 py-3  ' >
           <div className='mr-3'>
             <Image 
@@ -17,13 +59,14 @@ const SignUpForm = () => {
               alt='company icon' 
               width={20}
               height={20}
-              
             />
           </div>
           <input 
             className='bg-transparent flex-1 outline-none text-white text-left  '
             type="text"
             placeholder="Nom de l'entreprise"
+            name="nom"
+            required
             >
           </input>
         </div>
@@ -35,13 +78,14 @@ const SignUpForm = () => {
               alt='rue icon' 
               width={20}
               height={20}
-              
             />
           </div>
           <input
             className='bg-transparent flex-2 outline-none text-white text-left  '
             type="text"
             placeholder="rue de l'entreprise"
+            name="rue"
+            required
             >
           </input>
         </div>
@@ -54,13 +98,14 @@ const SignUpForm = () => {
                 alt='postal code icon' 
                 width={20}
                 height={20}
-                
               />
             </div>
             <input 
               className='bg-transparent flex-1  outline-none text-white   '
               type="text"
               placeholder="Code postal"
+              name="codePostal"
+              required
               >
             </input>
           </div>
@@ -71,13 +116,14 @@ const SignUpForm = () => {
                 alt='city icon' 
                 width={20}
                 height={20}
-                
               />
             </div>
             <input 
               className='bg-transparent flex-1 outline-none text-white text-left '
               type="text"
               placeholder="Ville"
+              name="ville"
+              required
               >
             </input>
           </div>
@@ -90,13 +136,14 @@ const SignUpForm = () => {
               alt='phone number icon' 
               width={20}
               height={20}
-              
             />
           </div>
           <input 
             className='bg-transparent flex-1 outline-none text-white text-left  '
             type="text"
             placeholder="Numéro de téléphone"
+            name="telephone"
+            required
             >
           </input>
         </div>
@@ -108,7 +155,6 @@ const SignUpForm = () => {
               alt='email icon' 
               width={20}
               height={20}
-              
             />
           </div>
            
@@ -116,13 +162,11 @@ const SignUpForm = () => {
           className="bg-transparent text-white text-left flex-1 outline-none "
           type='email'
           placeholder="Veuillez entrer l&apos;email de l&apos;entreprise"
+          name="email"
+          required
           ></input>
         </div>
         
-       
-
-        
-
         <p className='text-center text-gray-600 mt-6 text-sm'>
         En vous inscrivant, vous acceptez nos Conditions d&apos;utilisation et notre Politique de confidentialité.
         </p>
@@ -130,9 +174,10 @@ const SignUpForm = () => {
         
         <button 
           type="submit"
-          className='w-full bg-[#4A72A7] hover:bg-[#2c4a73] text-white font-semibold py-3 rounded-2xl transition duration-200'
+          disabled={loading}
+          className='w-full bg-[#4A72A7] hover:bg-[#2c4a73] disabled:opacity-60 text-white font-semibold py-3 rounded-2xl transition duration-200'
         >
-          S&apos;INSCRIRE
+          {loading? 'Envoi...': "S'INSCRIRE"}
         </button>
       </form>
       
