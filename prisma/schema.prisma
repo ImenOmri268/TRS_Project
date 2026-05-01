@@ -4,15 +4,15 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
+
 }
 
 datasource db {
   provider = "postgresql"
-
+  url      = env("DATABASE_URL")
 }
-
+ 
 //ENUM
 enum UserType {
   SUPER_ADMIN
@@ -107,12 +107,15 @@ model RolePermission {
 
 //DEMANDE
 model Demande{
-  id Int @id @default(autoincrement())
-  email String
-  statut StatutDemande
-  date DateTime @default(now())
-
-  adminId Int
+  id          Int           @id @default(autoincrement())
+  nom         String
+  rue         String
+  codePostal  String
+  ville       String
+  telephone   String
+  email       String
+  statut      StatutDemande @default(EN_ATTENTE)
+  date        DateTime      @default(now())
 }
 
 //NOTIFICATION
@@ -139,14 +142,15 @@ model Email {
 
 //RESSOURCE
 model Ressource{
-  id Int @id @default(autoincrement())
-  nom String
-  type String
+  id          Int    @id @default(autoincrement())
+  nom         String
+  type        String
   description String
+  adminId     Int
 
-  adminId Int
-  trs TRS[]
-  workflows Workflow[]
+  trs         TRS[]
+  workflows   Workflow[]
+  objectifs   Objectif[]    // ← ajoute cette ligne
 }
 
 //TRS
@@ -260,4 +264,15 @@ model Tracking {
 
   planId Int
   plan PlanAction @relation(fields: [planId], references: [id])
+}
+
+//OBJECTIF TRS
+model Objectif {
+  id          Int      @id @default(autoincrement())
+  valeurCible Float                          // valeur TRS à atteindre ex: 85.0
+  dateDebut   DateTime @default(now())
+  dateFin     DateTime?                      // date limite pour atteindre l'objectif
+
+  ressourceId Int
+  ressource   Ressource @relation(fields: [ressourceId], references: [id])
 }

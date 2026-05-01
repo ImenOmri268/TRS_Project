@@ -17,7 +17,7 @@ const SignInForm = () => {
  // Évite que l'utilisateur clique 2 fois pendant la requête
 
   async function handlerFormSubmit(event){
-    event.preventDefault(); //y5dm l page
+    event.preventDefault(); 
     setLoading(true);  //desactiver le btn immediatement
     try{
       const formData = new FormData(event.currentTarget);
@@ -38,11 +38,11 @@ const SignInForm = () => {
       }
       
       toast.success('Connexion réussie !');
-
+  
       if (data.mustChangePassword) {
         router.push('/resetPassword');
       }else {
-        router.push('/Dashboard')
+        router.push('/admin/Dashboard')
       }
 
     } catch (error) {
