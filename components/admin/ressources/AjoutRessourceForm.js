@@ -48,67 +48,24 @@ const AjoutRessourceForm = ({ isOpen, onClose }) => {
                   </div>
                 </div>
                 
-                <div >
-                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Nommez les composants des seuils</h3>
-                  <div className="grid gap-4">
-                    <div className=" bg-slate-50 p-6 rounded-2xl border border-slate-100 ">
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                          *Nommer les champs de taux de disponibilité
-                        </h3>
-                        <div className="grid gap-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <NommerInput  placeholder="ex: Temps_Prévu " />
-                            <NommerInput  placeholder="ex: Temps d'arrêts" />
-                          </div>
-                        </div>
-                      </div>
+                
 
-
-                      <div className="py-8">
-                        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                          *Nommer les champs de taux de performance
-                        </h3>
-                        <div className="grid gap-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <NommerInput  placeholder="ex: Qté_Produite_Total" />
-                            <NommerInput  placeholder="ex: Temps_Unitaire_Théorique" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                              <NommerInput  placeholder="ex: Temps_Opération" />
-                          </div>
-                        </div>
-                      </div>
-
-
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                          *Nommer les champs de taux de qualité
-                        </h3>
-                        <div className="grid gap-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <NommerInput  placeholder="ex: Qté_Produite_Total" />
-                            <NommerInput  placeholder="ex: Qté_Rebut" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                              <NommerInput  placeholder="ex: Qté_Réwork" />
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
+                {/* TRS Initial */}
+                <div>
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">TRS initial (%)
+                    <span className="text-xs font-normal text-slate-400 lowercase tracking-tight ml-2">s&apos;il ya un trs initial</span>
+                  </h3>
+                  <ModalInput icon={MdSettings}  placeholder="Entrer votre TRS initial si tu as un" type="number" />
                 </div>
-
                 {/* Initial Thresholds */}
                 <div>
                   <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Seuils Initiaux (%)
                     <span className="text-xs font-normal text-slate-400 lowercase tracking-tight ml-2">s&apos;il ya des valeurs initials</span>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <ModalInput icon={MdSettings} label="Disponibilité" placeholder="0" type="number" />
-                    <ModalInput icon={MdAnalytics} label="Performance" placeholder="0" type="number" />
-                    <ModalInput icon={MdCheckCircle} label="Qualité" placeholder="0" type="number" />
+                    <ModalInput icon={MdSettings}  placeholder="Disponibilité" type="number" />
+                    <ModalInput icon={MdAnalytics}  placeholder="Performance" type="number" />
+                    <ModalInput icon={MdCheckCircle}  placeholder="Qualité" type="number" />
                   </div>
                 </div>
               </div>
@@ -143,9 +100,8 @@ const ModalInput = ({ icon: Icon, label, ...props }) => (
 );
 
 
-const NommerInput = ({ label, placeholder }) => (
+const NommerInput = ({  placeholder }) => (
     <div className="space-y-1">
-      <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">{label}</label>
       <input 
         type="text"
         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-300"

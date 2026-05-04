@@ -1,36 +1,36 @@
 'use client'
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MdClose, MdPersonOutline, MdMailOutline, MdLockOutline, MdBusinessCenter } from "react-icons/md";
+import { MdClose, MdPersonOutline, MdMailOutline, MdBusinessCenter } from "react-icons/md";
 import { HiPlus } from "react-icons/hi";  
 import { IoReturnUpBack } from "react-icons/io5";
 
 const AjoutUserForm = ({ isOpen, onClose }) => {
-  const permissions = ["Collecte de données", "Suivi des données", "Consultation TRS", "Analyse des causes"];
+  const permissions = [
+    "Dashbaord",
+    "les objectifs",
+    "gestion des utilisateurs",
+    "gestion des ressources",
+    "suivi de trs",
+    "traitements",
+    "Plan d'actions",
+    "Controle"
+  ];
 
 
   return (
     <AnimatePresence mode="wait">
       {isOpen && (
         <>
-          {/* blur background */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-100"
-          />
-
-          {/* form slide-in */}
-          <motion.div
-            initial={{ opacity: 0, x: 0 }} // Sliding in like the menu
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-100 flex items-center justify-center p-4 "
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}  
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-100 flex items-center justify-center p-4"
           >
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto pointer-events-auto">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}>
               <div className="sticky top-0 bg-white px-8 py-6 flex items-center justify-between border-b border-slate-100 z-10">
                 <h2 className="text-xl font-bold ">Ajouter un utilisateur</h2>
                 <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">

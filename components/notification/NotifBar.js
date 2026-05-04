@@ -9,9 +9,9 @@ const NotifBar = ({ showNotif, setShowNotif }) => {
           initial={{ opacity: 0, y: 10, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-          className="absolute top-12 right-0 w-80 bg-white shadow-xl border border-slate-200 rounded-xl z-100 overflow-hidden"
+          className="absolute top-12 right-3 w-80 bg-white shadow-xl border border-slate-200 rounded-xl z-100 overflow-hidden"
         >
-          <div className="flex items-center justify-between p-4 border-b border-slate-100">
+          <div className="flex items-center justify-between p-4 border-b border-slate-100 ">
             <span className="font-semibold text-slate-800">Notifications</span>
             <MdClose className="cursor-pointer text-slate-400 hover:text-slate-600" onClick={() => setShowNotif(false)} />
           </div>
