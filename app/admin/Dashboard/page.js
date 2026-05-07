@@ -1,26 +1,18 @@
-import React from "react";
+import AdminLayout from "@/components/admin/adminLayout/AdminLayout"
+import StatsTRS from "@/components/admin/dashboard/StatsTRS"
+import MachinesTRS from "@/components/admin/dashboard/MachinesTRS"
+import GraphiqueTRS from "@/components/admin/dashboard/GraphiqueTRS"
 
-import AdminLayout from "@/components/admin/adminLayout/AdminLayout";
-import StatsTRS from "@/components/admin/dashboard/StatsTRS";
-import MachinesTRS from "@/components/admin/dashboard/MachineTRS";
-import GraphiqueTRS from "@/components/admin/dashboard/GraphiqueTRS";
-
-
-
-const page =  () => {
-
-  
+const page = () => {
   return (
     <AdminLayout activePage="Dashboard">
-      
+
       <StatsTRS />
       <MachinesTRS />
-
-      <GraphiqueTRS/>
-      
-
+      <GraphiqueTRS />
     </AdminLayout>
-   
+    
   )
-};
-export default page;
+}
+
+export default page

@@ -61,6 +61,8 @@ model User{
   type UserType
 
   mustChangePassword Boolean @default(true)
+
+  adminId Int? 
   
   roles UserRole[]
   notifications Notification[]
@@ -150,7 +152,7 @@ model Ressource{
 
   trs         TRS[]
   workflows   Workflow[]
-  objectifs   Objectif[]    // ← ajoute cette ligne
+  objectifs   Objectif[]    
 }
 
 //TRS
@@ -269,9 +271,9 @@ model Tracking {
 //OBJECTIF TRS
 model Objectif {
   id          Int      @id @default(autoincrement())
-  valeurCible Float                          // valeur TRS à atteindre ex: 85.0
+  valeurCible Float                          
   dateDebut   DateTime @default(now())
-  dateFin     DateTime?                      // date limite pour atteindre l'objectif
+  dateFin     DateTime?                      
 
   ressourceId Int
   ressource   Ressource @relation(fields: [ressourceId], references: [id])

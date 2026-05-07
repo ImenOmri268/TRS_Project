@@ -61,7 +61,7 @@ const MachinesTRS = () => {
             </div>
             <ProgressBar label="Disponibilité" valeur={machine.disponibilite} couleur="text-blue-500" />
             <ProgressBar label="Performance"   valeur={machine.performance}   couleur="text-green-500" />
-            <ProgressBar label="Qualité"        valeur={machine.qualite}        couleur="text-purple-500" />
+            <ProgressBar label="Qualité"        valeur={machine.qualite}        couleur="text-purple-600" />
             <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
               <span className="text-sm text-slate-500">TRS</span>
               <span className="text-2xl font-bold text-slate-800">
