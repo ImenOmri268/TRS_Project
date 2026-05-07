@@ -1,0 +1,86 @@
+import { NextResponse } from 'next/server'
+import { prisma } from '../../../lib/prisma'
+import { verifyToken } from '../../../lib/jwt'
+
+export async function GET(request) {
+  try {
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json(
+        { message: 'Non authentifié' }, 
+        { status: 401 })
+    }
+
+    const decoded = verifyToken(token)
+    const adminId = decoded.id
+
+    
+    const ressources = await prisma.ressource.findMany({
+      where: { adminId },
+      include: {
+        trs: {
+          include: {
+            disponibilite: true,
+            performance: true,
+            qualite: true,
+          }
+        },
+        objectifs: true,
+      }
+    })
+
+    // calc nb user
+    const nbUsers = await prisma.user.count({
+      where: { type: 'USER' }
+    })
+
+    
+    const actionsEnRetard = await prisma.action.count({
+      where: { statut: 'EN_RETARD' }
+    })
+
+    
+    const machinesData = ressources.map(ressource => {
+      const trsInitial = ressource.trs.find(t => t.type === 'INITIAL')
+      const trsFinal   = ressource.trs.find(t => t.type === 'FINAL')
+
+      return {
+        id: ressource.id,
+        nom: ressource.nom,
+        type: ressource.type,
+        trsInitial: trsInitial?.valeur ?? null,
+        trsFinal: trsFinal?.valeur ?? null,
+        disponibilite: trsInitial?.disponibilite?.valeur ?? null,
+        performance: trsInitial?.performance?.valeur ?? null,
+        qualite: trsInitial?.qualite?.valeur ?? null,
+        objectif: ressource.objectifs[0]?.valeurCible ?? null,
+      }
+    })
+
+    // TRS moyen
+    const trsValeurs = machinesData
+      .map(m => m.trsInitial)
+      .filter(v => v !== null)
+
+    const trsMoyen = trsValeurs.length > 0
+      ? (trsValeurs.reduce((a, b) => a + b, 0) / trsValeurs.length).toFixed(1)
+      : 0
+
+    return NextResponse.json({
+      stats: {
+        trsMoyen,
+        nbMachines: ressources.length,
+        nbUsers,
+        actionsEnRetard,
+      },
+      machines: machinesData,
+    })
+
+  } catch (error) {
+    console.error('[DASHBOARD ERROR]', error)
+    return NextResponse.json(
+      { message: 'Erreur serveur' },
+      { status: 500 }
+    )
+  }
+}
