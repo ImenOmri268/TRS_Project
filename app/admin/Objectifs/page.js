@@ -8,11 +8,11 @@ import { MdOutlineTrackChanges, MdAdd } from "react-icons/md";
 import AjoutButton from "@/components/admin/adminLayout/AjoutButton";
 import AjoutGoalForm from "@/components/admin/objectifs/AjoutGoalForm";
 
-const initialGoals = [
+const initialGoals = [/*
   { id: 1, title: "Optimisation TRS Ligne A", target: "85%", deadline: "2026-06-30", status: "En Cours", description: "Atteindre un TRS de 85% sur la ligne principale en réduisant les micro-arrêts." },
   { id: 2, title: "Réduction Temps de Réglage", target: "-15 min", deadline: "2026-05-15", status: "Atteint", description: "Diminuer le temps moyen de changement de série via la méthode SMED." },
   { id: 3, title: "Zéro Défaut Qualité", target: "100%", deadline: "2026-12-01", status: "Non Commencé", description: "Éliminer les rebuts liés aux erreurs de paramétrage du capteur B2." },
-];
+*/];
 
 const GoalsPage = () => {
   const [goals, setGoals] = useState(initialGoals);
@@ -45,12 +45,23 @@ const GoalsPage = () => {
         </div>
 
         {/* Dynamic Goal List */}
-        <GoalList 
-          goals={goals} 
-          onGoalClick={setSelectedGoal} 
-          onEditClick={setEditingGoal} 
-          onDeleteClick={handleDelete}
-        />
+        {goals.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MdOutlineTrackChanges className="text-slate-400 text-2xl" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-800">Aucun objectif défini</h3>
+            <p className="text-slate-500 mt-2">Commencez par créer votre premier objectif.</p>
+          </div>
+        ) : (
+          <GoalList 
+            goals={goals} 
+            onGoalClick={setSelectedGoal} 
+            onEditClick={setEditingGoal} 
+            onDeleteClick={handleDelete}
+          />
+        )}
+
 
         {/* Modals & Overlays */}
         <AjoutGoalForm isOpen={isOpen} onClose={() => setIsOpen(null)} />

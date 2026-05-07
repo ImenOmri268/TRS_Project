@@ -5,11 +5,11 @@ import TableUtilisateur from "@/components/admin/utilisateurs/TableUtilisateur";
 import { MdOutlinePeopleAlt } from "react-icons/md";
 
 export default function Page() {
-    const utilisateurs = [
+    const utilisateurs = [/*
     { id: 1, name: "John Doe", status: "Actif", email: "john@example.com", permissions: ["Dashbaord","les objectifs","gestion des utilisateurs"], actions:["consulter dashboard","ajouter un utilisateur"] }, 
     { id: 2, name: "Jane Smith", status: "Inactif", email: "jane@example.com", permissions: ["Plan d'actions", "Controle"] ,actions:["consulter plan d'actions","ajouter un plan d'action"]},
     { id: 3, name: "Alice Johnson", status: "Actif", email: "alice@example.com", permissions: ["suivi de trs", "traitements"] ,actions:["consulter suivi de trs","ajouter un traitement"]},
-  ];
+  */];
 
   return (
     <AdminLayout activePage="Liste des utilisateurs">
@@ -29,9 +29,19 @@ export default function Page() {
         
         {/* Table Container */}
         <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-          <TableUtilisateur
-            utilisateurs={utilisateurs}  
-          />
+          {utilisateurs.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MdOutlinePeopleAlt className="text-slate-400 text-2xl" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800">Aucun utilisateur défini</h3>
+              <p className="text-slate-500 mt-2">Commencez par créer votre premier utilisateur.</p>
+            </div>
+          ) : (
+            <TableUtilisateur
+              utilisateurs={utilisateurs}  
+            />
+          )}
         </div>
       </div>
     </AdminLayout>

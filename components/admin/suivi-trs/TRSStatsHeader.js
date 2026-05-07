@@ -2,9 +2,9 @@ import React from "react";
 import { FiTrendingUp, FiTarget, FiActivity } from "react-icons/fi";
 
 const exampleData = {
-  initial: "65%",
-  current: "78%",
-  target: "85%"
+  //initial: "75%",
+  //current: "82%",
+  //target: "90%"
 };
 
 const TRSStatsHeader = () => {
@@ -12,22 +12,28 @@ const TRSStatsHeader = () => {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <StatCard 
         title="TRS Initial" 
-        value={exampleData.initial} 
-        subtext="Au début de l'utilisation" 
+        value={exampleData?.initial ? exampleData.initial : "0%"}
+        subtext={exampleData?.initial && exampleData?.target 
+          ? `Distance à l'objectif: ${parseInt(exampleData.target) - parseInt(exampleData.initial)}%` 
+          : "0%"}
         icon={<FiActivity />} 
         color="slate"
       />
       <StatCard 
         title="TRS Actuel (Final)" 
-        value={exampleData.current} 
-        subtext="+13% d'amélioration" 
+        value={exampleData?.current ? exampleData.current : "0%"}
+        subtext={exampleData?.target && exampleData?.current 
+          ? `Distance à l'objectif: ${parseInt(exampleData.target) - parseInt(exampleData.current)}%` 
+          : "0%"}
         icon={<FiTrendingUp />} 
         color="blue"
       />
       <StatCard 
         title="Objectif Cible" 
-        value={exampleData.target} 
-        subtext="Distance à l'objectif: 7%" 
+        value={exampleData?.target ? exampleData.target : "0%"} 
+        subtext={exampleData?.target && exampleData?.current 
+          ? `Distance à l'objectif: ${parseInt(exampleData.target) - parseInt(exampleData.current)}%` 
+          : "0%"}
         icon={<FiTarget />} 
         color="green"
       />

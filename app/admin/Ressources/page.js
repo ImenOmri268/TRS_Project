@@ -6,7 +6,7 @@ import { HiOutlineCpuChip } from "react-icons/hi2";
 
 export default function Page() {
 
-    const ressources = [
+    const ressources = [/*
       { 
         id: 1, 
         name: "Presse Hydraulique A1", 
@@ -59,7 +59,7 @@ export default function Page() {
           { date: "2024-03-20", disp: "95%", perf: "90%", qual: "95%", trs: "81.2%" },
         ]
       }
-    ];
+    */];
 
   return (
     <AdminLayout activePage="Gestion des Ressources">
@@ -79,7 +79,17 @@ export default function Page() {
         
         {/* Table Container */}
         <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-          <TableRessources ressources={ressources} />
+          {ressources.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <HiOutlineCpuChip className="text-slate-400 text-2xl" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800">Aucune ressource définie</h3>
+              <p className="text-slate-500 mt-2">Commencez par créer votre première ressource.</p>
+            </div>
+          ) : (
+            <TableRessources ressources={ressources} />
+          )}
         </div>
       </div>
     </AdminLayout>
