@@ -2,9 +2,9 @@ import React from "react";
 import { FiTrendingUp, FiTarget, FiActivity } from "react-icons/fi";
 
 const exampleData = {
-  initial: "65%",
-  current: "78%",
-  target: "85%"
+  initial: "75%",
+  current: "82%",
+  target: "90%"
 };
 
 const TRSStatsHeader = () => {

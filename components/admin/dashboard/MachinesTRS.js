@@ -9,6 +9,8 @@ const ProgressBar = ({ label, valeur, couleur }) => (
     </div>
     <div className="w-full bg-slate-200 rounded-full h-2">
       <div
+        /* This ensures bg-purple-600 is included */
+        /* bg-purple-600 bg-blue-500 bg-green-500 */
         className={`h-2 rounded-full transition-all duration-500 ${couleur.replace('text', 'bg')}`}
         style={{ width: `${valeur ?? 0}%` }}
       />

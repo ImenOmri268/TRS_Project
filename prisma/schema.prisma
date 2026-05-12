@@ -55,6 +55,7 @@ enum AnalyseType {
 model User{
   id Int @id @default(autoincrement())
   name String
+  userRole String?
   email String @unique
   password String
   status Boolean @default(true)
@@ -63,7 +64,8 @@ model User{
   mustChangePassword Boolean @default(true)
 
   adminId Int? 
-  
+
+  userPermissions UserPermission[]
   roles UserRole[]
   notifications Notification[]
   emails Email[]
@@ -74,7 +76,7 @@ model User{
 //ROLE
 model Role {
   id Int @id @default(autoincrement())
-  name String
+  name String 
 
   users UserRole[]
   permissions RolePermission []
@@ -82,9 +84,10 @@ model Role {
 
 model Permission {
   id   Int    @id @default(autoincrement())
-  name String
+  name String 
 
   roles RolePermission[]
+  userPermissions UserPermission[] 
 }
 
 model UserRole {
@@ -105,6 +108,15 @@ model RolePermission {
   permission Permission @relation(fields: [permissionId], references: [id])
 
   @@id([roleId, permissionId])
+}
+
+model UserPermission {
+  userId       Int
+  permissionId Int
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, permissionId])
 }
 
 //DEMANDE
@@ -162,7 +174,7 @@ model TRS{
   valeur Float
 
   ressourceId Int
-  ressource Ressource @relation(fields: [ressourceId], references: [id])
+  ressource Ressource @relation(fields: [ressourceId], references: [id], onDelete: Cascade)
 
   disponibilite Disponibilite?
   performance Performance?
@@ -173,21 +185,27 @@ model Disponibilite {
   id Int @id @default(autoincrement())
   valeur Float
 
+  //nsami les champs specifique//////////////////////////////////////////////////////////////////
+
   trsId Int @unique
-  trs TRS @relation(fields: [trsId], references: [id])
+  trs TRS @relation(fields: [trsId], references: [id], onDelete: Cascade)
 }
 
 model Performance {
   id Int @id @default(autoincrement())
   valeur Float
 
+//nsami les champs specifique//////////////////////////////////////////////////////////////////
+
   trsId Int @unique
-  trs TRS @relation(fields: [trsId], references: [id])
+  trs TRS @relation(fields: [trsId], references: [id], onDelete: Cascade)
 }
 
 model Qualite {
   id Int @id @default(autoincrement())
   valeur Float
+
+//nsami les champs specifique//////////////////////////////////////////////////////////////////
 
   trsId Int @unique
   trs TRS @relation(fields: [trsId], references: [id])
@@ -271,6 +289,8 @@ model Tracking {
 //OBJECTIF TRS
 model Objectif {
   id          Int      @id @default(autoincrement())
+  title       String?
+  description String?
   valeurCible Float                          
   dateDebut   DateTime @default(now())
   dateFin     DateTime?                      

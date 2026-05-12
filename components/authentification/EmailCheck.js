@@ -5,7 +5,7 @@ import React from "react";
 import { useState } from "react";
 import {toast} from "sonner";
 
-const emailcheck = () => {
+const Emailcheck = () => {
   const [loading,setLoading]=useState(false);
   async function handleSubmit(event){
     event.preventDefault();
@@ -84,4 +84,4 @@ const emailcheck = () => {
   )
 };
 
-export default emailcheck;
+export default Emailcheck;

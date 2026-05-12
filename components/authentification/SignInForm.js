@@ -40,12 +40,13 @@ const SignInForm = () => {
       toast.success('Connexion réussie !');
   
       if (data.mustChangePassword) {
-        router.push('/resetPassword');
+        router.push('/shared/resetPassword');
       }else {
         router.push('/admin/Dashboard')
       }
 
     } catch (error) {
+      console.error('Login error:', error);
       toast.error('Erreur de connexion, réessayez.')
     } finally {
       setLoading(false)  //remet btn actif
@@ -102,15 +103,8 @@ const SignInForm = () => {
         </div>
         
 
-        <div className='flex flex-row sm:flex-row items-start sm:items-center justify-between gap-3'>
-          <label className='flex items-center cursor-pointer'>
-            <input 
-              type="checkbox" 
-              className='w-4 h-4 rounded border-gray-300 text-[#4A72A7] focus:ring-[#4A72A7] cursor-pointer'
-            />
-            <span className='ml-2 text-sm text-gray-700'>Se souvenir de moi</span>
-          </label>
-          <a href="/EmailSend" className='text-sm text-[#4A72A7] hover:text-[#2c4a73] hover:underline'>
+        <div className='flex flex-row   justify-center  gap-2'>
+          <a href="/shared/EmailSend" className='text-sm text-[#4A72A7] hover:text-[#2c4a73] hover:underline'>
             Mot de passe oublié ?
           </a>
         </div>
@@ -129,7 +123,7 @@ const SignInForm = () => {
       <p className='text-center text-gray-600 mt-6 text-sm'>
         Vous n&apos;avez pas de compte ? 
         
-        <Link href="/SignUp" className='text-[#4A72A7] hover:text-[#2c4a73] font-semibold hover:underline'>
+        <Link href="/shared/SignUp" className='text-[#4A72A7] hover:text-[#2c4a73] font-semibold hover:underline'>
           Inscrivez-vous
         </Link>
       </p>

@@ -20,9 +20,6 @@ const CinqP = () => {
             Analyse des causes racines pour les deux priorités majeures.
           </p>
         </div>
-        <div className="hidden md:block text-[10px] font-black text-slate-400 uppercase tracking-widest border-b-2 border-blue-500 pb-1">
-          Méthodologie Lean
-        </div>
       </div>
 
       {/* Grid Layout: Two forms next to each other on large screens */}

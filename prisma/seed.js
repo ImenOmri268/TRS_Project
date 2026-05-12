@@ -1,190 +1,222 @@
-const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+
+const prisma = new PrismaClient();
 
 async function main() {
+  console.log('🌱 Seeding database...');
 
-  // Utiliser l'admin existant (Marie Curie id=9)
-  const admin = await prisma.user.findUnique({
-    where: { email: 'marie@test.com' }
-  })
+  // Clean up (same as before, optional)
+  await prisma.userPermission.deleteMany();
+  await prisma.userRole.deleteMany();
+  await prisma.rolePermission.deleteMany();
+  await prisma.action.deleteMany();
+  await prisma.tracking.deleteMany();
+  await prisma.promptIA.deleteMany();
+  await prisma.planAction.deleteMany();
+  await prisma.analyse.deleteMany();
+  await prisma.workflow.deleteMany();
+  await prisma.objectif.deleteMany();
+  await prisma.qualite.deleteMany();
+  await prisma.performance.deleteMany();
+  await prisma.disponibilite.deleteMany();
+  await prisma.tRS.deleteMany();
+  await prisma.ressource.deleteMany();
+  await prisma.email.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.demande.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.role.deleteMany();
+  await prisma.permission.deleteMany();
 
-  if (!admin) {
-    console.log('❌ Admin marie@test.com non trouvé ! Lance le serveur et crée un compte admin d\'abord.')
-    return
+  // 2. Create Permissions
+  const permissionNames = [
+    'Dashboard',
+    'les objectifs',
+    'gestion des utilisateurs',
+    'gestion des ressources',
+    'suivi de trs',
+    'traitements',
+    'Plan d actions',
+    'Controle',
+  ];
+  const permissions = [];
+  for (const name of permissionNames) {
+    let perm = await prisma.permission.findFirst({ where: { name } });
+    if (!perm) {
+      perm = await prisma.permission.create({ data: { name } });
+    }
+    permissions.push(perm);
+  }
+  console.log(`✅ Created/Found ${permissions.length} permissions`);
+
+  // 3. Create Roles
+  const rolesData = [
+    { name: 'Administrateur' },
+    { name: 'Technicien' },
+    { name: 'Observateur' },
+  ];
+  const roles = [];
+  for (const roleData of rolesData) {
+    let role = await prisma.role.findFirst({ where: { name: roleData.name } });
+    if (!role) {
+      role = await prisma.role.create({ data: { name: roleData.name } });
+    }
+    roles.push(role);
+  }
+  console.log(`✅ Created/Found ${roles.length} roles`);
+
+  // 4. Assign Role → Permissions (RolePermission)
+  const adminRole = roles.find(r => r.name === 'Administrateur');
+  const technicianRole = roles.find(r => r.name === 'Technicien');
+  const observerRole = roles.find(r => r.name === 'Observateur');
+
+  // Admin: all permissions
+  for (const perm of permissions) {
+    const existing = await prisma.rolePermission.findUnique({
+      where: { roleId_permissionId: { roleId: adminRole.id, permissionId: perm.id } },
+    });
+    if (!existing) {
+      await prisma.rolePermission.create({
+        data: { roleId: adminRole.id, permissionId: perm.id },
+      });
+    }
   }
 
-  console.log('✅ Admin trouvé:', admin.email, 'id:', admin.id)
-
-  // ===== RESSOURCES =====
-  const machine1 = await prisma.ressource.create({
-    data: {
-      nom: 'Machine A1',
-      type: 'Presse hydraulique',
-      description: 'Presse hydraulique 500T ligne 1',
-      adminId: admin.id
+  // Technician: only some permissions
+  const techPerms = permissions.filter(p =>
+    ['Dashboard', 'suivi de trs', 'traitements'].includes(p.name)
+  );
+  for (const perm of techPerms) {
+    const existing = await prisma.rolePermission.findUnique({
+      where: { roleId_permissionId: { roleId: technicianRole.id, permissionId: perm.id } },
+    });
+    if (!existing) {
+      await prisma.rolePermission.create({
+        data: { roleId: technicianRole.id, permissionId: perm.id },
+      });
     }
-  })
-
-  const machine2 = await prisma.ressource.create({
-    data: {
-      nom: 'Ligne B2',
-      type: 'Ligne assemblage',
-      description: 'Assemblage final des composants',
-      adminId: admin.id
-    }
-  })
-
-  const machine3 = await prisma.ressource.create({
-    data: {
-      nom: 'Poste C3',
-      type: 'Poste de contrôle',
-      description: 'Inspection visuelle et dimensionnelle',
-      adminId: admin.id
-    }
-  })
-
-  // ===== TRS INITIAL =====
-  const trs1 = await prisma.tRS.create({
-    data: { type: 'INITIAL', valeur: 68.5, ressourceId: machine1.id }
-  })
-  const trs2 = await prisma.tRS.create({
-    data: { type: 'INITIAL', valeur: 72.3, ressourceId: machine2.id }
-  })
-  const trs3 = await prisma.tRS.create({
-    data: { type: 'INITIAL', valeur: 58.0, ressourceId: machine3.id }
-  })
-
-  // ===== DISPONIBILITE PERFORMANCE QUALITE =====
-  await prisma.disponibilite.create({ data: { valeur: 75.0, trsId: trs1.id } })
-  await prisma.performance.create({   data: { valeur: 80.5, trsId: trs1.id } })
-  await prisma.qualite.create({       data: { valeur: 92.0, trsId: trs1.id } })
-
-  await prisma.disponibilite.create({ data: { valeur: 78.0, trsId: trs2.id } })
-  await prisma.performance.create({   data: { valeur: 85.0, trsId: trs2.id } })
-  await prisma.qualite.create({       data: { valeur: 90.0, trsId: trs2.id } })
-
-  await prisma.disponibilite.create({ data: { valeur: 65.0, trsId: trs3.id } })
-  await prisma.performance.create({   data: { valeur: 70.0, trsId: trs3.id } })
-  await prisma.qualite.create({       data: { valeur: 88.0, trsId: trs3.id } })
-
-  // ===== TRS FINAL =====
-  await prisma.tRS.create({
-    data: { type: 'FINAL', valeur: 82.0, ressourceId: machine1.id }
-  })
-  await prisma.tRS.create({
-    data: { type: 'FINAL', valeur: 88.5, ressourceId: machine2.id }
-  })
-
-  // ===== OBJECTIFS =====
-  await prisma.objectif.create({ data: { valeurCible: 85.0, ressourceId: machine1.id } })
-  await prisma.objectif.create({ data: { valeurCible: 90.0, ressourceId: machine2.id } })
-  await prisma.objectif.create({ data: { valeurCible: 80.0, ressourceId: machine3.id } })
-
-  // ===== WORKFLOWS =====
-  const workflow1 = await prisma.workflow.create({
-    data: {
-      dateDebut: new Date('2025-01-10'),
-      dateFin: new Date('2025-03-15'),
-      statut: 'TERMINE',
-      ressourceId: machine1.id
-    }
-  })
-  const workflow2 = await prisma.workflow.create({
-    data: {
-      dateDebut: new Date('2025-02-01'),
-      dateFin: new Date('2025-04-20'),
-      statut: 'TERMINE',
-      ressourceId: machine2.id
-    }
-  })
-  const workflow3 = await prisma.workflow.create({
-    data: {
-      dateDebut: new Date('2025-04-01'),
-      statut: 'EN_COURS',
-      ressourceId: machine3.id
-    }
-  })
-
-  // ===== PLAN ACTIONS =====
-  const plan1 = await prisma.planAction.create({
-    data: {
-      description: 'Réduire les temps d\'arrêt machine A1',
-      statut: 'TERMINE',
-      dateDebut: new Date('2025-01-15'),
-      dateFin: new Date('2025-03-15'),
-      workflowId: workflow1.id
-    }
-  })
-  const plan2 = await prisma.planAction.create({
-    data: {
-      description: 'Améliorer la qualité ligne B2',
-      statut: 'TERMINE',
-      dateDebut: new Date('2025-02-10'),
-      dateFin: new Date('2025-04-20'),
-      workflowId: workflow2.id
-    }
-  })
-  const plan3 = await prisma.planAction.create({
-    data: {
-      description: 'Optimiser le poste de contrôle C3',
-      statut: 'EN_COURS',
-      dateDebut: new Date('2025-04-05'),
-      workflowId: workflow3.id
-    }
-  })
-
-  // ===== ACTIONS =====
-  const user = await prisma.user.findUnique({ where: { email: 'paul@test.com' } })
-
-  if (user) {
-    await prisma.action.create({
-      data: {
-        description: 'Remplacer les joints toutes les 200h',
-        statut: 'TERMINE',
-        planId: plan1.id,
-        userId: user.id
-      }
-    })
-    await prisma.action.create({
-      data: {
-        description: 'Former les opérateurs au nouveau process',
-        statut: 'TERMINE',
-        planId: plan2.id,
-        userId: user.id
-      }
-    })
-    await prisma.action.create({
-      data: {
-        description: 'Mettre en place les fiches de contrôle',
-        statut: 'EN_COURS',
-        planId: plan3.id,
-        userId: user.id
-      }
-    })
-    await prisma.action.create({
-      data: {
-        description: 'Audit interne du poste C3',
-        statut: 'EN_RETARD',
-        planId: plan3.id,
-        userId: user.id
-      }
-    })
   }
 
-  // ===== NOTIFICATIONS =====
-  await prisma.notification.create({
-    data: {
-      message: 'Action "Audit interne" est en retard !',
-      type: 'RETARD',
-      lu: false,
-      userId: admin.id
-    }
-  })
+  // Observer: only Dashboard
+  const observerPerm = permissions.find(p => p.name === 'Dashboard');
+  const existingObs = await prisma.rolePermission.findUnique({
+    where: { roleId_permissionId: { roleId: observerRole.id, permissionId: observerPerm.id } },
+  });
+  if (!existingObs) {
+    await prisma.rolePermission.create({
+      data: { roleId: observerRole.id, permissionId: observerPerm.id },
+    });
+  }
+  console.log('✅ Assigned role permissions');
 
-  console.log('✅ Seed terminé avec succès !')
-  console.log('Connecte-toi avec : marie@test.com / admin123')
+  // 5. Create Users
+  const passwordHash = await bcrypt.hash('password123', 10);
+
+  const superAdmin = await prisma.user.create({
+    data: {
+      name: 'Super Admin',
+      email: 'super@admin.com',
+      password: passwordHash,
+      status: true,
+      type: 'SUPER_ADMIN',
+      mustChangePassword: false,
+      adminId: null,
+    },
+  });
+
+  const admin = await prisma.user.create({
+    data: {
+      name: 'Admin User',
+      email: 'admin@example.com',
+      password: passwordHash,
+      status: true,
+      type: 'ADMIN',
+      mustChangePassword: true,
+      adminId: superAdmin.id,
+    },
+  });
+
+  const techUser = await prisma.user.create({
+    data: {
+      name: 'Jean Dupont',
+      email: 'jean.dupont@example.com',
+      password: passwordHash,
+      status: true,
+      type: 'USER',
+      mustChangePassword: true,
+      adminId: admin.id,
+    },
+  });
+
+  const observerUser = await prisma.user.create({
+    data: {
+      name: 'Marie Curie',
+      email: 'marie.curie@example.com',
+      password: passwordHash,
+      status: true,
+      type: 'USER',
+      mustChangePassword: true,
+      adminId: admin.id,
+    },
+  });
+  console.log(`✅ Created ${await prisma.user.count()} users`);
+
+  // 6. Assign Roles to Users (UserRole)
+  await prisma.userRole.create({
+    data: { userId: admin.id, roleId: adminRole.id },
+  });
+  await prisma.userRole.create({
+    data: { userId: techUser.id, roleId: technicianRole.id },
+  });
+  await prisma.userRole.create({
+    data: { userId: observerUser.id, roleId: observerRole.id },
+  });
+  console.log('✅ Assigned user roles');
+
+  // 7. Direct User Permissions (extra for technician)
+  const gestionRessourcePerm = permissions.find(p => p.name === 'gestion des ressources');
+  const existingUserPerm = await prisma.userPermission.findUnique({
+    where: { userId_permissionId: { userId: techUser.id, permissionId: gestionRessourcePerm.id } },
+  });
+  if (!existingUserPerm) {
+    await prisma.userPermission.create({
+      data: { userId: techUser.id, permissionId: gestionRessourcePerm.id },
+    });
+  }
+  console.log('✅ Assigned direct user permissions');
+
+  // 8. Create a sample Ressource
+  const ressource = await prisma.ressource.create({
+    data: {
+      nom: 'Machine Principale',
+      type: 'Production',
+      description: 'Machine de production principale',
+      adminId: admin.id,
+    },
+  });
+  console.log(`✅ Created ressource: ${ressource.nom}`);
+
+  // 9. Create a TRS object for that ressource
+  const trs = await prisma.tRS.create({
+    data: {
+      type: 'INITIAL',
+      valeur: 85.5,
+      ressourceId: ressource.id,
+    },
+  });
+  await prisma.disponibilite.create({ data: { valeur: 90.0, trsId: trs.id } });
+  await prisma.performance.create({ data: { valeur: 95.0, trsId: trs.id } });
+  await prisma.qualite.create({ data: { valeur: 99.0, trsId: trs.id } });
+
+  console.log('🎉 Seeding completed successfully!');
 }
 
 main()
-  .catch(e => { console.error('❌ Erreur:', e); process.exit(1) })
-  .finally(async () => await prisma.$disconnect())
+  .catch(e => {
+    console.error('❌ Seeding error:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

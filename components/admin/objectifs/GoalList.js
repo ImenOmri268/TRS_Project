@@ -1,7 +1,7 @@
 'use client'
 import React from "react";
 import { FaRegEdit, FaRegTrashAlt } from "react-icons/fa";
-import {  MdTrendingUp, MdCalendarToday } from "react-icons/md";
+import { MdTrendingUp, MdCalendarToday } from "react-icons/md";
 
 const GoalList = ({ goals, onGoalClick, onEditClick, onDeleteClick }) => {
   return (
@@ -9,14 +9,12 @@ const GoalList = ({ goals, onGoalClick, onEditClick, onDeleteClick }) => {
       {goals.map((goal) => (
         <div 
           key={goal.id}
-          className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-blue-200 transition-all cursor-pointer group relative"
+          className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-blue-200 transition-all cursor-pointer group relative flex flex-col"
           onClick={() => onGoalClick(goal)}
         >
           <div className="flex justify-between items-start mb-4">
-            <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-              goal.status === "Atteint" ? "bg-emerald-100 text-emerald-600" : "bg-blue-50 text-blue-600"
-            }`}>
-              {goal.status}
+            <span className="px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter bg-blue-50 text-blue-600">
+              {goal.ressource?.nom || "Indéfini"}
             </span>
             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button 
@@ -34,7 +32,7 @@ const GoalList = ({ goals, onGoalClick, onEditClick, onDeleteClick }) => {
             </div>
           </div>
 
-          <h3 className="text-xl font-bold text-slate-800 mb-2">{goal.title}</h3>
+          <h3 className="text-xl font-bold text-slate-800 mb-2 truncate">{goal.title}</h3>
           <p className="text-sm text-slate-500 line-clamp-2 mb-6 font-medium leading-relaxed">
             {goal.description}
           </p>
@@ -42,11 +40,13 @@ const GoalList = ({ goals, onGoalClick, onEditClick, onDeleteClick }) => {
           <div className="flex items-center justify-between border-t border-slate-50 pt-4 mt-auto">
             <div className="flex items-center gap-2">
               <MdTrendingUp className="text-blue-500" />
-              <span className="text-sm font-black text-slate-700">{goal.target}</span>
+              <span className="text-sm font-black text-slate-700">{goal.valeurCible}%</span>
             </div>
             <div className="flex items-center gap-2 text-slate-400">
               <MdCalendarToday size={14} />
-              <span className="text-[11px] font-bold">{goal.deadline}</span>
+              <span className="text-[11px] font-bold">
+                {goal.dateFin ? new Date(goal.dateFin).toLocaleDateString() : 'Pas de date'}
+              </span>
             </div>
           </div>
         </div>
