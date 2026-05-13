@@ -6,21 +6,41 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import ModifRessource from "./ModifRessource";
 import DetailsRessource from "./DetailsRessource";
 
-const TableRessources = ({ ressources }) => {
+const TableRessources = ({ ressources, refresh }) => {
   const [selectedResource, setSelectedResource] = useState(null);
   const [selectedDetails, setSelectedDetails] = useState(null);
-  const [ressourcesList, setRessourcesList] = useState(ressources);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handleDelete = (id) => {
-      const ressource = ressourcesList.find(r => r.id === id);
-      if(window.confirm(`Voulez-vous vraiment supprimer ${ressource.name} ?`)) {
-        // Here changed by the delete logic
-        setRessourcesList(ressourcesList.filter(res => res.id !== id));
+  // Filter based on search input
+  const filteredRessources = ressources.filter(res => 
+    res.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    res.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleDelete = async (id, nom) => {
+    if(window.confirm(`Voulez-vous vraiment supprimer la ressource "${nom}" ?`)) {
+      try {
+        const res = await fetch(`/api/admin/ressources?id=${id}`, {
+          method: 'DELETE',
+        });
+        
+        if (res.ok) {
+          refresh(); // Trigger the parent page to re-fetch data
+        } else {
+          alert("Erreur lors de la suppression");
+        }
+      } catch (error) {
+        console.error("Erreur réseau:", error);
       }
-    };
+    }
+  };
 
-
-
+  // Helper to get the most recent percentage from the TRS history array
+  const getLatestValue = (trsArray, field) => {
+    if (!trsArray || trsArray.length === 0) return "--";
+    const latest = trsArray[trsArray.length - 1];
+    return `${latest[field]}%`;
+  };
 
   return (
     <div className="w-full bg-white">
@@ -32,7 +52,9 @@ const TableRessources = ({ ressources }) => {
           <CiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl" />
           <input 
             type="text" 
-            placeholder="Rechercher une ressource..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Rechercher par nom ou type..." 
             className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all shadow-sm"
           />
         </div>
@@ -52,34 +74,46 @@ const TableRessources = ({ ressources }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {ressourcesList.map((ressource) => (
+            {filteredRessources.map((ressource) => (
               <tr className="hover:bg-slate-50/80 transition-colors group" key={ressource.id}>
                 <td className="py-5 px-6">
-                  <span className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors block">{ressource.name}</span>
-                  <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">{ressource.collection}</span>
+                  <span className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors block">{ressource.nom}</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">{ressource.type}</span>
                 </td>
+                
                 <td className="py-5 px-6 text-center">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${ressource.status === 'Actif' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                    {ressource.status}
+                  <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">
+                    Actif
                   </span>
                 </td>
+
                 <td className="py-5 px-6 text-center">
-                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-50 text-emerald-600 border border-emerald-100">{ressource.disponibilite}</span>
+                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-50 text-emerald-600 border border-emerald-100">
+                    {getLatestValue(ressource.trs, 'disponibilite')}
+                  </span>
                 </td>
+                
                 <td className="py-5 px-6 text-center">
-                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-blue-50 text-blue-600 border border-blue-100">{ressource.performance}</span>
+                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-blue-50 text-blue-600 border border-blue-100">
+                    {getLatestValue(ressource.trs, 'performance')}
+                  </span>
                 </td>
+                
                 <td className="py-5 px-6 text-center">
-                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-50 text-amber-600 border border-amber-100">{ressource.qualite}</span>
+                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-50 text-amber-600 border border-amber-100">
+                    {getLatestValue(ressource.trs, 'qualite')}
+                  </span>
                 </td>
+
                 <td className="py-5 px-6 text-right space-x-2">
                   <button onClick={() => setSelectedResource(ressource)} className="p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all">
                     <FaRegEdit size={18} />
                   </button>
-                  <button onClick={() => {handleDelete(ressource.id)}} className=" text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all">
+                  <button onClick={() => handleDelete(ressource.id, ressource.nom)} className="p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all">
                     <FaRegTrashAlt size={18} />
                   </button>
                 </td>
+
                 <td className="py-5 px-6 text-right">
                   <button 
                     onClick={() => setSelectedDetails(ressource)}
@@ -94,8 +128,15 @@ const TableRessources = ({ ressources }) => {
         </table>
       </div>
 
-      <ModifRessource resourceData={selectedResource} setSelectedResource={() => setSelectedResource(null)} />
-      <DetailsRessource resourceData={selectedDetails} setSelectedDetails={() => setSelectedDetails(null)} />
+      <ModifRessource 
+        resourceData={selectedResource} 
+        setSelectedResource={() => setSelectedResource(null)} 
+        refresh={refresh}
+      />
+      <DetailsRessource 
+        resourceData={selectedDetails} 
+        setSelectedDetails={() => setSelectedDetails(null)} 
+      />
     </div>
   );
 };

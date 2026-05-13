@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
-import { verifyToken } from '../../../lib/jwt';
+import {  verifyToken } from '../../../lib/jwt';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
 
 // ─── Helper: send welcome email ──────────────────────────────────────────────
-async function sendWelcomeEmail({ to, name,userRole, adminName, tempPassword }) {
+async function sendWelcomeEmail({ to, name,userRole, adminName, tempPassword  }) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -29,7 +29,7 @@ async function sendWelcomeEmail({ to, name,userRole, adminName, tempPassword }) 
         </div>
         <p style="margin-top: 20px;">Par sécurité, veuillez modifier votre mot de passe lors de votre première connexion.</p>
         <div style="text-align: center; margin-top: 30px;">
-          <a href="${process.env.APP_URL}" 
+          <a href="${process.env.APP_URL}/EmailSend" 
              style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
             Accéder à la plateforme
           </a>
@@ -126,7 +126,8 @@ export async function POST(request) {
     // Welcome Email
     try {
       const currentAdmin = await prisma.user.findUnique({ where: { id: adminId }, select: { name: true } });
-      await sendWelcomeEmail({ to: email, name, userRole, adminName: currentAdmin?.name, tempPassword });
+      
+      await sendWelcomeEmail({ to: email, name, userRole, adminName: currentAdmin?.name, tempPassword  });
     } catch (e) { console.error("Email fail", e); }
 
     const { password, ...safeUser } = newUser;

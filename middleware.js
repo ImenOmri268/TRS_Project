@@ -21,24 +21,31 @@ export async function middleware(request) {
 
   // Pages publiques
   if (publicRoutes.includes(pathname)) {
+    // --- FIX 1: If we are at the root '/' with a token, verify it
     if (token && pathname === '/') {
       try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET)
         const { payload } = await jwtVerify(token, secret)
         if (payload.type === 'SUPER_ADMIN') {
           return NextResponse.redirect(new URL('/superadmin/Dashboard', request.url))
-        } else {
+        } else  {
           return NextResponse.redirect(new URL('/admin/Dashboard', request.url))
         }
       } catch {
-        return NextResponse.next()
+        // Token invalid → delete it and let the user see the public page
+        const response = NextResponse.next()
+        response.cookies.delete('token')
+        return response
       }
     }
     return NextResponse.next()
   }
 
-  // Pas de token → login
+  // --- FIX 2: Avoid redirect loop when missing token and already on '/'
   if (!token) {
+    if (pathname === '/') {
+      return NextResponse.next() // already on home page, let it load
+    }
     return NextResponse.redirect(new URL('/', request.url))
   }
 
@@ -67,6 +74,7 @@ export async function middleware(request) {
     return NextResponse.next()
 
   } catch {
+    // Token invalide ou expiré → supprimer le cookie et rediriger vers l'accueil
     const response = NextResponse.redirect(new URL('/', request.url))
     response.cookies.delete('token')
     return response

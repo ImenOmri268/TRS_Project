@@ -18,15 +18,15 @@ const ProgressBar = ({ label, valeur, couleur }) => (
   </div>
 )
 
-const MachinesTRS = () => {
-  const [machines, setMachines] = useState([])
+const RessourcesTRS = () => {
+  const [ressources, setRessources] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetch('/api/admin/dashboard')
       .then(res => res.json())
       .then(data => {
-        setMachines(data.machines || [])
+        setRessources(data.machines || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -40,7 +40,7 @@ const MachinesTRS = () => {
     </div>
   )
 
-  if (machines.length === 0) return (
+  if (ressources.length === 0) return (
     <div className="mb-8">
       <h2 className="text-xl font-semibold text-slate-700 mb-4">Performances TRS par machine</h2>
       <div className="bg-white border border-slate-100 rounded-2xl p-8 text-center text-slate-400">
@@ -55,25 +55,25 @@ const MachinesTRS = () => {
         Performances TRS par machine
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {machines.map(machine => (
-          <div key={machine.id} className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+        {ressources.map(ressource => (
+          <div key={ressource.id} className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
             <div className="mb-4">
-              <h3 className="font-semibold text-slate-800 text-lg">{machine.nom}</h3>
-              <span className="text-xs text-slate-400">{machine.type}</span>
+              <h3 className="font-semibold text-slate-800 text-lg">{ressource.nom}</h3>
+              <span className="text-xs text-slate-400">{ressource.type}</span>
             </div>
-            <ProgressBar label="Disponibilité" valeur={machine.disponibilite} couleur="text-blue-500" />
-            <ProgressBar label="Performance"   valeur={machine.performance}   couleur="text-green-500" />
-            <ProgressBar label="Qualité"        valeur={machine.qualite}        couleur="text-purple-600" />
+            <ProgressBar label="Disponibilité" valeur={ressource.disponibilite} couleur="text-blue-500" />
+            <ProgressBar label="Performance"   valeur={ressource.performance}   couleur="text-green-500" />
+            <ProgressBar label="Qualité"        valeur={ressource.qualite}        couleur="text-purple-600" />
             <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
               <span className="text-sm text-slate-500">TRS</span>
               <span className="text-2xl font-bold text-slate-800">
-                {machine.trsInitial ?? '—'}%
+                {ressource.trsInitial ?? '—'}%
               </span>
             </div>
-            {machine.objectif && (
+            {ressource.objectif && (
               <div className="mt-2 flex justify-between items-center">
                 <span className="text-xs text-slate-400">Objectif</span>
-                <span className="text-sm font-semibold text-orange-500">{machine.objectif}%</span>
+                <span className="text-sm font-semibold text-orange-500">{ressource.objectif}%</span>
               </div>
             )}
           </div>
@@ -83,4 +83,4 @@ const MachinesTRS = () => {
   )
 }
 
-export default MachinesTRS
+export default RessourcesTRS;

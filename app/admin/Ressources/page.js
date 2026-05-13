@@ -1,65 +1,37 @@
-
+'use client'
+import React, { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/admin/adminLayout/AdminLayout";
 import AddRessourceAction from "@/components/admin/ressources/AddRessourceAction";
 import TableRessources from "@/components/admin/ressources/TableRessources";
 import { HiOutlineCpuChip } from "react-icons/hi2";
+import { MdRefresh } from "react-icons/md";
 
 export default function Page() {
+  const [ressources, setRessources] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const ressources = [
-      { 
-        id: 1, 
-        name: "Presse Hydraulique A1", 
-        description: "Presse haute précision utilisée pour le formage de composants métalliques aéronautiques.",
-        objectif: ["Maintenir un TRS > 85%", "Réduire les micro-arrêts de 10%"], 
-        collection: "Machine", 
-        status: "Actif", 
-        disponibilite: "92%", 
-        performance: "85%", 
-        qualite: "98%",
-        champs: { disponibilité: ["Temps_Prévu", "Temps d'arrêts"], performance: ["Qté_Produite_Total", "Temps_Unitaire_Théorique", "Temps_Opération"], qualité: ["Qté_Produite_Total", "Qté_Rebut", "Qté_Réwork"] },
-        trsHistory: [
-          { date: "2024-03-20", disp: "91%", perf: "84%", qual: "99%", trs: "75.6%" },
-          { date: "2024-03-19", disp: "93%", perf: "86%", qual: "98%", trs: "78.4%" },
-          { date: "2024-03-18", disp: "90%", perf: "82%", qual: "97%", trs: "71.5%" },
-        ]
-      },
-      { 
-        id: 2, 
-        name: "Scie Circulaire B2", 
-        description: "Équipement de découpe automatisé pour profilés aluminium haute densité.",
-        objectif: ["Optimisation du temps de coupe", "Zéro rebut sur série B"],  
-        collection: "Machine", 
-        status: "Inactif", 
-        disponibilite: "75%", 
-        performance: "60%", 
-        qualite: "80%",
-        champs: { disponibilité: ["Temps_Prévu", "Temps d'arrêts"], performance: ["Qté_Produite_Total", "Temps_Unitaire_Théorique", "Temps_Opération"], qualité: ["Qté_Produite_Total", "Qté_Rebut", "aaaaaaaaaaaa"] },
-        trsHistory: [
-          { date: "2024-03-15", disp: "70%", perf: "55%", qual: "80%", trs: "30.8%" },
-        ]
-      },{ 
-        id: 3, 
-        name: "Tour CNC C3", 
-        description: "Tour à commande numérique haute vitesse dédié à l'usinage de précision pour pièces cylindriques complexes.",
-        objectif: ["Réduction du temps de réglage", "Précision dimensionnelle à ±0.01mm"], 
-        collection: "Machine", 
-        status: "Actif", 
-        disponibilite: "95%", 
-        performance: "90%", 
-        qualite: "95%",
-        champs: { 
-          disponibilité: ["Temps_Prévu", "Temps d'arrêts"], 
-          performance: ["Qté_Produite_Total", "Temps_Unitaire_Théorique", "Temps_Opération"], 
-          qualité: ["Qté_Produite_Total", "Qté_Rebut", "Qté_Réwork"] 
-        },
-        trsHistory: [
-          { date: "2024-03-22", disp: "96%", perf: "92%", qual: "96%", trs: "84.7%" },
-          { date: "2024-03-21", disp: "94%", perf: "89%", qual: "94%", trs: "78.6%" },
-          { date: "2024-03-20", disp: "95%", perf: "90%", qual: "95%", trs: "81.2%" },
-        ]
+  // Function to fetch data from your new API
+  const fetchRessources = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/ressources');
+      if (res.ok) {
+        const data = await res.json();
+        setRessources(data);
+      } else {
+        console.error("Erreur lors de la récupération des ressources");
       }
-    ];
+    } catch (error) {
+      console.error("Erreur réseau:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    fetchRessources();
+  }, [fetchRessources]);
 
   return (
     <AdminLayout activePage="Gestion des Ressources">
@@ -72,14 +44,47 @@ export default function Page() {
               <HiOutlineCpuChip className="text-blue-600" />
               GESTION DES RESSOURCES
             </h1>
-            <p className="text-slate-500 font-medium">Supervisez la performance et l&apos;état opérationnel de vos machines.</p>
+            <p className="text-slate-500 font-medium">
+              Supervisez la performance et l&apos;état opérationnel de vos machines.
+            </p>
           </div>
-          <AddRessourceAction /> 
+          
+          <div className="flex items-center gap-3">
+             {/* Refresh Button */}
+             <button 
+              onClick={fetchRessources}
+              className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
+              title="Actualiser"
+            >
+              <MdRefresh className={`text-xl ${loading ? 'animate-spin' : ''}`} />
+            </button>
+            
+            {/* Add Action - Passing refresh to trigger re-fetch after creation */}
+            <AddRessourceAction refresh={fetchRessources} /> 
+          </div>
         </div>
         
         {/* Table Container */}
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-          <TableRessources ressources={ressources} />
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden min-h-[400px] relative">
+          {loading && ressources.length === 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-10">
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+                <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Chargement...</p>
+              </div>
+            </div>
+          ) : (
+            <TableRessources 
+              ressources={ressources} 
+              refresh={fetchRessources} 
+            />
+          )}
+
+          {!loading && ressources.length === 0 && (
+            <div className="p-20 text-center">
+              <p className="text-slate-400 italic">Aucune ressource trouvée. Commencez par en ajouter une.</p>
+            </div>
+          )}
         </div>
       </div>
     </AdminLayout>

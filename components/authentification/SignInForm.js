@@ -40,7 +40,7 @@ const SignInForm = () => {
       toast.success('Connexion réussie !');
   
       if (data.mustChangePassword) {
-        router.push('/shared/resetPassword');
+        router.push('/resetPassword');
       }else {
         router.push('/admin/Dashboard')
       }
@@ -104,7 +104,7 @@ const SignInForm = () => {
         
 
         <div className='flex flex-row   justify-center  gap-2'>
-          <a href="/shared/EmailSend" className='text-sm text-[#4A72A7] hover:text-[#2c4a73] hover:underline'>
+          <a href="/EmailSend" className='text-sm text-[#4A72A7] hover:text-[#2c4a73] hover:underline'>
             Mot de passe oublié ?
           </a>
         </div>
@@ -123,7 +123,7 @@ const SignInForm = () => {
       <p className='text-center text-gray-600 mt-6 text-sm'>
         Vous n&apos;avez pas de compte ? 
         
-        <Link href="/shared/SignUp" className='text-[#4A72A7] hover:text-[#2c4a73] font-semibold hover:underline'>
+        <Link href="/SignUp" className='text-[#4A72A7] hover:text-[#2c4a73] font-semibold hover:underline'>
           Inscrivez-vous
         </Link>
       </p>
