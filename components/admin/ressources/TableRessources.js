@@ -36,11 +36,15 @@ const TableRessources = ({ ressources, refresh }) => {
   };
 
   // Helper to get the most recent percentage from the TRS history array
-  const getLatestValue = (trsArray, field) => {
-    if (!trsArray || trsArray.length === 0) return "--";
-    const latest = trsArray[trsArray.length - 1];
-    return `${latest[field]}%`;
-  };
+const getLatestTRSValue = (trsArray, field) => {
+  // trsArray is what you passed: ressource.trs
+  if (trsArray && trsArray.length > 0) {
+    // Access the first TRS record, then the specific relation (field), then its 'valeur'
+    const val = trsArray[0][field]?.valeur; 
+    return val !== undefined ? `${val}%` : "0%";
+  }
+  return "-";
+};
 
   return (
     <div className="w-full bg-white">
@@ -82,26 +86,32 @@ const TableRessources = ({ ressources, refresh }) => {
                 </td>
                 
                 <td className="py-5 px-6 text-center">
-                  <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">
-                    Actif
-                  </span>
+                  {ressource.statut ? (
+                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">
+                      Actif
+                    </span>
+                    ) : (
+                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-700">
+                      Inactif
+                    </span>
+                  )}
                 </td>
 
                 <td className="py-5 px-6 text-center">
                   <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-50 text-emerald-600 border border-emerald-100">
-                    {getLatestValue(ressource.trs, 'disponibilite')}
+                    {getLatestTRSValue(ressource.trs, 'disponibilite')}
                   </span>
                 </td>
                 
                 <td className="py-5 px-6 text-center">
                   <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-blue-50 text-blue-600 border border-blue-100">
-                    {getLatestValue(ressource.trs, 'performance')}
+                    {getLatestTRSValue(ressource.trs, 'performance')}
                   </span>
                 </td>
                 
                 <td className="py-5 px-6 text-center">
                   <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-50 text-amber-600 border border-amber-100">
-                    {getLatestValue(ressource.trs, 'qualite')}
+                    {getLatestTRSValue(ressource.trs, 'qualite')}
                   </span>
                 </td>
 

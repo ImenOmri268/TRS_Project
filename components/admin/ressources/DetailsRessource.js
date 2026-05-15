@@ -7,10 +7,9 @@ import { IoReturnUpBack } from "react-icons/io5";
 const DetailsRessource = ({ resourceData, setSelectedDetails }) => {
   const isOpen = !!resourceData;
 
-  // Helper to calculate Global TRS percentage
-  const calculateGlobalTRS = (d, p, q) => {
-    const total = (d / 100) * (p / 100) * (q / 100) * 100;
-    return total.toFixed(1) + "%";
+  // Helper to extract the value from the nested relations
+  const getVal = (record, field) => {
+    return record[field]?.valeur ?? 0;
   };
 
   return (
@@ -18,11 +17,17 @@ const DetailsRessource = ({ resourceData, setSelectedDetails }) => {
       {isOpen && (
         <>
           <motion.div
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={() => setSelectedDetails(false)}  
-                    className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-100 flex items-center justify-center p-4"
-                  >
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden pointer-events-auto flex flex-col">
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setSelectedDetails(null)}  
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col"
+            >
               
               {/* Header */}
               <div className="px-8 py-6 flex items-center justify-between border-b border-slate-100 bg-white">
@@ -31,8 +36,16 @@ const DetailsRessource = ({ resourceData, setSelectedDetails }) => {
                     <MdLayers size={24}/>
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-900 leading-none mb-1">{resourceData.nom}</h2>
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold uppercase tracking-widest">
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-2xl font-bold text-slate-900 leading-none">{resourceData.nom}</h2>
+                        {/* Status Badge */}
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
+                            resourceData.statut ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
+                        }`}>
+                            {resourceData.statut ? "Actif" : "Inactif"}
+                        </span>
+                    </div>
+                    <span className="mt-1 inline-block px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold uppercase tracking-widest">
                       {resourceData.type}
                     </span>
                   </div>
@@ -45,15 +58,15 @@ const DetailsRessource = ({ resourceData, setSelectedDetails }) => {
               {/* Scrollable Content */}
               <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
                 
-                {/* 1. Description & Info Section */}
+                {/* 1. Description Section */}
                 <div className="grid grid-cols-1 gap-6">
                   <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 rounded-2xl border border-slate-200/60 relative overflow-hidden">
                     <MdInfoOutline className="absolute -right-2 -top-2 text-slate-200 text-6xl rotate-12" />
                     <h3 className="text-xs font-black text-blue-600 uppercase tracking-tighter mb-3">
-                       Informations Générales
+                       Description Technique
                     </h3>
                     <p className="text-sm text-slate-600 leading-relaxed font-medium relative z-10">
-                      {resourceData.description || "Aucune description détaillée n'est disponible pour cette ressource technique."}
+                      {resourceData.description || "Aucune description détaillée n'est disponible."}
                     </p>
                   </div>
                 </div>
@@ -62,7 +75,7 @@ const DetailsRessource = ({ resourceData, setSelectedDetails }) => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                      <MdHistory className="text-blue-500 text-xl" /> Historique des Performances (TRS)
+                      <MdHistory className="text-blue-500 text-xl" /> Historique des Performances
                     </h3>
                   </div>
                   
@@ -70,32 +83,42 @@ const DetailsRessource = ({ resourceData, setSelectedDetails }) => {
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="bg-slate-50 border-b border-slate-100">
-                          <th className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase">Date d&apos;enregistrement</th>
-                          <th className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase text-center">Disponibilité</th>
-                          <th className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase text-center">Performance</th>
-                          <th className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase text-center">Qualité</th>
-                          <th className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase text-right">TRS Global</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Type</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Dispo.</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Perf.</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Qualité</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-right">Valeur TRS</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                         {resourceData.trs && resourceData.trs.length > 0 ? (
-                          resourceData.trs.map((record, idx) => (
-                            <tr key={record.id || idx} className="hover:bg-blue-50/30 transition-colors">
-                              <td className="px-6 py-4 text-sm font-semibold text-slate-600">
-                                {new Date(record.createdAt).toLocaleDateString('fr-FR')}
+                          resourceData.trs.map((record) => (
+                            <tr key={record.id} className="hover:bg-blue-50/30 transition-colors">
+                              <td className="px-6 py-4">
+                                <span className={`text-[10px] font-bold px-2 py-1 rounded ${
+                                    record.type === 'INITIAL' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                                }`}>
+                                    {record.type}
+                                </span>
                               </td>
-                              <td className="px-6 py-4 text-sm text-center text-slate-500">{record.disponibilite}%</td>
-                              <td className="px-6 py-4 text-sm text-center text-slate-500">{record.performance}%</td>
-                              <td className="px-6 py-4 text-sm text-center text-slate-500">{record.qualite}%</td>
-                              <td className="px-6 py-4 text-sm font-bold text-blue-600 text-right">
-                                {calculateGlobalTRS(record.disponibilite, record.performance, record.qualite)}
+                              <td className="px-6 py-4 text-sm text-center font-medium text-slate-600">
+                                {getVal(record, 'disponibilite')}%
+                              </td>
+                              <td className="px-6 py-4 text-sm text-center font-medium text-slate-600">
+                                {getVal(record, 'performance')}%
+                              </td>
+                              <td className="px-6 py-4 text-sm text-center font-medium text-slate-600">
+                                {getVal(record, 'qualite')}%
+                              </td>
+                              <td className="px-6 py-4 text-sm font-black text-blue-600 text-right">
+                                {record.valeur}%
                               </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan="5" className="px-6 py-8 text-center text-slate-400 text-sm italic">
-                              Aucun historique de performance enregistré.
+                            <td colSpan="5" className="px-6 py-12 text-center text-slate-400 text-sm italic">
+                              Aucune donnée de performance enregistrée.
                             </td>
                           </tr>
                         )}
@@ -114,12 +137,9 @@ const DetailsRessource = ({ resourceData, setSelectedDetails }) => {
                 >
                   <IoReturnUpBack /> Fermer
                 </button>
-                <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95">
-                   Exporter les données
-                </button>
               </div>
 
-            </div>
+            </motion.div>
           </motion.div>
         </>
       )}

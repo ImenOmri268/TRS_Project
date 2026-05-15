@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Clean up (same as before, optional)
+  // Clean up (order matters to respect foreign keys)
   await prisma.userPermission.deleteMany();
   await prisma.userRole.deleteMany();
   await prisma.rolePermission.deleteMany();
@@ -20,7 +20,7 @@ async function main() {
   await prisma.qualite.deleteMany();
   await prisma.performance.deleteMany();
   await prisma.disponibilite.deleteMany();
-  await prisma.tRS.deleteMany();
+  await prisma.tRS.deleteMany();          // model name is TRS → prisma.tRS
   await prisma.ressource.deleteMany();
   await prisma.email.deleteMany();
   await prisma.notification.deleteMany();
@@ -29,7 +29,7 @@ async function main() {
   await prisma.role.deleteMany();
   await prisma.permission.deleteMany();
 
-  // 2. Create Permissions
+  // 1. Create Permissions
   const permissionNames = [
     'Dashboard',
     'les objectifs',
@@ -50,7 +50,7 @@ async function main() {
   }
   console.log(`✅ Created/Found ${permissions.length} permissions`);
 
-  // 3. Create Roles
+  // 2. Create Roles
   const rolesData = [
     { name: 'Administrateur' },
     { name: 'Technicien' },
@@ -66,7 +66,7 @@ async function main() {
   }
   console.log(`✅ Created/Found ${roles.length} roles`);
 
-  // 4. Assign Role → Permissions (RolePermission)
+  // 3. Assign Role → Permissions (RolePermission)
   const adminRole = roles.find(r => r.name === 'Administrateur');
   const technicianRole = roles.find(r => r.name === 'Technicien');
   const observerRole = roles.find(r => r.name === 'Observateur');
@@ -110,7 +110,7 @@ async function main() {
   }
   console.log('✅ Assigned role permissions');
 
-  // 5. Create Users
+  // 4. Create Users
   const passwordHash = await bcrypt.hash('password123', 10);
 
   const superAdmin = await prisma.user.create({
@@ -121,7 +121,7 @@ async function main() {
       status: true,
       type: 'SUPER_ADMIN',
       mustChangePassword: false,
-      adminId: null,
+      adminId: null,   // no parent admin
     },
   });
 
@@ -162,7 +162,7 @@ async function main() {
   });
   console.log(`✅ Created ${await prisma.user.count()} users`);
 
-  // 6. Assign Roles to Users (UserRole)
+  // 5. Assign Roles to Users (UserRole)
   await prisma.userRole.create({
     data: { userId: admin.id, roleId: adminRole.id },
   });
@@ -174,7 +174,7 @@ async function main() {
   });
   console.log('✅ Assigned user roles');
 
-  // 7. Direct User Permissions (extra for technician)
+  // 6. Direct User Permissions (extra for technician)
   const gestionRessourcePerm = permissions.find(p => p.name === 'gestion des ressources');
   const existingUserPerm = await prisma.userPermission.findUnique({
     where: { userId_permissionId: { userId: techUser.id, permissionId: gestionRessourcePerm.id } },
@@ -186,18 +186,19 @@ async function main() {
   }
   console.log('✅ Assigned direct user permissions');
 
-  // 8. Create a sample Ressource
+  // 7. Create a sample Ressource (with required `statut` field)
   const ressource = await prisma.ressource.create({
     data: {
       nom: 'Machine Principale',
       type: 'Production',
       description: 'Machine de production principale',
       adminId: admin.id,
+      statut: true,           // new required enum field
     },
   });
   console.log(`✅ Created ressource: ${ressource.nom}`);
 
-  // 9. Create a TRS object for that ressource
+  // 8. Create a TRS object for that ressource
   const trs = await prisma.tRS.create({
     data: {
       type: 'INITIAL',

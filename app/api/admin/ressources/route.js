@@ -46,29 +46,56 @@ export async function POST(request) {
   try {
     const token = request.cookies.get('token')?.value;
     const decoded = verifyToken(token);
-    const { nom, type, description, parameters } = await request.json();
+    
+    // 1. Destructure the initial values from the JSON body
+    const body = await request.json();
+    const { 
+      nom, 
+      type, 
+      description, 
+      parameters, 
+      initialTRS, 
+      initialDisp, 
+      initialPerf, 
+      initialQual 
+    } = body;
 
-    // parameters should be an array like: 
-    // [{ label: "Temps prévu", category: "DISPONIBILITE" }, ...]
-
-   const newResource = await prisma.ressource.create({
-  data: {
-    nom: nom,
-    type: type,
-    description: description,
-    adminId: decoded.id, // Use the ID from your decoded token
-    // REMOVED 'status' because it doesn't exist in your schema
-    parameters: {
-      create: parameters.map(p => ({
-        label: p.label,
-        category: p.category
-      }))
-    }
-  },
-  include: {
-    parameters: true
-  }
-});
+    // 2. Now these variables are defined and can be used in the logic
+    const newResource = await prisma.ressource.create({
+      data: {
+        nom,
+        type,
+        description,
+        statut: true,
+        adminId: decoded.id,
+        parameters: {
+          create: parameters.map(p => ({
+            label: p.label,
+            category: p.category
+          }))
+        },
+        // This line will now work because the variables are defined above
+        trs: (initialTRS || initialDisp || initialPerf || initialQual) ? {
+          create: [{
+            type: 'INITIAL',
+            valeur: parseFloat(initialTRS) || 0,
+            disponibilite: { create: { valeur: parseFloat(initialDisp) || 0 } },
+            performance: { create: { valeur: parseFloat(initialPerf) || 0 } },
+            qualite: { create: { valeur: parseFloat(initialQual) || 0 } },
+          }]
+        } : undefined
+      },
+      include: {
+        parameters: true,
+        trs: {
+          include: {
+            disponibilite: true,
+            performance: true,
+            qualite: true
+          }
+        }
+      }
+    });
 
     return NextResponse.json(newResource, { status: 201 });
   } catch (error) {
@@ -84,28 +111,39 @@ export async function PUT(request) {
     const decoded = verifyToken(token);
     const body = await request.json();
     
-    const { id, nom, type, description, status, dailyEntries } = body;
+    // Destructure everything we need
+    const { id, nom, type, description, statut, dailyEntries, parameters } = body;
 
-    // If dailyEntries is provided, it's a "Daily Logging" action
-    // dailyEntries: [{ parameterId: 10, value: 480 }, { parameterId: 11, value: 20 }]
+    // 1. Update Daily Logging if provided
     if (dailyEntries && dailyEntries.length > 0) {
       await prisma.dailyValue.createMany({
         data: dailyEntries.map(entry => ({
           parameterId: entry.parameterId,
           value: parseFloat(entry.value),
-          date: new Date() // Automatically logs for today
+          date: new Date()
         }))
       });
     }
 
-    // Standard info update
+    // 2. Handle Parameter Label Updates (Dynamic Schema)
+    // We use 'resourceParameter' because your model is 'ResourceParameter'
+    if (parameters && parameters.length > 0) {
+      for (const param of parameters) {
+        await prisma.resourceParameter.update({
+          where: { id: parseInt(param.id) },
+          data: { label: param.label }
+        });
+      }
+    }
+
+    // 3. Update main Resource Info
     const updated = await prisma.ressource.update({
       where: { id: parseInt(id) },
       data: {
         nom,
         type,
         description,
-        status
+        statut: Boolean(statut) // Ensure it treats it as a true/false boolean
       }
     });
 
@@ -115,6 +153,7 @@ export async function PUT(request) {
     return NextResponse.json({ message: 'Erreur de mise à jour' }, { status: 500 });
   }
 }
+
 
 // ─── DELETE: Remove Resource and Cascade Data ───────────────────────────────
 export async function DELETE(request) {

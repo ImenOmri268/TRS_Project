@@ -33,11 +33,7 @@ enum TypeNotification{
   ACTION
 }
 
-enum statutRessource{
-  EN_PANNE
-  ACTIVE
-  INACTIVE
-}
+
 
 enum TRSType{
   INITIAL
@@ -174,7 +170,7 @@ model Ressource{
   type        String
   description String
   adminId     Int
-  statut      statutRessource   
+  statut      Boolean @default(true)  
 
   parameters  ResourceParameter[] 
   trs         TRS[]
