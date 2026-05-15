@@ -9,7 +9,7 @@ const ModalSelect = ({ icon: Icon, label, value, onChange, options, isLoading })
         onChange={onChange}
         disabled={isLoading}
       >
-        <option value="">Sélectionner une ressource</option>
+        
         {options.map(option => (
           <option key={option.id} value={option.id}>
             {option.nom} ({option.type})

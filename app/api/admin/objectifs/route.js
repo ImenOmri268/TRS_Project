@@ -44,15 +44,33 @@ export async function POST(request) {
     if (!token) return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
 
     const body = await request.json();
-    const {title, description, valeurCible, dateFin, ressourceId } = body;
+    const { title, description, valeurCible, dateFin, ressourceId } = body;
+
+    // Safety Check: Ensure ressourceId exists and is a valid number
+    const parsedResourceId = parseInt(ressourceId);
+    if (!ressourceId || isNaN(parsedResourceId)) {
+      return NextResponse.json({ message: 'ID de ressource invalide' }, { status: 400 });
+    }
+
+    // Check if resource already has an objective
+    const existing = await prisma.objectif.findFirst({
+      where: { ressourceId: parsedResourceId },
+    });
+
+    if (existing) {
+      return NextResponse.json(
+        { message: 'Cette ressource a déjà un objectif défini.' },
+        { status: 400 }
+      );
+    }
 
     const newObjectif = await prisma.objectif.create({
       data: {
         title,
         description,
-        valeurCible: parseFloat(valeurCible),
+        valeurCible: parseFloat(valeurCible) || 0,
         dateFin: dateFin ? new Date(dateFin) : null,
-        ressourceId: parseInt(ressourceId),
+        ressourceId: parsedResourceId,
       },
     });
 

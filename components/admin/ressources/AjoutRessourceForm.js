@@ -7,6 +7,7 @@ import { IoReturnUpBack } from "react-icons/io5";
 
 const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
   const scrollContainerRef = useRef(null);
+  const errorTimeoutRef = useRef(null); // Ref to store the timer
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     nom: "",
@@ -37,6 +38,9 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
   };
 
   const handleSubmit = async () => {
+    // Clear any existing timer to restart the 4-second countdown
+    if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+
     // Validation
     const allParamsFilled = Object.values(params).flat().every(label => label.trim() !== "");
     
@@ -47,6 +51,12 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
       }
+
+      // Hide the error after 4 seconds
+      errorTimeoutRef.current = setTimeout(() => {
+        setError("");
+      }, 4000);
+
       return;
     }
 
@@ -71,6 +81,8 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
       }
     } catch (err) {
       setError("Erreur de connexion au serveur.");
+      // Also hide server errors after 4 seconds
+      errorTimeoutRef.current = setTimeout(() => setError(""), 4000);
     }
   };
 
@@ -81,7 +93,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}  
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-100 flex items-center justify-center p-4"
           >
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
@@ -100,16 +112,16 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
                 </button>
               </div>
 
-              {/* STICKY ERROR MESSAGE (Fixed at top of content area) */}
+              {/* STICKY ERROR MESSAGE */}
               <AnimatePresence>
                 {error && (
                   <motion.div 
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className=" flex-1overflow-hidden bg-red-50 border-20 border-red-100 w-full"
+                    className="flex flex-1 overflow-hidden bg-red-50 border-4 border-red-100  "
                   >
-                    <div className="px-8 py-3 flex items-center gap-3 text-red-600 text-sm font-semibold">
+                    <div className=" px-8 py-3 flex items-center gap-5 text-red-600 text-sm font-semibold">
                       <MdErrorOutline className="text-xl shrink-0" />
                       {error}
                     </div>
@@ -171,13 +183,13 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
               {/* FOOTER */}
               <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
                 <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors flex items-center gap-2">
-                  <IoReturnUpBack /> Annuler
+                  <IoReturnUpBack size={20} /> Annuler
                 </button>
                 <button 
                   onClick={handleSubmit}
                   className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center gap-2"
                 >
-                  <HiPlus /> Créer la Ressource
+                  <HiPlus size={20} /> Créer la Ressource
                 </button>
               </div>
             </motion.div>
