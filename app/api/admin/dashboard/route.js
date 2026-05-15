@@ -48,12 +48,13 @@ export async function GET(request) {
         id: ressource.id,
         nom: ressource.nom,
         type: ressource.type,
+        stat:ressource.stat,
         trsInitial: trsInitial?.valeur ?? null,
         trsFinal: trsFinal?.valeur ?? null,
         disponibilite: trsInitial?.disponibilite?.valeur ?? null,
         performance: trsInitial?.performance?.valeur ?? null,
         qualite: trsInitial?.qualite?.valeur ?? null,
-        objectif: ressource.objectifs[0]?.valeurCible ?? null,
+        objectif: ressource.objectifs[0]?.valeurCible ?? null, 
       }
     })
 
@@ -65,11 +66,14 @@ export async function GET(request) {
     const trsMoyen = trsValeurs.length > 0
       ? (trsValeurs.reduce((a, b) => a + b, 0) / trsValeurs.length).toFixed(1)
       : 0
+    
+    const nbActiveMachines = ressources.filter(r => r.statut === true).length
 
     return NextResponse.json({
       stats: {
         trsMoyen,
         nbMachines: ressources.length,
+        nbActiveMachines,
         nbUsers,
         actionsEnRetard,
       },
