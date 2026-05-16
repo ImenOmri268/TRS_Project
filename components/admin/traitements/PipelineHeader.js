@@ -1,14 +1,13 @@
 import React from "react";
-import { FiDatabase, FiCpu, FiBarChart2, FiHelpCircle, FiShare2, FiFileText } from "react-icons/fi";
+import { FiCpu, FiBarChart2, FiHelpCircle, FiShare2, FiFileText } from "react-icons/fi";
 
 const PipelineHeader = ({ currentStep, onClick }) => {
   const steps = [
-    { id: 1, name: "Collecte", icon: <FiDatabase /> },
-    { id: 2, name: "Brainstorming", icon: <FiCpu /> },
-    { id: 3, name: "Pareto", icon: <FiBarChart2 /> },
-    { id: 4, name: "5 Pourquoi", icon: <FiHelpCircle /> },
-    { id: 5, name: "Ishikawa", icon: <FiShare2 /> },
-    { id: 6, name: "Rapport", icon: <FiFileText /> },
+    { id: 1, name: "Brainstorming", icon: <FiCpu /> },
+    { id: 2, name: "Pareto", icon: <FiBarChart2 /> },
+    { id: 3, name: "5 Pourquoi", icon: <FiHelpCircle /> },
+    { id: 4, name: "Ishikawa", icon: <FiShare2 /> },
+    { id: 5, name: "Rapport", icon: <FiFileText /> },
   ];
 
   return (

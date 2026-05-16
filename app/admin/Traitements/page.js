@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import AdminLayout from "@/components/admin/adminLayout/AdminLayout";
 import PipelineHeader from "@/components/admin/traitements/PipelineHeader";
 import { FiArrowRight, FiArrowLeft, FiCheckCircle } from "react-icons/fi";
-import CollectData from "@/components/admin/traitements/steps/CollectData";
 import Brainstorming from "@/components/admin/traitements/steps/Brainstorming";
 import ParetoSchema from "@/components/admin/traitements/steps/ParetoSchema";
 import CinqP from "@/components/admin/traitements/steps/CinqP";
@@ -19,13 +18,12 @@ const TraitementPage = () => {
 
   const renderStep = () => {
     switch (currentStep) {
-      case 1: return <CollectData />;
-      case 2: return <Brainstorming />;
-      case 3: return <ParetoSchema />;
-      case 4: return <CinqP />;
-      case 5: return <Ishikawa />;
-      case 6: return <RapportGen />;
-      default: return <CollectData />;
+      case 1: return <Brainstorming />;
+      case 2: return <ParetoSchema />;
+      case 3: return <CinqP />;
+      case 4: return <Ishikawa />;
+      case 5: return <RapportGen />;
+      default: return <Brainstorming />;
     }
   };
 
