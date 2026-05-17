@@ -163,20 +163,20 @@ model Email {
   user User @relation(fields: [userId], references: [id])
 }
 
-//RESSOURCE
-model Ressource{
-  id          Int    @id @default(autoincrement())
+// RESSOURCE
+model Ressource {
+  id          Int      @id @default(autoincrement())
   nom         String
   type        String
   description String
-  adminId     Int
-  statut      Boolean @default(true)  
+  adminId     Int      // This links the resource to the Admin
+  statut      Boolean  @default(true)
 
-  parameters  ResourceParameter[] 
+  parameters  ResourceParameter[]
   trs         TRS[]
-  workflows   Workflow[]
-  objectifs   Objectif[] 
-
+  objectifs   Objectif[]
+  
+  // Note: workflowId is removed from here because the Workflow is now GLOBAL
 }
 
 //TRS
@@ -243,40 +243,41 @@ model Qualite {
   trs TRS @relation(fields: [trsId], references: [id])
 }
 
-//PROCESSUS D'AMELIORATION
+// PROCESSUS D'AMELIORATION (The "Traitement")
 model Workflow {
-  id Int @id @default(autoincrement())
-  dateDebut DateTime
-  dateFin DateTime?
-  statut Statut
-
-  ressourceId Int
-  ressource Ressource @relation(fields: [ressourceId], references: [id])
-
-  analyses Analyse[]
-  planAction PlanAction?
+  id              String    @id @default(cuid())
+  nom             String
+  description     String?
+  valeurTrsGlobal Float     
+  statut          String    @default("EN_COURS")
+  dateDebut       DateTime  @default(now())
+  dateFin         DateTime?
+  
+  // RELATIONS
+  analyses        Analyse[] 
+  planAction      PlanAction? // <--- ADDED THIS: Inverse relation for PlanAction
 }
 
-//ANALYSE
-model Analyse{
-  id Int @id @default(autoincrement())
-  type AnalyseType
-  contenu String
-
-  workflowId Int
-  workflow Workflow @relation(fields: [workflowId], references: [id]) 
+model Analyse {
+  id         String   @id @default(cuid())
+  workflowId String
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  type       String   
+  contenu    String   @db.Text 
+  createdAt  DateTime @default(now())
 }
 
-//PLAN ACTION
+// PLAN ACTION
 model PlanAction {
-  id Int @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   description String
-  statut Statut
-  dateDebut DateTime
-  dateFin DateTime?
+  statut      Statut    @default(EN_COURS)
+  dateDebut   DateTime  @default(now())
+  dateFin     DateTime?
 
-  workflowId  Int      @unique
-  workflow    Workflow @relation(fields: [workflowId], references: [id])
+  // FIXED: Changed type from Int to String to match Workflow.id
+  workflowId  String    @unique 
+  workflow    Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   actions     Action[]
   promptIA    PromptIA?
