@@ -1,6 +1,23 @@
 import { prisma } from '@/app/lib/prisma';
 import { NextResponse } from 'next/server';
 
+export async function GET() {
+  try {
+    const plans = await prisma.planAction.findMany({
+      include: {
+        workflow: { select: { nom: true } },
+        _count: { select: { actions: true } }
+      },
+      orderBy: { dateDebut: 'desc' }
+    });
+    return NextResponse.json(plans);
+  } catch (err) {
+    return NextResponse.json({ error: "Fetch error" }, { status: 500 });
+  }
+}
+
+
+
 // POST: Create the main PlanAction container
 export async function POST(request) {
   try {
@@ -22,15 +39,3 @@ export async function POST(request) {
   }
 }
 
-// GET: Fetch plans to list them in the UI if needed
-export async function GET() {
-  try {
-    const plans = await prisma.planAction.findMany({
-      include: { _count: { select: { actions: true } } },
-      orderBy: { dateDebut: 'desc' }
-    });
-    return NextResponse.json(plans);
-  } catch (error) {
-    return NextResponse.json({ error: "Erreur de récupération" }, { status: 500 });
-  }
-}

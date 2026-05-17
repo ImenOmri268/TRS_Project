@@ -245,7 +245,7 @@ model Qualite {
 
 // PROCESSUS D'AMELIORATION (The "Traitement")
 model Workflow {
-  id              String    @id @default(cuid())
+  id              Int       @id @default(autoincrement()) // This is an Int
   nom             String
   description     String?
   valeurTrsGlobal Float     
@@ -255,12 +255,12 @@ model Workflow {
   
   // RELATIONS
   analyses        Analyse[] 
-  planAction      PlanAction? // <--- ADDED THIS: Inverse relation for PlanAction
+  planAction      PlanAction? 
 }
 
 model Analyse {
-  id         String   @id @default(cuid())
-  workflowId String
+  id         Int      @id @default(autoincrement())
+  workflowId Int      // CHANGED: String -> Int to match Workflow.id
   workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   type       String   
   contenu    String   @db.Text 
@@ -275,8 +275,7 @@ model PlanAction {
   dateDebut   DateTime  @default(now())
   dateFin     DateTime?
 
-  // FIXED: Changed type from Int to String to match Workflow.id
-  workflowId  String    @unique 
+  workflowId  Int       @unique // CHANGED: String -> Int to match Workflow.id
   workflow    Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   actions     Action[]

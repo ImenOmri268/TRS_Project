@@ -1,26 +1,16 @@
 'use client'
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AdminLayout from "@/components/admin/adminLayout/AdminLayout";
-
-import { MdTimeline, MdAssignmentAdd } from "react-icons/md";
+import { MdTimeline } from "react-icons/md";
 import AiActions from "@/components/admin/actions/AiActions";
 import ManualActions from "@/components/admin/actions/ManualActions";
 
 const Page = () => {
   const [activePlan, setActivePlan] = useState(null);
 
-  // Initialize a plan if none exists for the current improvement cycle
-  const createNewPlan = async () => {
-    const res = await fetch("/api/admin/plan-action", {
-      method: "POST",
-      body: JSON.stringify({
-        workflowId: 1, // This would normally come from your URL or State
-        description: "Plan d'amélioration continue",
-        dateDebut: new Date(),
-      })
-    });
-    const data = await res.json();
-    setActivePlan(data);
+  // This is the missing function that the child component needs
+  const handlePlanCreated = (newPlan) => {
+    setActivePlan(newPlan);
   };
 
   return (
@@ -33,16 +23,19 @@ const Page = () => {
               AMÉLIORATION CONTINUE
             </h1>
             <p className="text-slate-500 font-medium">
-              Sélectionnez un plan pour commencer.
+              {activePlan 
+                ? `Plan actif : ${activePlan.description}` 
+                : "Initialisez un plan pour commencer à ajouter des actions."}
             </p>
           </div>
-          
-          
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-250px)]">
-          {/* We pass the activePlan.id so actions are linked correctly */}
-          <ManualActions planId={activePlan?.id} />
+          {/* ADD THE PROPS HERE */}
+          <ManualActions 
+            planId={activePlan?.id} 
+            onPlanCreated={handlePlanCreated} 
+          />
           <AiActions planId={activePlan?.id} />
         </div>
       </div>

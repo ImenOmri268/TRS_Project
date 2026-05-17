@@ -2,6 +2,23 @@ import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 
 
+export async function GET() {
+  try {
+    const workflows = await prisma.workflow.findMany({
+      orderBy: { dateDebut: 'desc' },
+      select: {
+        id: true,
+        nom: true,
+        dateDebut: true
+      }
+    });
+    return NextResponse.json(workflows);
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+
 export async function POST(req) {
   try {
     const body = await req.json();

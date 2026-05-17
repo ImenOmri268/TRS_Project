@@ -1,47 +1,46 @@
+import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
-import { prisma } from '../../../lib/prisma'
 
-// Fetch analysis data (used by Pareto & 5 Whys to get previous data)
+
 export async function GET(req) {
-  const { searchParams } = new URL(req.url);
-  const workflowId = searchParams.get("workflowId");
-  const type = searchParams.get("type");
-
   try {
-    const analyse = await prisma.analyse.findFirst({
-      where: { workflowId, type },
-      orderBy: { createdAt: 'desc' }
+    const { searchParams } = new URL(req.url);
+    const workflowId = searchParams.get("workflowId");
+    const type = searchParams.get("type");
+
+    if (!workflowId) return NextResponse.json({ error: "workflowId requis" }, { status: 400 });
+
+    const analyses = await prisma.analyse.findMany({
+      where: {
+        // CRITICAL FIX: Convert the URL string "2" into the integer 2
+        workflowId: parseInt(workflowId),
+        type: type || undefined,
+      },
     });
-    return NextResponse.json(analyse);
+
+    return NextResponse.json(analyses);
   } catch (error) {
+    console.error("GET Analyse Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// Save or Update analysis data
 export async function POST(req) {
   try {
-    const { workflowId, type, contenu } = await req.json();
+    const body = await req.json();
 
-    // We use upsert-like logic: If an analysis of this type exists for this workflow, update it.
-    const existing = await prisma.analyse.findFirst({
-      where: { workflowId, type }
+    const analysis = await prisma.analyse.create({
+      data: {
+        // CRITICAL FIX: Convert workflowId to Integer
+        workflowId: parseInt(body.workflowId),
+        type: body.type,
+        contenu: body.contenu,
+      },
     });
 
-    let result;
-    if (existing) {
-      result = await prisma.analyse.update({
-        where: { id: existing.id },
-        data: { contenu }
-      });
-    } else {
-      result = await prisma.analyse.create({
-        data: { workflowId, type, contenu }
-      });
-    }
-
-    return NextResponse.json(result);
+    return NextResponse.json(analysis);
   } catch (error) {
+    console.error("POST Analyse Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

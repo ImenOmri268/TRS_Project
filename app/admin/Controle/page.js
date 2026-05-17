@@ -1,39 +1,81 @@
 'use client'
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminLayout from "@/components/admin/adminLayout/AdminLayout";
 import StatusCards from "@/components/admin/controle/StatusCards";
-import TRSComparison from "@/components/admin/controle/TRSComparison";
 import ActionTable from "@/components/admin/controle/ActionTable";
-import ActionDetails from "@/components/admin/controle/ActionDetails"; // Your new component
-import { MdOutlineAssessment } from "react-icons/md";
+import ActionDetails from "@/components/admin/controle/ActionDetails"; 
 import ActionEdit from "@/components/admin/controle/ActionEdit.js";
+import { MdOutlineAssessment } from "react-icons/md";
+import PlanList from "@/components/admin/controle/PlanList";
+import { MdAddCircleOutline } from "react-icons/md";
+import ActionCreate from "@/components/admin/controle/ActionCreate";
 
-const initialActions = [
-  { id: 1, title: "Calibration Capteur B2", category: "Matériel", status: "Terminé", impact: "+2.5%", priority: "Haute", date: "2026-04-28"},
-  { id: 2, title: "Formation Opérateurs", category: "Main d'œuvre", status: "En Cours", impact: "En attente", priority: "Moyenne", date: "2026-05-01" },
-  { id: 3, title: "Nettoyage Circuit Huile", category: "Environnement", status: "A faire", impact: "0%", priority: "Basse", date: "2026-05-10" },
-  {id:4, title: "Optimisation Réglages Machine", category: "Méthodes", status: "Terminé", impact: "+1.2%", priority: "Haute", date: "2026-04-30" },
-  {id:5, title: "Maintenance Préventive", category: "Matériel", status: "En Cours", impact: "En attente", priority: "Moyenne", date: "2026-05-05" },
-];
 
 const MonitoringPage = () => {
-  const [actions, setActions] = useState(initialActions);
+  // 1. Initialize with an empty array
+  const [actions, setActions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedAction, setSelectedAction] = useState(null);
   const [editingAction, setEditingAction] = useState(null);
-  const [deleteAction, setDeleteAction] = useState(null);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
- const handleDelete = (id) => {
+  // 2. Fetch actions from the API on mount
+ const fetchActions = async (planId = null) => {
+  try {
+    setLoading(true);
+    let url = "/api/admin/actions";
+    if (planId) url += `?planId=${planId}`;
+    
+    const res = await fetch(url);
+    const data = await res.json();
+    setActions(data);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  useEffect(() => {
+    fetchActions();
+  }, []);
+
+  // Handle Plan Selection
+const handlePlanSelect = (id) => {
+  setSelectedPlanId(id);
+  fetchActions(id); // Fetch actions specific to this plan
+};
+
+  // 3. Adapt Delete logic to call the API
+  const handleDelete = async (id) => {
     const actionToDelete = actions.find(a => a.id === id);
     
-    if(window.confirm(`Voulez-vous vraiment supprimer l'action "${actionToDelete.title}" ?`)) {
-      // Corrected logic: filter the current actions state and update it
-      setActions(actions.filter(action => action.id !== id));
-      
-      // Safety: Close details panel if the deleted action was open
-      if(selectedAction?.id === id) setSelectedAction(null);
+    // Using the text description for the prompt since 'title' isn't in your Prisma model
+    if(window.confirm(`Voulez-vous vraiment supprimer l'action : "${actionToDelete.description}" ?`)) {
+      try {
+        const res = await fetch(`/api/admin/actions?id=${id}`, {
+          method: "DELETE",
+        });
+
+        if (res.ok) {
+          // Update local state
+          setActions(prev => prev.filter(action => action.id !== id));
+          if(selectedAction?.id === id) setSelectedAction(null);
+        } else {
+          alert("Erreur lors de la suppression sur le serveur.");
+        }
+      } catch (err) {
+        console.error("Erreur delete:", err);
+      }
     }
   };
 
+  // 4. Handle refresh after edit (to be called by ActionEdit)
+  const handleRefresh = () => {
+    fetchActions();
+    setEditingAction(null);
+  };
 
   return (
     <AdminLayout activePage="Contrôle">
@@ -44,36 +86,63 @@ const MonitoringPage = () => {
             <MdOutlineAssessment className="text-blue-600" />
             CONTRÔLE & SUIVI
           </h1>
-          <p className="text-slate-500 font-medium">Cliquez sur une action pour voir les détails de réalisation.</p>
+          <p className="text-slate-500 font-medium italic">
+            Surveillance en temps réel des performances et des correctifs.
+          </p>
         </div>
+        <button 
+            onClick={() => setIsCreateOpen(true)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:shadow-lg active:scale-95"
+        >
+            <MdAddCircleOutline size={20} />
+            Ajouter une action
+        </button>
 
-        <StatusCards actions={actions} />
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          <div className="xl:col-span-1">
-            <TRSComparison  />
+        {/* 5. Loading State Feedback */}
+        {loading ? (
+          <div className="p-20 text-center animate-pulse font-bold text-slate-400 uppercase tracking-widest text-xs">
+            Chargement des données de contrôle...
           </div>
-          <div className="xl:col-span-2">
-            <ActionTable 
-              actions={actions} 
-              onActionClick={setSelectedAction}
-              onEditClick={setEditingAction}
-              onDeleteClick={handleDelete}
-            />
-          </div>
-        </div>
+        ) : (
+          <>
+            <StatusCards actions={actions} />
 
-        {/* The Animated Details Panel */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+              <div className="xl:col-span-1">
+                <PlanList onPlanSelect={handlePlanSelect} selectedPlanId={selectedPlanId} />
+              </div>
+              <div className="xl:col-span-2">
+                <ActionTable 
+                  actions={actions} 
+                  onActionClick={setSelectedAction}
+                  onEditClick={setEditingAction}
+                  onDeleteClick={handleDelete}
+                />
+              </div>
+            </div>
+          </>
+        )}
+
         <ActionDetails 
           selectedAction={selectedAction} 
           onClose={() => setSelectedAction(null)} 
         />
+
         <ActionEdit 
-        editingAction={editingAction} 
-        onClose={() => setEditingAction(null)} />
-    
+          editingAction={editingAction} 
+          onClose={() => setEditingAction(null)} 
+          onSuccess={handleRefresh} // We'll add this prop to your Edit component next
+        />
+
+        <ActionCreate 
+          isOpen={isCreateOpen} 
+          onClose={() => setIsCreateOpen(false)} 
+          onSuccess={() => {
+            setIsCreateOpen(false);
+            fetchActions(selectedPlanId); // Refresh table
+          }}
+        />
       </div>
-      
     </AdminLayout>
   );
 };

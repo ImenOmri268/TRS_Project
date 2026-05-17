@@ -1,14 +1,32 @@
 'use client'
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MdAddCircleOutline, MdOutlineDeleteSweep, MdClose, MdBarChart, MdSave } from "react-icons/md";
 
 const Brainstorming = ({ workflowId }) => {
   const [loading, setLoading] = useState(false);
   const [problems, setProblems] = useState([
     { id: 1, text: "", frequency: "" },
-    { id: 2, text: "", frequency: "" },
-    { id: 3, text: "", frequency: "" },
   ]);
+
+  // ADDED: Fetch existing data on mount
+  useEffect(() => {
+    const fetchExistingData = async () => {
+      if (!workflowId) return;
+      try {
+        const response = await fetch(`/api/admin/analyses?workflowId=${workflowId}&type=BRAINSTORMING`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.length > 0) {
+            // Prisma stores 'contenu' as a string, we parse it back to an array
+            setProblems(JSON.parse(data[0].contenu));
+          }
+        }
+      } catch (err) {
+        console.error("Error loading brainstorming:", err);
+      }
+    };
+    fetchExistingData();
+  }, [workflowId]);
 
   const addProblem = () => {
     const nextId = problems.length > 0 ? Math.max(...problems.map(p => p.id)) + 1 : 1;
@@ -16,6 +34,10 @@ const Brainstorming = ({ workflowId }) => {
   };
 
   const removeProblem = (id) => {
+    if (problems.length === 1) {
+      setProblems([{ id: 1, text: "", frequency: "" }]);
+      return;
+    }
     setProblems(problems.filter(p => p.id !== id));
   };
 
@@ -26,12 +48,12 @@ const Brainstorming = ({ workflowId }) => {
   };
 
   const handleSaveData = async () => {
-    if (!workflowId) return alert("Erreur: Aucun workflow actif trouvé.");
+    // Ensure workflowId is treated as a number
+    const numericId = parseInt(workflowId);
+    if (!numericId) return alert("Erreur: Aucun workflow actif trouvé.");
     
-    // Filter out empty rows
     const validProblems = problems.filter(p => p.text.trim() !== "" && p.frequency !== "");
-    
-    if (validProblems.length === 0) return alert("Veuillez remplir au moins un problème avec sa fréquence.");
+    if (validProblems.length === 0) return alert("Veuillez remplir au moins une ligne.");
 
     setLoading(true);
     try {
@@ -39,18 +61,16 @@ const Brainstorming = ({ workflowId }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          workflowId: workflowId,
+          workflowId: numericId, // Send as Number
           type: "BRAINSTORMING",
-          // We save the array as a stringified JSON in the 'contenu' field of your schema
           contenu: JSON.stringify(validProblems)
         }),
       });
 
       if (response.ok) {
-        alert("Données de brainstorming enregistrées !");
+        alert("Données enregistrées !");
       }
     } catch (err) {
-      console.error("Save error:", err);
       alert("Erreur lors de la sauvegarde.");
     } finally {
       setLoading(false);
