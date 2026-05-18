@@ -98,17 +98,21 @@ export async function PUT(request) {
     const { id, dailyEntries, nom, type, description, statut, parameters } = body;
     const resourceId = parseInt(id);
 
-    // 1. Log the raw Daily Values if they exist
+    // ─── CRITICAL FIX: SHARED TIMESTAMP ─────────────────────────────────────
+    // This variable ensures all metrics from this "Collecte" are linked together.
+    const calculationDate = new Date(); 
+
     if (dailyEntries && dailyEntries.length > 0) {
+      // 1. Log the raw Daily Values using the shared timestamp
       await prisma.dailyValue.createMany({
         data: dailyEntries.map(entry => ({
           parameterId: parseInt(entry.parameterId),
           value: parseFloat(entry.value),
-          date: new Date()
+          date: calculationDate
         }))
       });
 
-      // 2. DYNAMIC CALCULATION FIX
+      // 2. Dynamic Calculation
       const resourceParams = await prisma.resourceParameter.findMany({
         where: { ressourceId: resourceId }
       });
@@ -124,6 +128,7 @@ export async function PUT(request) {
           catParamIds.includes(parseInt(e.parameterId))
         );
         
+        // Ensure we have both values (e.g., Total and Stopped) to calculate the %
         if (relevantEntries.length >= 2) {
           const v1 = parseFloat(relevantEntries[0].value);
           const v2 = parseFloat(relevantEntries[1].value);
@@ -131,12 +136,13 @@ export async function PUT(request) {
           if (v1 !== 0) {
             const resultPourcentage = ((v1 - v2) / v1) * 100;
 
+            // 3. Create CalculatedMetric with the shared calculationDate
             await prisma.calculatedMetric.create({
               data: {
                 ressourceId: resourceId,
                 category: cat,
                 valeur: parseFloat(resultPourcentage.toFixed(2)),
-                date: new Date()
+                date: calculationDate // Linked to the same session
               }
             });
           }
@@ -144,7 +150,7 @@ export async function PUT(request) {
       }
     }
 
-    // --- NEW FIX: Update the field names (labels) ---
+    // 4. Update the field names (labels) if modified in the interface
     if (parameters && Array.isArray(parameters)) {
       for (const param of parameters) {
         if (param.id) {
@@ -155,9 +161,8 @@ export async function PUT(request) {
         }
       }
     }
-    // -----------------------------------------------
 
-    // 3. Update basic info
+    // 5. Update basic resource information
     const updateData = {};
     if (nom) updateData.nom = nom;
     if (type) updateData.type = type;
