@@ -3,40 +3,27 @@ import { prisma } from '../../../lib/prisma';
 import {  verifyToken } from '../../../lib/jwt';
 
 // ─── GET: List Resources with Parameters and Daily Values ──────────────────
+// ─── GET: Fetch resources with the LATEST performance metrics ──────────────
 export async function GET(request) {
   try {
     const token = request.cookies.get('token')?.value;
-    if (!token) return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
-
     const decoded = verifyToken(token);
-    if (decoded.type !== 'ADMIN') return NextResponse.json({ message: 'Accès refusé' }, { status: 403 });
 
     const resources = await prisma.ressource.findMany({
       where: { adminId: decoded.id },
       orderBy: { nom: 'asc' },
       include: {
-        parameters: {
-          include: {
-            dailyValues: {
-              orderBy: { date: 'desc' },
-              // We take a list of recent values to show the "history"
-              take: 30 
-            }
-          }
-        },
-        trs: {
-          include: {
-            disponibilite: true,
-            performance: true,
-            qualite: true,
-          }
-        },
+        parameters: { include: { dailyValues: { orderBy: { date: 'desc' }, take: 5 } } },
+        trs: { include: { disponibilite: true, performance: true, qualite: true } },
+        metrics: {
+          orderBy: { date: 'desc' },
+          // Removed 'take: 3' to get the full history for the table
+        }
       }
     });
 
     return NextResponse.json(resources);
   } catch (error) {
-    console.error('[RESOURCES_GET_ERROR]', error);
     return NextResponse.json({ message: 'Erreur serveur' }, { status: 500 });
   }
 }
@@ -104,47 +91,82 @@ export async function POST(request) {
   }
 }
 
-// ─── PUT: Update Details or Log Daily Values ────────────────────────────────
+
 export async function PUT(request) {
   try {
-    const token = request.cookies.get('token')?.value;
-    const decoded = verifyToken(token);
     const body = await request.json();
-    
-    // Destructure everything we need
-    const { id, nom, type, description, statut, dailyEntries, parameters } = body;
+    const { id, dailyEntries, nom, type, description, statut, parameters } = body;
+    const resourceId = parseInt(id);
 
-    // 1. Update Daily Logging if provided
+    // 1. Log the raw Daily Values if they exist
     if (dailyEntries && dailyEntries.length > 0) {
       await prisma.dailyValue.createMany({
         data: dailyEntries.map(entry => ({
-          parameterId: entry.parameterId,
+          parameterId: parseInt(entry.parameterId),
           value: parseFloat(entry.value),
           date: new Date()
         }))
       });
+
+      // 2. DYNAMIC CALCULATION FIX
+      const resourceParams = await prisma.resourceParameter.findMany({
+        where: { ressourceId: resourceId }
+      });
+
+      const categories = ['DISPONIBILITE', 'PERFORMANCE', 'QUALITE'];
+      
+      for (const cat of categories) {
+        const catParamIds = resourceParams
+          .filter(p => p.category === cat)
+          .map(p => p.id);
+
+        const relevantEntries = dailyEntries.filter(e => 
+          catParamIds.includes(parseInt(e.parameterId))
+        );
+        
+        if (relevantEntries.length >= 2) {
+          const v1 = parseFloat(relevantEntries[0].value);
+          const v2 = parseFloat(relevantEntries[1].value);
+
+          if (v1 !== 0) {
+            const resultPourcentage = ((v1 - v2) / v1) * 100;
+
+            await prisma.calculatedMetric.create({
+              data: {
+                ressourceId: resourceId,
+                category: cat,
+                valeur: parseFloat(resultPourcentage.toFixed(2)),
+                date: new Date()
+              }
+            });
+          }
+        }
+      }
     }
 
-    // 2. Handle Parameter Label Updates (Dynamic Schema)
-    // We use 'resourceParameter' because your model is 'ResourceParameter'
-    if (parameters && parameters.length > 0) {
+    // --- NEW FIX: Update the field names (labels) ---
+    if (parameters && Array.isArray(parameters)) {
       for (const param of parameters) {
-        await prisma.resourceParameter.update({
-          where: { id: parseInt(param.id) },
-          data: { label: param.label }
-        });
+        if (param.id) {
+          await prisma.resourceParameter.update({
+            where: { id: parseInt(param.id) },
+            data: { label: param.label }
+          });
+        }
       }
     }
+    // -----------------------------------------------
 
-    // 3. Update main Resource Info
+    // 3. Update basic info
+    const updateData = {};
+    if (nom) updateData.nom = nom;
+    if (type) updateData.type = type;
+    if (description !== undefined) updateData.description = description;
+    if (statut !== undefined) updateData.statut = statut;
+
     const updated = await prisma.ressource.update({
-      where: { id: parseInt(id) },
-      data: {
-        nom,
-        type,
-        description,
-        statut: Boolean(statut) // Ensure it treats it as a true/false boolean
-      }
+      where: { id: resourceId },
+      data: updateData
     });
 
     return NextResponse.json(updated);
@@ -153,7 +175,6 @@ export async function PUT(request) {
     return NextResponse.json({ message: 'Erreur de mise à jour' }, { status: 500 });
   }
 }
-
 
 // ─── DELETE: Remove Resource and Cascade Data ───────────────────────────────
 export async function DELETE(request) {

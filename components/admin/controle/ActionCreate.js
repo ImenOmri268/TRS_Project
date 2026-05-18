@@ -97,7 +97,7 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
           {/* SELECT PLAN */}
           <div>
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-              Dossier Source (Plan d'action)
+              Dossier Source (Plan d&apos;action)
             </label>
             <div className="relative">
               <select 
@@ -106,7 +106,7 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
                 onChange={(e) => setFormData({...formData, planId: e.target.value})}
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-blue-50 outline-none appearance-none font-bold text-slate-700 cursor-pointer"
               >
-                <option value="">Sélectionner le plan d'action...</option>
+                <option value="">Sélectionner le plan d&apos;action...</option>
                 {plans.map(p => (
                   <option key={p.id} value={p.id}>
                     [{p.workflow?.nom || 'Global'}] {p.description}
@@ -143,7 +143,7 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
           {/* DESCRIPTION */}
           <div>
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-              Objectif / Description de l'action
+              Objectif / Description de l&apos;action
             </label>
             <div className="relative">
               <textarea 

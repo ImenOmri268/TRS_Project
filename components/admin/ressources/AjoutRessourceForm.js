@@ -7,7 +7,7 @@ import { IoReturnUpBack } from "react-icons/io5";
 
 const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
   const scrollContainerRef = useRef(null);
-  const errorTimeoutRef = useRef(null); // Ref to store the timer
+  const errorTimeoutRef = useRef(null);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     nom: "",
@@ -38,21 +38,18 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
   };
 
   const handleSubmit = async () => {
-    // Clear any existing timer to restart the 4-second countdown
     if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
 
-    // Validation
+    // Validation: Ensure identification and all parameter labels are filled
     const allParamsFilled = Object.values(params).flat().every(label => label.trim() !== "");
     
     if (!formData.nom.trim() || !formData.type.trim() || !formData.description.trim() || !allParamsFilled) {
       setError("Champs obligatoires manquants. Veuillez vérifier l'identification et la configuration.");
       
-      // Auto-scroll to top to see the error
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      // Hide the error after 4 seconds
       errorTimeoutRef.current = setTimeout(() => {
         setError("");
       }, 4000);
@@ -61,6 +58,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
     }
 
     try {
+      // Map the dynamic labels to the format expected by the POST API
       const formattedParams = [
         ...params.DISPONIBILITE.map(label => ({ label, category: "DISPONIBILITE" })),
         ...params.PERFORMANCE.map(label => ({ label, category: "PERFORMANCE" })),
@@ -70,18 +68,31 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
       const response = await fetch('/api/admin/ressources', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, parameters: formattedParams })
+        body: JSON.stringify({ 
+          nom: formData.nom,
+          type: formData.type,
+          description: formData.description,
+          initialTRS: formData.initialTRS,
+          initialDisp: formData.initialDisp,
+          initialPerf: formData.initialPerf,
+          initialQual: formData.initialQual,
+          parameters: formattedParams 
+        })
       });
 
       if (response.ok) {
-        refresh();
-        onClose();
+        refresh(); // Refresh the table list
+        onClose(); // Close modal
+        // Reset state
         setFormData({ nom: "", type: "", description: "", initialTRS: "", initialDisp: "", initialPerf: "", initialQual: "" });
         setError("");
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || "Erreur lors de la création.");
+        errorTimeoutRef.current = setTimeout(() => setError(""), 4000);
       }
     } catch (err) {
       setError("Erreur de connexion au serveur.");
-      // Also hide server errors after 4 seconds
       errorTimeoutRef.current = setTimeout(() => setError(""), 4000);
     }
   };
@@ -93,7 +104,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}  
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-100 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
           >
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
@@ -101,8 +112,8 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
               onClick={(e) => e.stopPropagation()}
             >
               
-              {/* STICKY HEADER */}
-              <div className="bg-white px-8 pt-6 pb-3 flex items-center justify-between border-b border-slate-100 z-18">
+              {/* HEADER */}
+              <div className="bg-white px-8 pt-6 pb-3 flex items-center justify-between border-b border-slate-100">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">Nouvelle Ressource</h2>
                   <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tight">* Champs obligatoires</p>
@@ -112,14 +123,14 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
                 </button>
               </div>
 
-              {/* STICKY ERROR MESSAGE */}
+              {/* ERROR MESSAGE */}
               <AnimatePresence>
                 {error && (
                   <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="flex flex-1 overflow-hidden bg-red-50 border-4 border-red-100  "
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="bg-red-50 border-b border-red-100 w-full"
                   >
                     <div className=" px-8 py-3 flex items-center gap-5 text-red-600 text-sm font-semibold">
                       <MdErrorOutline className="text-xl shrink-0" />
@@ -129,7 +140,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
                 )}
               </AnimatePresence>
 
-              {/* SCROLLABLE CONTENT */}
+              {/* CONTENT */}
               <div 
                 ref={scrollContainerRef}
                 className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar"
@@ -144,7 +155,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
                   </div>
                 </section>
 
-                {/* Initial Values */}
+                {/* Initial Values (Fallback) */}
                 <section className="space-y-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Valeurs Initiales (%) <span className="lowercase font-normal italic opacity-60">(Optionnel)</span></h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

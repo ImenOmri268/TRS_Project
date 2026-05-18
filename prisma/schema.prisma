@@ -164,19 +164,40 @@ model Email {
 }
 
 // RESSOURCE
+// RESSOURCE
 model Ressource {
   id          Int      @id @default(autoincrement())
-  nom         String
-  type        String
+  nom          String
+  type         String
   description String
-  adminId     Int      // This links the resource to the Admin
-  statut      Boolean  @default(true)
+  adminId      Int      
+  statut       Boolean  @default(true)
+
+  // Link to the initial values provided at creation
+  initialDisponibilite Float?
+  initialPerformance   Float?
+  initialQualite       Float?
+  initialTRS           Float?
 
   parameters  ResourceParameter[]
   trs         TRS[]
   objectifs   Objectif[]
   
-  // Note: workflowId is removed from here because the Workflow is now GLOBAL
+  // New: Relation to store the history of calculated percentages
+  metrics     CalculatedMetric[]
+}
+
+
+//  Stores the result of your calculation after every "Collecte de données"
+model CalculatedMetric {
+  id           Int               @id @default(autoincrement())
+  date         DateTime          @default(now())
+  
+  category     ParameterCategory // DISPONIBILITE, PERFORMANCE, or QUALITE
+  valeur       Float             // The resulting percentage (%)
+
+  ressourceId  Int
+  ressource    Ressource         @relation(fields: [ressourceId], references: [id], onDelete: Cascade)
 }
 
 //TRS
@@ -193,16 +214,16 @@ model TRS{
   qualite Qualite?
 }
 
-// les champs de disponibilité
+// store the fields names
 model ResourceParameter {
-  id          Int               @id @default(autoincrement())
-  label       String
-  // This link allows one parameter to have many daily values
-  dailyValues DailyValue[]
-
-  category    ParameterCategory // Use the Enum here
-  ressourceId Int
-  ressource   Ressource         @relation(fields: [ressourceId], references: [id], onDelete: Cascade)
+  id           Int               @id @default(autoincrement())
+  label        String            // e.g., "Temps d'arrêt" or "Total Produit"
+  category     ParameterCategory 
+  
+  dailyValues  DailyValue[]
+  
+  ressourceId  Int
+  ressource    Ressource         @relation(fields: [ressourceId], references: [id], onDelete: Cascade)
 }
 
 model DailyValue {
@@ -219,28 +240,24 @@ model Disponibilite {
   id Int @id @default(autoincrement())
   valeur Float
 
-
   trsId Int @unique
-  trs TRS @relation(fields: [trsId], references: [id], onDelete: Cascade)
+  trs TRS @relation(fields: [trsId], references: [id], onDelete: Cascade) // Add this
 }
 
 model Performance {
   id Int @id @default(autoincrement())
   valeur Float
 
-
   trsId Int @unique
-  trs TRS @relation(fields: [trsId], references: [id], onDelete: Cascade)
+  trs TRS @relation(fields: [trsId], references: [id], onDelete: Cascade) // Add this
 }
 
 model Qualite {
   id Int @id @default(autoincrement())
   valeur Float
 
-
-
   trsId Int @unique
-  trs TRS @relation(fields: [trsId], references: [id])
+  trs TRS @relation(fields: [trsId], references: [id], onDelete: Cascade) // Add this
 }
 
 // PROCESSUS D'AMELIORATION (The "Traitement")

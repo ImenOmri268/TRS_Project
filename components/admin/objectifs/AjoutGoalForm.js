@@ -142,12 +142,12 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh }) => {
             <AnimatePresence>
               {error && (
                 <motion.div 
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden bg-red-50 border-b border-red-100 w-full"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="bg-red-50 border-b border-red-100 w-full"
                 >
-                  <div className="px-8 py-3 flex items-center gap-3 text-red-600 text-sm font-semibold">
+                  <div className="px-8 py-3  items-center gap-3 text-red-600 text-sm font-semibold">
                     <MdErrorOutline className="text-xl shrink-0" />
                     {error}
                   </div>
@@ -163,7 +163,7 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh }) => {
               
               {/* Section: Définition */}
               <section className="space-y-4">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Définition de l'objectif *</h3>
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Définition de l&apos;objectif *</h3>
                 <div className="grid gap-4">
                   <ModalInput 
                     icon={MdOutlineTrackChanges} 

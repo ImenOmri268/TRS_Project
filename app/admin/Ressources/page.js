@@ -10,13 +10,15 @@ export default function Page() {
   const [ressources, setRessources] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Function to fetch data from your new API
+  // Function to fetch data from your adapted API
   const fetchRessources = useCallback(async () => {
     setLoading(true);
     try {
+      // Points to your updated API that now includes metrics and initial TRS
       const res = await fetch('/api/admin/ressources');
       if (res.ok) {
         const data = await res.json();
+        // data will now include: parameters, trs (initial), and metrics (calculated)
         setRessources(data);
       } else {
         console.error("Erreur lors de la récupération des ressources");
@@ -82,7 +84,7 @@ export default function Page() {
 
           {!loading && ressources.length === 0 && (
             <div className="p-20 text-center">
-              <p className="text-slate-400 italic">Aucune ressource trouvée. Commencez par en ajouter une.</p>
+              <p className="text-slate-400 italic font-medium">Aucune ressource trouvée. Commencez par en ajouter une.</p>
             </div>
           )}
         </div>

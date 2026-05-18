@@ -145,11 +145,11 @@ const AjoutUserForm = ({ isOpen, onClose, refresh, userToEdit = null }) => {
             <AnimatePresence>
               {error && (
                 <motion.div 
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden bg-red-50 border-b border-red-100 w-full"
-                >
+                                  initial={{ opacity: 0, y: -8 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -8 }}
+                                  className="bg-red-50 border-b border-red-100 w-full"
+                                > 
                   <div className="px-8 py-3 flex items-center gap-3 text-red-600 text-sm font-semibold">
                     <MdErrorOutline className="text-xl shrink-0" />
                     {error}

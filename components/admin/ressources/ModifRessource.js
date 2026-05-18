@@ -20,7 +20,7 @@ const ModifRessource = ({ resourceData, setSelectedResource, refresh }) => {
       setFormData({
         nom: resourceData.nom || "",
         type: resourceData.type || "",
-        statut: resourceData.statut ?? true // Sync with actual DB status
+        statut: resourceData.statut ?? true 
       });
       setParams(resourceData.parameters || []);
     }
@@ -60,12 +60,12 @@ const ModifRessource = ({ resourceData, setSelectedResource, refresh }) => {
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
             onClick={() => setSelectedResource(null)} 
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[70]" 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150]" 
           />
           
           <motion.div 
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} 
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-[80] flex flex-col"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-[160] flex flex-col"
           >
             {/* Header */}
             <div className="bg-white px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0">
@@ -102,7 +102,7 @@ const ModifRessource = ({ resourceData, setSelectedResource, refresh }) => {
                 <input
                   value={formData.nom}
                   onChange={(e) => setFormData({...formData, nom: e.target.value})}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:border-blue-500 focus:bg-white transition-all outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:border-blue-500 focus:bg-white transition-all outline-none font-semibold"
                 />
               </div>
 
@@ -111,7 +111,7 @@ const ModifRessource = ({ resourceData, setSelectedResource, refresh }) => {
                 <input
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:border-blue-500 focus:bg-white transition-all outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:border-blue-500 focus:bg-white transition-all outline-none font-semibold"
                 />
               </div>
 
