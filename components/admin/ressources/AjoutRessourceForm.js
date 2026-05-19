@@ -5,7 +5,7 @@ import { MdClose, MdSettings, MdAnalytics, MdCheckCircle, MdMemory, MdCategory, 
 import { HiPlus } from "react-icons/hi";
 import { IoReturnUpBack } from "react-icons/io5";
 
-const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
+const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/ressources' }) => {
   const scrollContainerRef = useRef(null);
   const errorTimeoutRef = useRef(null); // Ref to store the timer
   const [error, setError] = useState("");
@@ -67,7 +67,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
         ...params.QUALITE.map(label => ({ label, category: "QUALITE" }))
       ];
 
-      const response = await fetch('/api/admin/ressources', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, parameters: formattedParams })
@@ -116,11 +116,11 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh }) => {
               <AnimatePresence>
                 {error && (
                   <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="flex flex-1 overflow-hidden bg-red-50 border-4 border-red-100  "
-                  >
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    className="bg-red-50 border-b border-red-100 w-full"
+                                  >
                     <div className=" px-8 py-3 flex items-center gap-5 text-red-600 text-sm font-semibold">
                       <MdErrorOutline className="text-xl shrink-0" />
                       {error}

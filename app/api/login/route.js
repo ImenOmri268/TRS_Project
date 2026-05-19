@@ -17,6 +17,9 @@ export async function POST(request) {
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
+        userPermissions: {
+          include: { permission: true }
+        },
         roles: {
           include: {
             role: {
@@ -49,10 +52,13 @@ export async function POST(request) {
       )
     }
 
-    //***
-    const permissions = user.roles.flatMap(ur =>
+    const directPermissions = user.userPermissions.map(up => up.permission.name)
+
+    const rolePermissions = user.roles.flatMap(ur =>
       ur.role.permissions.map(rp => rp.permission.name)
     )
+
+    const permissions = [...new Set([...directPermissions, ...rolePermissions])]
 
     const token = signToken({
       id: user.id,
@@ -62,22 +68,21 @@ export async function POST(request) {
       permissions
     })
 
-    //reponse lel front
     const response = NextResponse.json({
       message: 'Connexion réussie',
       mustChangePassword: user.mustChangePassword,
       type: user.type
     })
 
-    //sockage maa token fel cookie
+
     response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', //protec contre les attaques
-      maxAge: 60 * 60 * 24 * 7 //7jours
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7
     })
 
-    return response  //front yekhou reponse + cookie
+    return response
 
   } catch (error) {
     console.error('[LOGIN ERROR]', error)
