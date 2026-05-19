@@ -16,7 +16,7 @@ const GoalList = ({ goals, onGoalClick, onEditClick, onDeleteClick }) => {
             <span className="px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter bg-blue-50 text-blue-600">
               {goal.ressource?.nom || "Indéfini"}
             </span>
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-2 ">
               <button 
                 onClick={(e) => { e.stopPropagation(); onEditClick(goal); }}
                 className="p-2 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-xl transition-colors"

@@ -1,24 +1,30 @@
 'use client'
-import React, { useState } from "react";
-import { MdOutlinePlaylistAddCheck, MdSettingsInputComponent, MdSave } from "react-icons/md";
-
+import React, { useState, useEffect } from "react";
+import { MdOutlinePlaylistAddCheck, MdSettingsInputComponent, MdSave, MdCheckCircle } from "react-icons/md";
 
 const CollectForm = ({ resource }) => {
   const [formValues, setFormValues] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Reset form when resource changes
+  useEffect(() => {
+    setFormValues({});
+    setShowSuccess(false);
+  }, [resource?.id]);
 
   if (!resource) {
     return (
-      <div className="h-full min-h-[300px] border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-slate-400 p-8 text-center">
-        <div className="p-4 bg-slate-50 rounded-full mb-4">
-          <MdSettingsInputComponent size={40} className="text-slate-200" />
+      <div className="h-full min-h-[450px] border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-white/50">
+        <div className="p-5 bg-slate-100 rounded-3xl mb-4 text-slate-300">
+          <MdSettingsInputComponent size={48} />
         </div>
-        <p className="font-medium">Aucune ressource sélectionnée</p>
+        <h4 className="text-slate-600 font-bold text-lg">Prêt pour la saisie</h4>
+        <p className="text-sm max-w-[250px] mt-1">Sélectionnez une ressource dans la liste de gauche pour commencer.</p>
       </div>
     );
   }
 
-  // Handle Input changes
   const handleInputChange = (id, value) => {
     setFormValues((prev) => ({
       ...prev,
@@ -26,14 +32,12 @@ const CollectForm = ({ resource }) => {
     }));
   };
 
-  // Logic to save values into DailyValues
   const handleSaveCollecte = async () => {
     setLoading(true);
     
-    // Prepare data for your PUT endpoint
     const dailyEntries = Object.entries(formValues).map(([paramId, val]) => ({
       parameterId: parseInt(paramId),
-      value: val,
+      value: parseFloat(val) || 0,
     }));
 
     try {
@@ -47,8 +51,9 @@ const CollectForm = ({ resource }) => {
       });
 
       if (response.ok) {
-        alert("Collecte enregistrée avec succès !"); // Or use toast.success
-        setFormValues({}); // Clear inputs after save
+        setShowSuccess(true);
+        setFormValues({});
+        setTimeout(() => setShowSuccess(false), 3000);
       } else {
         const error = await response.json();
         alert(error.message || "Erreur lors de l'enregistrement");
@@ -60,6 +65,8 @@ const CollectForm = ({ resource }) => {
     }
   };
 
+  // Grouping parameters by their category
+  const categories = ['DISPONIBILITE', 'PERFORMANCE', 'QUALITE'];
   const parametersByCategory = resource.parameters?.reduce((acc, param) => {
     const cat = param.category;
     if (!acc[cat]) acc[cat] = [];
@@ -68,54 +75,91 @@ const CollectForm = ({ resource }) => {
   }, {}) || {};
 
   return (
-    <div className="bg-slate-50/50 rounded-3xl border border-slate-200 p-8 space-y-8 flex flex-col">
-      {/* Header without button */}
-      <div className="flex items-center gap-3 mb-2">
-        <MdOutlinePlaylistAddCheck className="text-blue-600 text-2xl" />
-        <h3 className="text-lg font-bold text-slate-800">Saisie : {resource.nom}</h3>
+    <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col animate-in fade-in ">
+      
+      {/* Header Info */}
+      <div className="p-8 border-b border-slate-50 bg-slate-50/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-600 text-white rounded-2xl">
+              <MdOutlinePlaylistAddCheck size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800 leading-tight">
+                Saisie Journalière
+              </h3>
+              <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mt-0.5">
+                {resource.nom} — {resource.type}
+              </p>
+            </div>
+          </div>
+          {showSuccess && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold animate-bounce">
+              <MdCheckCircle /> Enregistré !
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-8 flex-grow">
-        {Object.keys(parametersByCategory).length > 0 ? (
-          Object.entries(parametersByCategory).map(([category, params]) => (
-            <div key={category} className="space-y-4">
-              <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-                Données de {category.toLowerCase()}
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="p-8 space-y-10">
+        {categories.map((category) => {
+          const params = parametersByCategory[category];
+          if (!params) return null;
+
+          return (
+            <div key={category} className="space-y-5">
+              <div className="flex items-center gap-3">
+                <span className="h-px bg-slate-200 flex-grow"></span>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
+                  {category}
+                </h4>
+                <span className="h-px bg-slate-200 flex-grow"></span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 {params.map((param) => (
-                  <div key={param.id} className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">
-                      {param.label}
+                  <div key={param.id} className="group">
+                    <label className="flex justify-between items-center mb-2 px-1">
+                      <span className="text-xs font-bold text-slate-600 group-focus-within:text-blue-600 transition-colors uppercase">
+                        {param.label}
+                      </span>
                     </label>
-                    <input 
-                      type="number" 
-                      value={formValues[param.id] || ""}
-                      onChange={(e) => handleInputChange(param.id, e.target.value)}
-                      placeholder="0"
-                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-sm"
-                    />
+                    <div className="relative">
+                      <input 
+                        type="number" 
+                        value={formValues[param.id] || ""}
+                        onChange={(e) => handleInputChange(param.id, e.target.value)}
+                        placeholder="0.00"
+                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-800 focus:bg-white focus:border-blue-500 transition-all outline-none"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-          ))
-        ) : (
-          <div className="text-center py-10 text-slate-400 text-sm italic">
-            Aucun paramètre configuré pour cette ressource.
+          );
+        })}
+
+        {Object.keys(parametersByCategory).length === 0 && (
+          <div className="text-center py-10">
+            <p className="text-slate-400 text-sm italic">Aucun paramètre trouvé.</p>
           </div>
         )}
       </div>
 
-      {/* Button placed at the bottom */}
-      <div className="pt-6 border-t border-slate-200 flex justify-end">
+      {/* Footer Actions */}
+      <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex justify-end">
         <button 
           onClick={handleSaveCollecte}
           disabled={loading || Object.keys(formValues).length === 0}
-          className="flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group flex items-center gap-3 bg-slate-900 text-white px-10 py-4 rounded-2xl text-sm font-black shadow-xl shadow-slate-200 hover:bg-blue-600 hover:shadow-blue-200 transition-all active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
         >
-          <MdSave className="text-lg" />
-          {loading ? "Enregistrement..." : "Enregistrer votre collecte"}
+          {loading ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+          ) : (
+            <MdSave className="text-xl" />
+          )}
+          {loading ? "Calcul en cours..." : "Valider la production"}
         </button>
       </div>
     </div>
