@@ -5,10 +5,13 @@ import { MdAssignmentAdd, MdDescription, MdEvent, MdSettings } from "react-icons
 const CreatePlanForm = ({ onPlanCreated }) => {
   const [loading, setLoading] = useState(false);
   const [workflows, setWorkflows] = useState([]);
+  const [resources, setResources] =useState([]);
   const [fetchingWorkflows, setFetchingWorkflows] = useState(true);
+  const [fetchingResources, setFetchingResources]= useState(true);
   
   const [planData, setPlanData] = useState({
     description: "",
+    ressourceId:"",
     workflowId: "", 
     dateDebut: new Date().toISOString().split('T')[0]
   });
@@ -31,12 +34,35 @@ const CreatePlanForm = ({ onPlanCreated }) => {
     fetchWorkflows();
   }, []);
 
+
+  useEffect(() => {
+    const fetchResource = async () => {
+      try {
+        const response = await fetch("/api/admin/ressources"); // We'll create/update this route
+        if (response.ok) {
+          const data = await response.json();
+          setResources(data);
+        }
+      } catch (err) {
+        console.error("Erreur lors du chargement des ressources:", err);
+      } finally {
+        setFetchingResources(false);
+      }
+    };
+    fetchResource();
+  }, []);
+
   const handleCreatePlan = async (e) => {
-  e.preventDefault();
-  if (!planData.workflowId) {
-    alert("Veuillez sélectionner un workflow.");
-    return;
-  }
+    e.preventDefault();
+    if (!planData.workflowId) {
+      alert("Veuillez sélectionner un workflow.");
+      return;
+    }
+    else if(!planData.ressourceId){
+      alert("Veuillez sélectionner un ressource.");
+      return;
+    }
+    
   
   setLoading(true);
   try {
@@ -79,6 +105,31 @@ const CreatePlanForm = ({ onPlanCreated }) => {
       <form onSubmit={handleCreatePlan} className="p-5 space-y-6">
         <div className="space-y-5">
           
+          {/* SELECT RESOURCE */}
+          <div>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
+              Sélectionner le ressource (à suivre)
+            </label>
+            <div className="relative">
+              <select 
+                required
+                value={planData.ressourceId}
+                onChange={(e) => setPlanData({...planData, ressourceId: e.target.value})}
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer font-medium text-slate-700"
+              >
+                <option value="">{fetchingResources ? "Chargement..." : "-- Choisir un ressource --"}</option>
+                {resources.map((rs) => (
+                  <option key={rs.id} value={rs.id}>
+                    {rs.nom} ({new Date(rs.dateDebut).toLocaleDateString()})
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <MdSettings size={18} className="animate-spin-slow" />
+              </div>
+            </div>
+          </div>
+
           {/* SELECT WORKFLOW */}
           <div>
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
