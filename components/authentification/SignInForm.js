@@ -41,9 +41,11 @@ const SignInForm = () => {
   
       if (data.mustChangePassword) {
         router.push('/resetPassword');
-      }else {
-        router.push('/admin/Dashboard')
-      }
+      } else if (data.type === 'ADMIN') {
+        router.push('/admin/Dashboard');
+      } else if (data.type === 'USER') {
+        router.push('/user/Dashboard');  
+      } 
 
     } catch (error) {
       console.error('Login error:', error);

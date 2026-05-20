@@ -6,7 +6,7 @@ import { HiPlus } from "react-icons/hi";
 import { IoReturnUpBack } from "react-icons/io5";
 import ModalSelect from "./ModalSelect";
 
-const AjoutGoalForm = ({ isOpen, onClose, refresh }) => {
+const AjoutGoalForm = ({ isOpen, onClose, refresh, ressourcesApiUrl='/api/admin/ressources' }) => {
   const [error, setError] = useState("");
   const errorTimeoutRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -36,7 +36,7 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh }) => {
   const fetchRessources = async () => {
     setIsLoadingRessources(true);
     try {
-      const res = await fetch('/api/admin/ressources');
+      const res = await fetch(ressourcesApiUrl);
       if (res.ok) {
         const data = await res.json();
         setRessources(data);
