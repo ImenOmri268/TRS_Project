@@ -67,7 +67,7 @@ const RessourcesTRS = () => {
             <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
               <span className="text-sm text-slate-500">TRS</span>
               <span className="text-2xl font-bold text-slate-800">
-                {ressource.trsInitial ?? '—'}%
+                {ressource.trsFinal ?? '—'}%
               </span>
             </div>
             {ressource.objectif && (

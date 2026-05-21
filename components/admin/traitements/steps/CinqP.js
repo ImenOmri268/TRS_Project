@@ -1,95 +1,113 @@
 'use client'
 import React, { useState, useEffect } from "react";
-import { MdHelpOutline, MdOutlinePsychology, MdSave, MdCheckCircle } from "react-icons/md";
+import { MdHelpOutline, MdOutlinePsychology, MdSave, MdErrorOutline } from "react-icons/md";
 
-const CinqP = ({ workflowId }) => {
-  const [topProblems, setTopProblems] = useState([]);
+const CinqP = ({ ressourceId, activeWorkflow, onSaveStep }) => {
+  const [criticalCategories, setCriticalCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [responses, setResponses] = useState({});
 
   useEffect(() => {
     const initializeData = async () => {
-      const numericId = parseInt(workflowId);
-      if (!numericId) return;
+      if (!activeWorkflow?.id) return;
 
       try {
-        // 1. Fetch Brainstorming to get the top 2 problems
-        const brainRes = await fetch(`/api/admin/analyses?workflowId=${numericId}&type=BRAINSTORMING`);
-        const brainData = await brainRes.json();
-        
-        let sorted = [];
-        // Handle array response from findMany
-        if (brainData && brainData.length > 0 && brainData[0].contenu) {
-          const allProblems = JSON.parse(brainData[0].contenu);
-          sorted = allProblems
-            .sort((a, b) => Number(b.frequency) - Number(a.frequency))
-            .slice(0, 2);
-          setTopProblems(sorted);
-        }
+        const res = await fetch(`/api/admin/workflow?workflowId=${activeWorkflow.id}`);
+        if (res.ok) {
+          const workflowsData = await res.json();
+          
+          const paretoRow = Array.isArray(workflowsData)
+            ? workflowsData.find(analysis => analysis.type === "PARETO")
+            : null;
 
-        // 2. Fetch existing 5 Whys to populate inputs if they exist
-        const whyRes = await fetch(`/api/admin/analyses?workflowId=${numericId}&type=CINQ_POURQUOI`);
-        const whyData = await whyRes.json();
+          let loadedCategories = [];
+          if (paretoRow && paretoRow.contenu) {
+            loadedCategories = JSON.parse(paretoRow.contenu);
+            setCriticalCategories(loadedCategories);
+          }
 
-        const initialResponses = {};
-        // Initialize with empty whys first
-        sorted.forEach(p => {
-          initialResponses[p.id] = ["", "", "", "", ""];
-        });
+          const whyRow = Array.isArray(workflowsData)
+            ? workflowsData.find(analysis => analysis.type === "CINQ_POURQUOI")
+            : null;
 
-        // Overlay existing saved whys from the DB
-        if (whyData && whyData.length > 0) {
-          whyData.forEach(analysis => {
-            const parsed = JSON.parse(analysis.contenu);
-            if (initialResponses[parsed.problemId]) {
-              initialResponses[parsed.problemId] = parsed.whys;
-            }
+          const initialResponses = {};
+          // UPDATED: Prefill with structured array objects holding distinct why and answer states
+          loadedCategories.forEach(cat => {
+            initialResponses[cat.id] = [
+              { why: "", answer: "" },
+              { why: "", answer: "" },
+              { why: "", answer: "" },
+              { why: "", answer: "" },
+              { why: "", answer: "" }
+            ];
           });
+
+          if (whyRow && whyRow.contenu) {
+            const parsedData = JSON.parse(whyRow.contenu);
+            Object.keys(parsedData).forEach(catId => {
+              if (initialResponses[catId]) {
+                // Ensure backward/forward compatibility during format conversion if needed
+                initialResponses[catId] = parsedData[catId].map((item) => {
+                  if (typeof item === 'string') {
+                    return { why: "", answer: item }; // Fallback data patch
+                  }
+                  return item;
+                });
+              }
+            });
+          }
+          
+          setResponses(initialResponses);
         }
-        
-        setResponses(initialResponses);
       } catch (err) {
-        console.error("Error initializing 5 Whys:", err);
+        console.error("Error initializing 5 Whys workflow context:", err);
       } finally {
-        setLoading(false);
+        loading && setLoading(false);
       }
     };
 
     initializeData();
-  }, [workflowId]);
+  }, [activeWorkflow]);
 
-  const handleInputChange = (probId, index, value) => {
+  // UPDATED: Targeting specific sub-property key parameters (either 'why' or 'answer')
+  const handleInputChange = (catId, index, key, value) => {
     setResponses(prev => ({
       ...prev,
-      [probId]: prev[probId].map((val, i) => (i === index ? value : val))
+      [catId]: prev[catId].map((item, i) => (i === index ? { ...item, [key]: value } : item))
     }));
   };
 
-  const handleSaveAnalyse = async (probId, probTitle) => {
-    const numericId = parseInt(workflowId);
+  const handleSaveAllWhys = async () => {
+    if (!activeWorkflow?.id || !ressourceId) {
+      return alert("Session de traitement ou ressource introuvable.");
+    }
+
     setSaving(true);
     try {
-      const response = await fetch("/api/admin/analyses", {
+      const response = await fetch("/api/admin/workflow", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          workflowId: numericId, // Integer
-          type: "CINQ_POURQUOI",
-          contenu: JSON.stringify({
-            problemId: probId,
-            problemTitle: probTitle,
-            whys: responses[probId]
-          })
+          workflowId: activeWorkflow.id,
+          ressourceId: parseInt(ressourceId),
+          type: "CINQ_POURQUOI", 
+          contenu: JSON.stringify(responses)
         })
       });
       
       if (response.ok) {
-        alert(`Analyse enregistrée avec succès !`);
+        if (typeof onSaveStep === "function") {
+          onSaveStep(responses);
+        }
+        alert("Toutes les analyses des 5 Pourquoi ont été enregistrées ! Les causes majeures sont prêtes pour l'arbre d'Ishikawa.");
+      } else {
+        const errorData = await response.json();
+        alert(`Erreur de sauvegarde: ${errorData.error || "Inconnue"}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de l'enregistrement.");
+      alert("Erreur lors du traitement de la sauvegarde.");
     } finally {
       setSaving(false);
     }
@@ -98,89 +116,126 @@ const CinqP = ({ workflowId }) => {
   if (loading) return (
     <div className="flex flex-col items-center justify-center p-20 gap-4">
       <div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" />
-      <p className="font-bold text-slate-400 text-xs uppercase">Analyse des priorités...</p>
+      <p className="font-bold text-slate-400 text-xs uppercase tracking-wider">Chargement des axes critiques...</p>
+    </div>
+  );
+
+  if (criticalCategories.length === 0) return (
+    <div className="flex flex-col items-center justify-center p-12 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 text-slate-400">
+      <MdErrorOutline size={48} className="mb-4 opacity-20" />
+      <p className="font-bold">Analyse indisponible</p>
+      <p className="text-xs text-center max-w-[280px] mt-2">
+        Veuillez d&apos;abord valider et sauvegarder le 
+        <span className="font-bold text-blue-500"> Diagramme de Pareto</span> à l&apos;étape précédente.
+      </p>
     </div>
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex justify-between items-start">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* HEADER BAR ROW */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between sm:items-center border-b border-slate-100 pb-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
-            <MdOutlinePsychology className="text-blue-600" size={32} /> Méthode des 5 Pourquoi
+          <h2 className="text-xl sm:text-2xl font-black text-slate-800 flex items-center gap-2">
+            <MdOutlinePsychology className="text-blue-600 flex-shrink-0" size={32} /> 
+            <span>Analyse des 5 Pourquoi</span>
           </h2>
-          <p className="text-sm text-slate-500 font-medium">
-            Workflow #{workflowId} : Creusez jusqu&apos;à la racine des problèmes majeurs.
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            Déterminez la cause majeure pour chaque catégorie critique issue du Pareto.
           </p>
         </div>
+        
+        <button 
+          onClick={handleSaveAllWhys}
+          disabled={saving}
+          className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-100 transition-all active:scale-95 disabled:opacity-50"
+        >
+          <MdSave size={18} /> {saving ? "Enregistrement..." : "Enregistrer tout"}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {topProblems.map((prob, idx) => (
-          <div key={prob.id} className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/40 group relative">
-            <div className="mb-8 flex justify-between items-start">
-              <div>
-                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Axe Prioritaire #0{idx + 1}</span>
-                <h3 className="font-bold text-slate-800 text-lg mt-1 leading-tight">
-                   {prob.text}
-                </h3>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-2xl text-blue-500">
-                <MdHelpOutline size={24} />
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {responses[prob.id]?.map((text, i) => (
-                <div key={i} className="relative pl-10">
-                  {i < 4 && <div className="absolute left-[11px] top-8 w-0.5 h-10 bg-slate-100" />}
-                  
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-3 mb-1">
-                        <div className={`absolute left-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all ${
-                          i === 4 ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-100" : "bg-white border-slate-200 text-slate-400"
-                        }`}>
-                          {i + 1}
-                        </div>
-                        <label className={`text-[10px] font-black uppercase tracking-widest ${i === 4 ? "text-emerald-600" : "text-slate-400"}`}>
-                            {i === 4 ? "Cause Racine (Solution ciblée)" : `Pourquoi n°${i + 1} ?`}
-                        </label>
-                    </div>
-                    
-                    <input 
-                      type="text"
-                      value={text}
-                      onChange={(e) => handleInputChange(prob.id, i, e.target.value)}
-                      className={`w-full border rounded-2xl px-5 py-3.5 text-sm outline-none transition-all ${
-                        i === 4 
-                        ? "bg-emerald-50/30 border-emerald-100 focus:ring-4 focus:ring-emerald-500/5 text-emerald-700 font-bold" 
-                        : "bg-slate-50/50 border-slate-100 focus:border-blue-300 text-slate-600"
-                      }`}
-                      placeholder={i === 4 ? "Source fondamentale..." : "Définissez la cause..."}
-                    />
-                  </div>
+      {/* DYNAMIC PARETO BLOCKS GRID */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
+        {criticalCategories.map((cat, idx) => (
+          <div key={cat.id} className="bg-white p-4 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative flex flex-col justify-between">
+            <div>
+              
+              <div className="mb-6 flex justify-between items-start gap-4">
+                <div>
+                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
+                    Catégorie Critique #0{idx + 1}
+                  </span>
+                  <h3 className="font-bold text-slate-800 text-base sm:text-lg mt-1 uppercase tracking-tight break-words">
+                     {cat.name}
+                  </h3>
                 </div>
-              ))}
-            </div>
+                <div className="p-2.5 sm:p-3 bg-blue-50 rounded-2xl text-blue-500 shrink-0">
+                  <MdHelpOutline size={22} />
+                </div>
+              </div>
 
-            <div className="mt-8 pt-6 border-t border-slate-50 flex justify-end">
-              <button 
-                onClick={() => handleSaveAnalyse(prob.id, prob.text)}
-                disabled={saving || !responses[prob.id]?.[4]}
-                className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest hover:bg-blue-600 active:scale-95 transition-all disabled:opacity-20"
-              >
-                <MdSave size={18} /> {saving ? "..." : "Enregistrer"}
-              </button>
+              {/* SEQUENTIAL LOOP CONTAINER */}
+              <div className="space-y-6">
+                {responses[cat.id]?.map((item, i) => {
+                  const isMainCause = i === 4;
+                  return (
+                    <div key={i} className="relative pl-7 sm:pl-9">
+                      {/* Interactive connector layout line */}
+                      {i < 4 && <div className="absolute left-[11px] top-8 w-0.5 h-[calc(100%+1.5rem)] bg-slate-100" />}
+                      
+                      <div className="flex flex-col gap-2">
+                        {/* Title Badge Label Row */}
+                        <div className="flex items-center gap-3">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all absolute left-0 ${
+                            isMainCause 
+                              ? "bg-red-500 border-red-500 text-white shadow-md shadow-red-100" 
+                              : "bg-white border-slate-200 text-slate-400"
+                          }`}>
+                            {i + 1}
+                          </div>
+                          <label className={`text-[10px] font-black uppercase tracking-wider ${
+                            isMainCause ? "text-red-500" : "text-slate-400"
+                          }`}>
+                            {isMainCause ? "Cause Majeure Finale (Transmise à Ishikawa)" : `Étape n°${i + 1}`}
+                          </label>
+                        </div>
+                        
+                        {/* UPDATED: DUAL SPLIT RESPONSIVE INPUT MATRIX LAYER */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
+                          {/* Pourquoi Input Field */}
+                          <input 
+                            type="text"
+                            value={item.why || ""}
+                            onChange={(e) => handleInputChange(cat.id, i, "why", e.target.value)}
+                            className={`w-full border rounded-xl px-3 py-2 text-[11px] sm:text-xs outline-none transition-all bg-slate-50/30 border-slate-200 focus:border-blue-400 text-slate-700`}
+                            placeholder={`Pourquoi n°${i + 1} ?`}
+                          />
+                          
+                          {/* Réponse Input Field */}
+                          <input 
+                            type="text"
+                            value={item.answer || ""}
+                            onChange={(e) => handleInputChange(cat.id, i, "answer", e.target.value)}
+                            className={`w-full border rounded-xl px-3 py-2 text-[11px] sm:text-xs outline-none transition-all ${
+                              isMainCause 
+                                ? "bg-red-50/40 border-red-200 focus:border-red-400 focus:ring-4 focus:ring-red-500/5 text-red-700 font-bold placeholder-red-300" 
+                                : "bg-slate-50/80 border-slate-200 focus:border-blue-400 text-slate-600"
+                            }`}
+                            placeholder={isMainCause ? "Cause principale définitive..." : "Réponse associée..."}
+                          />
+                        </div>
+
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
             </div>
           </div>
         ))}
       </div>
-
-      {topProblems.length === 0 && (
-        <div className="p-20 bg-slate-50 rounded-[3rem] text-center border-2 border-dashed border-slate-200">
-           <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">En attente de l&apos;analyse Pareto</p>
-        </div>
-      )}
     </div>
   );
 };

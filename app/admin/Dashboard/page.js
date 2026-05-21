@@ -1,14 +1,14 @@
 import AdminLayout from "@/components/admin/adminLayout/AdminLayout"
 import StatsTRS from "@/components/admin/dashboard/StatsTRS"
-import MachinesTRS from "@/components/admin/dashboard/RessourcesTRS"
 import GraphiqueTRS from "@/components/admin/dashboard/GraphiqueTRS"
+import RessourcesTRS from "@/components/admin/dashboard/RessourcesTRS"
 
 const page = () => {
   return (
     <AdminLayout activePage="Dashboard">
 
       <StatsTRS />
-      <MachinesTRS />
+      <RessourcesTRS />
       <GraphiqueTRS />
     </AdminLayout>
     

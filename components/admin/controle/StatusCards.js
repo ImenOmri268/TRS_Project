@@ -1,18 +1,18 @@
 'use client'
 import React from "react";
 import { MdCheckCircle, MdPendingActions, MdTrendingUp, MdErrorOutline } from "react-icons/md";
+import { RiTodoLine } from "react-icons/ri";
 
 const StatusCards = ({ actions = [] }) => {
   // Mapping logic to match your Prisma Enum: Statut { EN_COURS, TERMINE, EN_RETARD }
   const completed = actions.filter(a => a.statut === "TERMINE").length;
   const inProgress = actions.filter(a => a.statut === "EN_COURS").length;
   const delayed = actions.filter(a => a.statut === "EN_RETARD").length;
+  const toDo = actions.filter(a => a.statut === "A_FAIRE").length;
 
   // This can eventually be fetched from your TRS model, 
   // but for now, we'll keep the structure clean for the UI
-  const trsStats = {
-    gain: 5.4 // You can pass this as a prop later from MonitoringPage
-  };
+  
 
   const stats = [
     { 
@@ -30,19 +30,20 @@ const StatusCards = ({ actions = [] }) => {
       bg: "bg-blue-50" 
     },
     { 
+      label: "Actions a faire", 
+      value: toDo, 
+      icon: <RiTodoLine />, 
+      color: "text-orange-600", 
+      bg: "bg-orange-50" 
+    },
+    { 
       label: "Actions en Retard", 
       value: delayed, 
       icon: <MdErrorOutline />, 
       color: "text-rose-600", 
       bg: "bg-rose-50" 
-    },
-    { 
-      label: "Amélioration TRS", 
-      value: `+${trsStats.gain}%`, 
-      icon: <MdTrendingUp />, 
-      color: "text-amber-600", 
-      bg: "bg-amber-50" 
-    },
+    }
+    
   ];
 
   return (

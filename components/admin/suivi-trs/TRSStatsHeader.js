@@ -31,7 +31,7 @@ const TRSStatsHeader = ({ stats, loading }) => {
         value={actionsRetard} 
         subtext="Nécessite une attention immédiate" 
         icon={<FiTarget />} 
-        color="green"
+        color="red"
       />
     </div>
   );
@@ -40,7 +40,7 @@ const TRSStatsHeader = ({ stats, loading }) => {
 const StatCard = ({ title, value, subtext, icon, color }) => {
   const colorMap = {
     blue: "bg-blue-600 text-white",
-    green: "bg-green-500 text-white",
+    red: "bg-red-400 text-red-50",
     slate: "bg-white text-slate-900 border border-slate-200"
   };
 
