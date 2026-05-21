@@ -30,7 +30,9 @@ const GoalsPage = () => {
     }
   };
 
-  useEffect(() => { fetchGoals(); }, []);
+  useEffect(() => { 
+    fetchGoals();
+  }, []);
 
   const handleDelete = async (id) => {
     if (window.confirm(`Voulez-vous vraiment supprimer cet objectif ?`)) {

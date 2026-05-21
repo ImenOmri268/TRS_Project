@@ -6,13 +6,15 @@ export async function GET(request) {
   try {
     const token = request.cookies.get('token')?.value
     if (!token) {
-      return NextResponse.json({ message: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json(
+        { message: 'Non authentifié' },
+        { status: 401 }
+      )
     }
 
     const decoded = verifyToken(token)
     
-    // Si ADMIN → utilise son propre ID
-    // Si USER → trouve l'adminId via la table User
+    //si admin on prend son id si un user on prend id de son admin
     let adminId
     if (decoded.type === 'ADMIN') {
       adminId = decoded.id
@@ -23,9 +25,11 @@ export async function GET(request) {
       })
       adminId = user?.adminId
     }
-
     if (!adminId) {
-      return NextResponse.json({ message: 'Admin introuvable' }, { status: 404 })
+      return NextResponse.json(
+        { message: 'Admin introuvable' },
+        { status: 404 }
+      )
     }
 
     const ressources = await prisma.ressource.findMany({
@@ -42,6 +46,7 @@ export async function GET(request) {
       }
     })
 
+    // calc nb user
     const nbUsers = await prisma.user.count({
       where: { type: 'USER' }
     })
@@ -67,16 +72,22 @@ export async function GET(request) {
       }
     })
 
-    const trsValeurs = machinesData.map(m => m.trsInitial).filter(v => v !== null)
+    //TRS moyen
+    const trsValeurs = machinesData
+    .map(m => m.trsInitial)
+    .filter(v => v !== null)
+
     const trsMoyen = trsValeurs.length > 0
       ? (trsValeurs.reduce((a, b) => a + b, 0) / trsValeurs.length).toFixed(1)
       : 0
+
+    const nbActiveMachines = ressources.filter(r => r.statut === true).length
 
     return NextResponse.json({
       stats: {
         trsMoyen,
         nbMachines: ressources.length,
-        nbActiveMachines: ressources.filter(r => r.statut === true).length,
+        nbActiveMachines,
         nbUsers,
         actionsEnRetard,
       },
@@ -85,6 +96,8 @@ export async function GET(request) {
 
   } catch (error) {
     console.error('[USER DASHBOARD ERROR]', error)
-    return NextResponse.json({ message: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json(
+      { message: 'Erreur serveur' },
+      { status: 500 })
   }
 }

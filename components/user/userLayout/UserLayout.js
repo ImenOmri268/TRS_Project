@@ -15,6 +15,7 @@ import MenuButton from '../../../components/admin/adminLayout/MenuButton'
 
 const MENU_ITEMS = [
   { label: 'Dashboard',      href: '/user/Dashboard',   permission: 'voir_dashboard',      icon: '/dashboard.svg' },
+  { label: 'Utilisateurs', href: '/user/Utilisateurs', permission: 'voir_utilisateurs', icon: '/utilisateur.svg' },
   { label: 'Collecte TRS',   href: '/user/CollecteTRS', permission: 'faire_collecte',      icon: <MdSettingsInputComponent className="w-5 h-5" /> },
   { label: 'Traitements',    href: '/user/Traitements', permission: 'lancer_amelioration', icon: '/pipeline.svg' },
   { label: "Plan d'actions", href: '/user/PlanAction',  permission: 'voir_plan_action',    icon: '/plan.svg' },

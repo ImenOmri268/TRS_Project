@@ -3,13 +3,15 @@ import { jwtVerify } from 'jose'
 
 const publicRoutes = ['/', '/SignUp', '/resetPassword', '/EmailSend']
 
-// Pages user et leurs permissions requises
 const userPagePermissions = {
   '/user/Dashboard'    : 'voir_dashboard',
   '/user/Objectifs'    : 'voir_objectifs',
+  '/user/Ressources'   : 'voir_ressources',
+  '/user/Utilisateurs' : 'voir_utilisateurs',
   '/user/CollecteTRS'  : 'faire_collecte',
   '/user/Traitements'  : 'lancer_amelioration',
   '/user/PlanAction'   : 'voir_plan_action',
+  '/user/SuiviTRS'     : 'voir_dashboard',
   '/user/Rapports'     : 'voir_rapport',
 }
 
@@ -23,8 +25,6 @@ export async function middleware(request) {
       try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET)
         const { payload } = await jwtVerify(token, secret)
-
-        // Redirection selon le type
         if (payload.type === 'ADMIN') {
           return NextResponse.redirect(new URL('/admin/Dashboard', request.url))
         } else if (payload.type === 'USER') {
@@ -50,7 +50,6 @@ export async function middleware(request) {
     const { payload } = await jwtVerify(token, secret)
 
     // ADMIN → accès total aux pages /admin
-    // Un ADMIN ne peut pas accéder aux pages /user et vice versa
     if (payload.type === 'ADMIN') {
       if (pathname.startsWith('/user')) {
         return NextResponse.redirect(new URL('/admin/Dashboard', request.url))
@@ -58,18 +57,28 @@ export async function middleware(request) {
       return NextResponse.next()
     }
 
-    // USER → vérifier permissions selon la page
+    // USER → vérifier permissions depuis la DB
     if (payload.type === 'USER') {
-      // Un USER ne peut pas accéder aux pages /admin
       if (pathname.startsWith('/admin')) {
         return NextResponse.redirect(new URL('/user/Dashboard', request.url))
       }
 
-      // Vérifier la permission pour la page demandée
       const permissionRequise = userPagePermissions[pathname]
       if (permissionRequise) {
-        const hasPermission = payload.permissions?.includes(permissionRequise)
-        if (!hasPermission) {
+        // Vérifier depuis l'API profil (toujours à jour depuis la DB)
+        try {
+          const profilRes = await fetch(new URL('/api/user/profil', request.url), {
+            headers: { cookie: `token=${token}` }
+          })
+          if (!profilRes.ok) {
+            return NextResponse.redirect(new URL('/user/Dashboard', request.url))
+          }
+          const profil = await profilRes.json()
+          const hasPermission = profil.permissions?.includes(permissionRequise)
+          if (!hasPermission) {
+            return NextResponse.redirect(new URL('/user/Dashboard', request.url))
+          }
+        } catch {
           return NextResponse.redirect(new URL('/user/Dashboard', request.url))
         }
       }

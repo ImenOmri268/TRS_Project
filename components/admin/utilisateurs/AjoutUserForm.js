@@ -5,7 +5,7 @@ import { MdClose, MdPersonOutline, MdMailOutline, MdToggleOn, MdToggleOff, MdErr
 import { HiPlus, HiSave } from "react-icons/hi";  
 import { IoReturnUpBack } from "react-icons/io5";
 
-const AjoutUserForm = ({ isOpen, onClose, refresh, userToEdit = null }) => {
+const AjoutUserForm = ({ isOpen, onClose, refresh, userToEdit = null, apiUrl='/api/admin/utilisateurs' }) => {
   const [loading, setLoading] = useState(false);
   const [availablePermissions, setAvailablePermissions] = useState([]);
   const [error, setError] = useState("");
@@ -79,7 +79,7 @@ const AjoutUserForm = ({ isOpen, onClose, refresh, userToEdit = null }) => {
     setLoading(true);
     try {
       const isEditing = !!userToEdit;
-      const url = '/api/admin/utilisateurs';
+      const url = apiUrl;
       const method = isEditing ? 'PUT' : 'POST';
       
       const payload = {
@@ -150,11 +150,6 @@ const AjoutUserForm = ({ isOpen, onClose, refresh, userToEdit = null }) => {
                                   exit={{ opacity: 0, y: -8 }}
                                   className="bg-red-50 border-b border-red-100 w-full"
                                 > 
-                                  initial={{ opacity: 0, y: -8 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -8 }}
-                                  className="bg-red-50 border-b border-red-100 w-full"
-                                >
                   <div className="px-8 py-3 flex items-center gap-3 text-red-600 text-sm font-semibold">
                     <MdErrorOutline className="text-xl shrink-0" />
                     {error}

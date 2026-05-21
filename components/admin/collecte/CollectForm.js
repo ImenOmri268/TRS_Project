@@ -2,12 +2,11 @@
 import React, { useState, useEffect } from "react";
 import { MdOutlinePlaylistAddCheck, MdSettingsInputComponent, MdSave, MdCheckCircle } from "react-icons/md";
 
-const CollectForm = ({ resource }) => {
+const CollectForm = ({ resource, onSuccess, apiUrl = '/api/admin/ressources' }) => {
   const [formValues, setFormValues] = useState({});
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Reset form when resource changes
   useEffect(() => {
     setFormValues({});
     setShowSuccess(false);
@@ -26,34 +25,28 @@ const CollectForm = ({ resource }) => {
   }
 
   const handleInputChange = (id, value) => {
-    setFormValues((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
+    setFormValues((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleSaveCollecte = async () => {
     setLoading(true);
-    
     const dailyEntries = Object.entries(formValues).map(([paramId, val]) => ({
       parameterId: parseInt(paramId),
       value: parseFloat(val) || 0,
     }));
 
     try {
-      const response = await fetch('/api/admin/ressources', {
+      const response = await fetch(apiUrl, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: resource.id,
-          dailyEntries: dailyEntries
-        }),
+        body: JSON.stringify({ id: resource.id, dailyEntries: dailyEntries }),
       });
 
       if (response.ok) {
         setShowSuccess(true);
         setFormValues({});
         setTimeout(() => setShowSuccess(false), 3000);
+        if (onSuccess) onSuccess();
       } else {
         const error = await response.json();
         alert(error.message || "Erreur lors de l'enregistrement");
@@ -65,7 +58,6 @@ const CollectForm = ({ resource }) => {
     }
   };
 
-  // Grouping parameters by their category
   const categories = ['DISPONIBILITE', 'PERFORMANCE', 'QUALITE'];
   const parametersByCategory = resource.parameters?.reduce((acc, param) => {
     const cat = param.category;
@@ -75,9 +67,7 @@ const CollectForm = ({ resource }) => {
   }, {}) || {};
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col animate-in fade-in ">
-      
-      {/* Header Info */}
+    <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col animate-in fade-in">
       <div className="p-8 border-b border-slate-50 bg-slate-50/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -85,9 +75,7 @@ const CollectForm = ({ resource }) => {
               <MdOutlinePlaylistAddCheck size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-800 leading-tight">
-                Saisie Journalière
-              </h3>
+              <h3 className="text-xl font-black text-slate-800 leading-tight">Saisie Journalière</h3>
               <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mt-0.5">
                 {resource.nom} — {resource.type}
               </p>
@@ -105,7 +93,6 @@ const CollectForm = ({ resource }) => {
         {categories.map((category) => {
           const params = parametersByCategory[category];
           if (!params) return null;
-
           return (
             <div key={category} className="space-y-5">
               <div className="flex items-center gap-3">
@@ -115,7 +102,6 @@ const CollectForm = ({ resource }) => {
                 </h4>
                 <span className="h-px bg-slate-200 flex-grow"></span>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 {params.map((param) => (
                   <div key={param.id} className="group">
@@ -124,22 +110,19 @@ const CollectForm = ({ resource }) => {
                         {param.label}
                       </span>
                     </label>
-                    <div className="relative">
-                      <input 
-                        type="number" 
-                        value={formValues[param.id] || ""}
-                        onChange={(e) => handleInputChange(param.id, e.target.value)}
-                        placeholder="0.00"
-                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-800 focus:bg-white focus:border-blue-500 transition-all outline-none"
-                      />
-                    </div>
+                    <input
+                      type="number"
+                      value={formValues[param.id] || ""}
+                      onChange={(e) => handleInputChange(param.id, e.target.value)}
+                      placeholder="0.00"
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-800 focus:bg-white focus:border-blue-500 transition-all outline-none"
+                    />
                   </div>
                 ))}
               </div>
             </div>
           );
         })}
-
         {Object.keys(parametersByCategory).length === 0 && (
           <div className="text-center py-10">
             <p className="text-slate-400 text-sm italic">Aucun paramètre trouvé.</p>
@@ -147,9 +130,8 @@ const CollectForm = ({ resource }) => {
         )}
       </div>
 
-      {/* Footer Actions */}
       <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex justify-end">
-        <button 
+        <button
           onClick={handleSaveCollecte}
           disabled={loading || Object.keys(formValues).length === 0}
           className="group flex items-center gap-3 bg-slate-900 text-white px-10 py-4 rounded-2xl text-sm font-black shadow-xl shadow-slate-200 hover:bg-blue-600 hover:shadow-blue-200 transition-all active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"

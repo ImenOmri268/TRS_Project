@@ -8,8 +8,7 @@ export async function GET(request) {
     if (!token) return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
 
     const decoded = verifyToken(token);
-
-    // Récupère l'adminId du user
+    
     let adminId;
     if (decoded.type === 'ADMIN') {
       adminId = decoded.id;
