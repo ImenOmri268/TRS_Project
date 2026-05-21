@@ -30,7 +30,7 @@ const PipelineHeader = ({ currentStep, onStepClick }) => {
                   ${isActive 
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 ring-4 ring-blue-100 scale-110 font-bold' 
                     : isCompleted
-                    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-100 font-bold'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 ring-4 ring-blue-100 scale-110 font-bold' 
                     : 'bg-slate-50 border-2 border-slate-200 text-slate-400 group-hover:border-blue-400 group-hover:text-blue-500 group-hover:bg-white'
                   }
                 `}>
@@ -41,7 +41,7 @@ const PipelineHeader = ({ currentStep, onStepClick }) => {
                   
                   {/* Completed Success Indicator Ring Overlay */}
                   {isCompleted && (
-                    <div className="absolute inset-0 rounded-full border-2 border-emerald-200 animate-ping opacity-25 pointer-events-none" />
+                    <div className="absolute inset-0 rounded-full border-2 border-blue-800 animate-ping opacity-25 pointer-events-none" />
                   )}
                 </div>
 
@@ -50,7 +50,7 @@ const PipelineHeader = ({ currentStep, onStepClick }) => {
                   isActive 
                     ? 'text-blue-600 font-extrabold' 
                     : isCompleted 
-                    ? 'text-emerald-600' 
+                    ? 'text-blue-600' 
                     : 'text-slate-400 group-hover:text-slate-600'
                 }`}>
                   {step.name}
@@ -61,7 +61,7 @@ const PipelineHeader = ({ currentStep, onStepClick }) => {
               {index !== steps.length - 1 && (
                 <div className="flex-1 h-[3px] bg-slate-100 mx-2 rounded-full overflow-hidden relative -mt-6">
                   <div 
-                    className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 transition-all duration-700 ease-in-out" 
+                    className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-700 ease-in-out" 
                     style={{ 
                       width: isCompleted ? '100%' : '0%',
                       transformOrigin: 'left'

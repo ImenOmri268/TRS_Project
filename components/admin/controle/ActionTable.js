@@ -6,6 +6,7 @@ import { MdOutlinePlaylistAddCheck } from "react-icons/md";
 const ActionTable = ({ actions, onActionClick, onEditClick, onDeleteClick }) => {
   const getStatusStyle = (status) => {
     switch (status) {
+      case "A_FAIRE": return "bg-orange-100 text-orange-700 border-orange-200"
       case "TERMINE": return "bg-emerald-100 text-emerald-700 border-emerald-200";
       case "EN_COURS": return "bg-blue-100 text-blue-700 border-blue-200";
       case "EN_RETARD": return "bg-rose-100 text-rose-700 border-rose-200";
@@ -18,7 +19,7 @@ const ActionTable = ({ actions, onActionClick, onEditClick, onDeleteClick }) => 
       <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
         <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
           <MdOutlinePlaylistAddCheck className="text-blue-600" size={24} /> 
-          Journal des Réalisations
+          Journal des actions
         </h3>
       </div>
       
@@ -26,7 +27,7 @@ const ActionTable = ({ actions, onActionClick, onEditClick, onDeleteClick }) => 
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/50">
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Détails Action</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">titre</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Responsable</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Statut</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
@@ -40,7 +41,7 @@ const ActionTable = ({ actions, onActionClick, onEditClick, onDeleteClick }) => 
               >
                 <td className="px-6 py-4" onClick={() => onActionClick(action)}>
                   <p className="text-sm font-bold text-slate-700 group-hover:text-blue-600 transition-colors leading-tight">
-                    {action.description}
+                    {action.title}
                   </p>
                 </td>
                 <td className="px-6 py-4" onClick={() => onActionClick(action)}>
@@ -52,7 +53,7 @@ const ActionTable = ({ actions, onActionClick, onEditClick, onDeleteClick }) => 
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex justify-end gap-1 ">
                     <button 
                       onClick={(e) => { e.stopPropagation(); onEditClick(action); }}
                       className="p-2 bg-white border border-slate-100 hover:border-blue-200 text-slate-400 hover:text-blue-600 rounded-xl shadow-sm transition-all"

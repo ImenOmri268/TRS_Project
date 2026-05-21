@@ -21,13 +21,11 @@ const Ishikawa = ({ ressourceId, activeWorkflow, onSaveStep }) => {
       if (!activeWorkflow?.id) return;
 
       try {
-        // FIXED: Fetch rows matching this session directly from the workflows collection
         const res = await fetch(`/api/admin/workflow?workflowId=${activeWorkflow.id}`);
         
         if (res.ok) {
           const workflowsData = await res.json();
           
-          // Locate upstream 5-Whys and Pareto rows inside the array response
           const whyRow = Array.isArray(workflowsData) 
             ? workflowsData.find(analysis => analysis.type === "CINQ_POURQUOI") 
             : null;
@@ -43,20 +41,27 @@ const Ishikawa = ({ ressourceId, activeWorkflow, onSaveStep }) => {
             const parsedWhys = JSON.parse(whyRow.contenu);
             const paretoCategories = paretoRow && paretoRow.contenu ? JSON.parse(paretoRow.contenu) : [];
 
-            // Map the 5th Whys (index 4) as the dynamic fish heads
             Object.keys(parsedWhys).forEach((catId) => {
               const whyArray = parsedWhys[catId];
-              const finalRootCause = whyArray[4]; // The Cause Majeure
+              const fifthStep = whyArray?.[4]; // Get the 5th step object
+              
+              // FIXED: Extract the actual string text from the structured object format safely
+              let finalRootCauseText = "";
+              if (fifthStep) {
+                finalRootCauseText = typeof fifthStep === "string" 
+                  ? fifthStep 
+                  : fifthStep.answer || fifthStep.why || "";
+              }
+
               const parentCategory = paretoCategories.find(c => c.id.toString() === catId.toString());
 
-              if (finalRootCause && finalRootCause.trim() !== "") {
+              if (finalRootCauseText && finalRootCauseText.trim() !== "") {
                 loadedHeads.push({
                   id: catId,
-                  text: finalRootCause,
+                  text: finalRootCauseText.trim(),
                   categoryContext: parentCategory ? parentCategory.name : "Axe Critique"
                 });
 
-                // Seed clean structural template for state validation
                 initialFish[catId] = {
                   methode: ["", ""],
                   milieu: ["", ""],
@@ -69,14 +74,12 @@ const Ishikawa = ({ ressourceId, activeWorkflow, onSaveStep }) => {
             setFishHeads(loadedHeads);
           }
 
-          // Load pre-existing Ishikawa database details if saved previously in this session
           const ishRow = Array.isArray(workflowsData) 
             ? workflowsData.find(analysis => analysis.type === "ISHIKAWA") 
             : null;
 
           if (ishRow && ishRow.contenu) {
             const parsedIshData = JSON.parse(ishRow.contenu);
-            // Patch existing parameters cleanly back into the tracker state
             Object.keys(parsedIshData).forEach(catId => {
               if (initialFish[catId]) {
                 initialFish[catId] = parsedIshData[catId];
@@ -113,14 +116,13 @@ const Ishikawa = ({ ressourceId, activeWorkflow, onSaveStep }) => {
 
     setSaving(true);
     try {
-      // FIXED: Forward payload array parameters directly to unified workflow route path
       const res = await fetch("/api/admin/workflow", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workflowId: activeWorkflow.id,
           ressourceId: parseInt(ressourceId),
-          type: "ISHIKAWA", // Exact Enum identifier targeting database schema
+          type: "ISHIKAWA", 
           contenu: JSON.stringify(fishData)
         })
       });
@@ -184,7 +186,6 @@ const Ishikawa = ({ ressourceId, activeWorkflow, onSaveStep }) => {
       {fishHeads.map((head) => (
         <div key={head.id} className="bg-slate-50/40 p-10 rounded-[2.5rem] border border-slate-200/60 relative">
           
-          {/* Badge Label indicating parent Category */}
           <div className="inline-block bg-blue-50 text-blue-600 font-extrabold text-[10px] uppercase tracking-widest border border-blue-100 px-3 py-1 rounded-md mb-2">
             Axe : {head.categoryContext}
           </div>
@@ -192,13 +193,12 @@ const Ishikawa = ({ ressourceId, activeWorkflow, onSaveStep }) => {
           <div className="min-w-[1000px] h-[520px] relative mt-4 overflow-x-auto">
             
             {/* CENTRAL SPINE */}
-            <div className="absolute top-1/2 left-0 w-[74%] h-1.5 bg-slate-200 -translate-y-1/2 rounded-full" />
+            <div className="absolute top-1/2 left-0 w-[89%] h-1.5 bg-slate-200 -translate-y-1/2 rounded-full" />
 
-            {/* THE PROBLEM HEAD (Effect coming from 5 whys root cause) */}
+            {/* THE PROBLEM HEAD */}
             <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center">
               <div className="relative bg-slate-900 text-white px-8 py-6 max-w-[240px] text-center font-black rounded-2xl shadow-xl z-10 uppercase tracking-tight text-sm ring-[10px] ring-white">
                 {head.text}
-                <div className="absolute top-1/2 -right-3 w-6 h-6 bg-slate-900 rotate-45 -translate-y-1/2 -z-10" />
               </div>
             </div>
 
@@ -211,25 +211,22 @@ const Ishikawa = ({ ressourceId, activeWorkflow, onSaveStep }) => {
               >
                 <div className="flex flex-col items-center h-full relative">
                   
-                  {/* Category Bone Node Header */}
                   <div className={`px-5 py-2 rounded-xl text-[9px] font-black shadow-sm z-20 w-fit text-center uppercase tracking-widest border transition-all
                     ${cat.pos === 'top' 
                       ? 'bg-blue-600 border-blue-600 text-white mb-auto shadow-blue-50' 
-                      : 'bg-white border-slate-200 text-slate-500 mt-auto order-last shadow-sm'}`}>
+                      : 'bg-blue-600 border-blue-600 text-white mt-auto order-last shadow-sm'}`}>
                     {cat.name}
                   </div>
 
-                  {/* Canvas Line Connection Graphic */}
                   <svg className="absolute inset-0 w-full h-full pointer-events-none">
                     <line 
                       x1="50%" y1={cat.pos === 'top' ? "25%" : "75%"} 
                       x2="95%" y2={cat.pos === 'top' ? "100%" : "0%"} 
-                      stroke={cat.pos === 'top' ? "#2563eb" : "#cbd5e1"} 
+                      stroke={"#2563eb"} 
                       strokeWidth="2.5" strokeDasharray="5 4"
                     />
                   </svg>
 
-                  {/* Secondary Under-bone inputs list */}
                   <div className={`absolute w-full px-2 space-y-6 ${cat.pos === 'top' ? 'top-14' : 'bottom-14'}`}>
                     {[0, 1].map(idx => (
                       <div key={idx} className="relative group">

@@ -13,12 +13,10 @@ const CinqP = ({ ressourceId, activeWorkflow, onSaveStep }) => {
       if (!activeWorkflow?.id) return;
 
       try {
-        // FIXED: Fetching all relevant analysis rows mapped to this single active workflow sequence
         const res = await fetch(`/api/admin/workflow?workflowId=${activeWorkflow.id}`);
         if (res.ok) {
           const workflowsData = await res.json();
           
-          // 1. Identify the Pareto record entry row to render the critical workspace cards
           const paretoRow = Array.isArray(workflowsData)
             ? workflowsData.find(analysis => analysis.type === "PARETO")
             : null;
@@ -29,23 +27,33 @@ const CinqP = ({ ressourceId, activeWorkflow, onSaveStep }) => {
             setCriticalCategories(loadedCategories);
           }
 
-          // 2. Extract existing 5-Whys row data if previously saved during this session path
           const whyRow = Array.isArray(workflowsData)
             ? workflowsData.find(analysis => analysis.type === "CINQ_POURQUOI")
             : null;
 
           const initialResponses = {};
-          // Prefill empty rows structure for each active Pareto category block
+          // UPDATED: Prefill with structured array objects holding distinct why and answer states
           loadedCategories.forEach(cat => {
-            initialResponses[cat.id] = ["", "", "", "", ""];
+            initialResponses[cat.id] = [
+              { why: "", answer: "" },
+              { why: "", answer: "" },
+              { why: "", answer: "" },
+              { why: "", answer: "" },
+              { why: "", answer: "" }
+            ];
           });
 
-          // Overlay with matching records pulled out from Database
           if (whyRow && whyRow.contenu) {
             const parsedData = JSON.parse(whyRow.contenu);
             Object.keys(parsedData).forEach(catId => {
               if (initialResponses[catId]) {
-                initialResponses[catId] = parsedData[catId];
+                // Ensure backward/forward compatibility during format conversion if needed
+                initialResponses[catId] = parsedData[catId].map((item) => {
+                  if (typeof item === 'string') {
+                    return { why: "", answer: item }; // Fallback data patch
+                  }
+                  return item;
+                });
               }
             });
           }
@@ -55,17 +63,18 @@ const CinqP = ({ ressourceId, activeWorkflow, onSaveStep }) => {
       } catch (err) {
         console.error("Error initializing 5 Whys workflow context:", err);
       } finally {
-        setLoading(false);
+        loading && setLoading(false);
       }
     };
 
     initializeData();
   }, [activeWorkflow]);
 
-  const handleInputChange = (catId, index, value) => {
+  // UPDATED: Targeting specific sub-property key parameters (either 'why' or 'answer')
+  const handleInputChange = (catId, index, key, value) => {
     setResponses(prev => ({
       ...prev,
-      [catId]: prev[catId].map((val, i) => (i === index ? value : val))
+      [catId]: prev[catId].map((item, i) => (i === index ? { ...item, [key]: value } : item))
     }));
   };
 
@@ -76,14 +85,13 @@ const CinqP = ({ ressourceId, activeWorkflow, onSaveStep }) => {
 
     setSaving(true);
     try {
-      // FIXED: Posting straight to centralized workflow rows controller route
       const response = await fetch("/api/admin/workflow", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workflowId: activeWorkflow.id,
           ressourceId: parseInt(ressourceId),
-          type: "CINQ_POURQUOI", // Linked directly to database structural Enum attributes
+          type: "CINQ_POURQUOI", 
           contenu: JSON.stringify(responses)
         })
       });
@@ -124,13 +132,16 @@ const CinqP = ({ ressourceId, activeWorkflow, onSaveStep }) => {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* HEADER BAR ROW */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between sm:items-center border-b border-slate-100 pb-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
-            <MdOutlinePsychology className="text-blue-600" size={32} /> Analyse des 5 Pourquoi
+          <h2 className="text-xl sm:text-2xl font-black text-slate-800 flex items-center gap-2">
+            <MdOutlinePsychology className="text-blue-600 flex-shrink-0" size={32} /> 
+            <span>Analyse des 5 Pourquoi</span>
           </h2>
-          <p className="text-sm text-slate-500 font-medium">
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
             Déterminez la cause majeure pour chaque catégorie critique issue du Pareto.
           </p>
         </div>
@@ -138,40 +149,43 @@ const CinqP = ({ ressourceId, activeWorkflow, onSaveStep }) => {
         <button 
           onClick={handleSaveAllWhys}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all active:scale-95"
+          className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-100 transition-all active:scale-95 disabled:opacity-50"
         >
           <MdSave size={18} /> {saving ? "Enregistrement..." : "Enregistrer tout"}
         </button>
       </div>
 
-      {/* Grid container responsive adjustment rendering per dynamic items */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      {/* DYNAMIC PARETO BLOCKS GRID */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
         {criticalCategories.map((cat, idx) => (
-          <div key={cat.id} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative flex flex-col justify-between">
+          <div key={cat.id} className="bg-white p-4 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative flex flex-col justify-between">
             <div>
-              <div className="mb-6 flex justify-between items-start">
+              
+              <div className="mb-6 flex justify-between items-start gap-4">
                 <div>
                   <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
                     Catégorie Critique #0{idx + 1}
                   </span>
-                  <h3 className="font-bold text-slate-800 text-lg mt-1 uppercase tracking-tight">
+                  <h3 className="font-bold text-slate-800 text-base sm:text-lg mt-1 uppercase tracking-tight break-words">
                      {cat.name}
                   </h3>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-2xl text-blue-500 shrink-0">
+                <div className="p-2.5 sm:p-3 bg-blue-50 rounded-2xl text-blue-500 shrink-0">
                   <MdHelpOutline size={22} />
                 </div>
               </div>
 
-              {/* 5 Sequential Inputs Form Loop */}
-              <div className="space-y-5">
-                {responses[cat.id]?.map((text, i) => {
+              {/* SEQUENTIAL LOOP CONTAINER */}
+              <div className="space-y-6">
+                {responses[cat.id]?.map((item, i) => {
                   const isMainCause = i === 4;
                   return (
-                    <div key={i} className="relative pl-9">
-                      {i < 4 && <div className="absolute left-[11px] top-8 w-0.5 h-8 bg-slate-100" />}
+                    <div key={i} className="relative pl-7 sm:pl-9">
+                      {/* Interactive connector layout line */}
+                      {i < 4 && <div className="absolute left-[11px] top-8 w-0.5 h-[calc(100%+1.5rem)] bg-slate-100" />}
                       
-                      <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-2">
+                        {/* Title Badge Label Row */}
                         <div className="flex items-center gap-3">
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all absolute left-0 ${
                             isMainCause 
@@ -183,26 +197,41 @@ const CinqP = ({ ressourceId, activeWorkflow, onSaveStep }) => {
                           <label className={`text-[10px] font-black uppercase tracking-wider ${
                             isMainCause ? "text-red-500" : "text-slate-400"
                           }`}>
-                            {isMainCause ? "Cause Majeure Finale (Transmise à Ishikawa)" : `Pourquoi n°${i + 1} ?`}
+                            {isMainCause ? "Cause Majeure Finale (Transmise à Ishikawa)" : `Étape n°${i + 1}`}
                           </label>
                         </div>
                         
-                        <input 
-                          type="text"
-                          value={text || ""}
-                          onChange={(e) => handleInputChange(cat.id, i, e.target.value)}
-                          className={`w-full border rounded-xl px-4 py-2.5 text-xs outline-none transition-all ${
-                            isMainCause 
-                              ? "bg-red-50/40 border-red-200 focus:border-red-400 focus:ring-4 focus:ring-red-500/5 text-red-700 font-bold placeholder-red-300" 
-                              : "bg-slate-50/50 border-slate-200 focus:border-blue-400 text-slate-600"
-                          }`}
-                          placeholder={isMainCause ? "Cause principale définitive..." : `Explicitez la cause du niveau ${i + 1}...`}
-                        />
+                        {/* UPDATED: DUAL SPLIT RESPONSIVE INPUT MATRIX LAYER */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
+                          {/* Pourquoi Input Field */}
+                          <input 
+                            type="text"
+                            value={item.why || ""}
+                            onChange={(e) => handleInputChange(cat.id, i, "why", e.target.value)}
+                            className={`w-full border rounded-xl px-3 py-2 text-[11px] sm:text-xs outline-none transition-all bg-slate-50/30 border-slate-200 focus:border-blue-400 text-slate-700`}
+                            placeholder={`Pourquoi n°${i + 1} ?`}
+                          />
+                          
+                          {/* Réponse Input Field */}
+                          <input 
+                            type="text"
+                            value={item.answer || ""}
+                            onChange={(e) => handleInputChange(cat.id, i, "answer", e.target.value)}
+                            className={`w-full border rounded-xl px-3 py-2 text-[11px] sm:text-xs outline-none transition-all ${
+                              isMainCause 
+                                ? "bg-red-50/40 border-red-200 focus:border-red-400 focus:ring-4 focus:ring-red-500/5 text-red-700 font-bold placeholder-red-300" 
+                                : "bg-slate-50/80 border-slate-200 focus:border-blue-400 text-slate-600"
+                            }`}
+                            placeholder={isMainCause ? "Cause principale définitive..." : "Réponse associée..."}
+                          />
+                        </div>
+
                       </div>
                     </div>
                   );
                 })}
               </div>
+
             </div>
           </div>
         ))}

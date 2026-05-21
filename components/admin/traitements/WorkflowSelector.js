@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from "react";
-import { FiPlus, FiFolder, FiCpu, FiCornerDownRight, FiFileText, FiActivity } from "react-icons/fi";
+import { FiPlus, FiFolder, FiCpu, FiCornerDownRight, FiFileText, FiActivity, FiTrash2 } from "react-icons/fi";
 
 const WorkflowSelector = ({ onSelectWorkflow }) => {
   const [resources, setResources] = useState([]);
@@ -15,11 +15,11 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
   useEffect(() => {
     const fetchResources = async () => {
       try {
-        const res = await fetch("/api/admin/ressources"); // Ensure this API endpoint is valid
+        const res = await fetch("/api/admin/ressources"); 
         const data = await res.json();
         setResources(data || []);
         if (data && data.length > 0) {
-          setActiveResource(data[0]); // Default selection
+          setActiveResource(data[0]); 
         }
       } catch (err) {
         console.error("Error loading resources selector:", err);
@@ -67,7 +67,6 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
       if (res.ok) {
         const createdWorkflow = await res.json();
         setNewWorkflowName("");
-        // Pass control straight back to the parent router configuration loop pipeline
         onSelectWorkflow(activeResource, createdWorkflow);
       } else {
         alert("Erreur lors du déploiement du nouveau workflow de traitement.");
@@ -77,6 +76,32 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
       alert("Erreur serveur de communication API.");
     } finally {
       setCreating(false);
+    }
+  };
+
+  // ADDED: Isolated Workflow Removal Event Loop
+  const handleDeleteWorkflow = async (e, workflowId) => {
+    e.stopPropagation(); // Stop parent onClick from executing selection route
+
+    if (!confirm("Êtes-vous sûr de vouloir supprimer définitivement cette session ainsi que toutes ses analyses (Pareto, 5P, Ishikawa...) ?")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/workflow?workflowId=${workflowId}`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) {
+        // Remove item instantly from local state array tracking
+        setWorkflows(prev => prev.filter(wf => wf.id !== workflowId));
+      } else {
+        const errData = await res.json();
+        alert(`Erreur lors de la suppression: ${errData.error || "Inconnue"}`);
+      }
+    } catch (err) {
+      console.error("Error deleting workflow execution session loop:", err);
+      alert("Une erreur de communication est survenue avec le serveur.");
     }
   };
 
@@ -147,7 +172,6 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
             </div>
           </div>
 
-          {/* Dynamic workflows container execution tracking view list */}
           <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[42vh] pr-1">
             {loadingWorkflows ? (
               <div className="flex justify-center items-center py-20">
@@ -162,7 +186,7 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
                 <div
                   key={wf.id}
                   onClick={() => onSelectWorkflow(activeResource, wf)}
-                  className="w-full text-left p-4 rounded-2xl bg-white border border-slate-200/70 hover:border-blue-400 hover:shadow-md transition-all flex items-center justify-between group cursor-pointer"
+                  className="w-full text-left p-4 rounded-2xl bg-white border border-slate-200/70 hover:border-blue-400 hover:shadow-md transition-all flex items-center justify-between group cursor-pointer animate-in fade-in-50 duration-200"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full group-hover:scale-125 transition-transform" />
@@ -176,17 +200,29 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
                     </div>
                   </div>
 
-                  {/* Hidden conditional quick link layout icon wrapper triggered cleanly via peer hover elements */}
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation(); // Stops routing navigation triggers
-                      onSelectWorkflow(activeResource, wf); // Or navigate directly to final step block mapping
-                    }}
-                    className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-50 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all border border-slate-100"
-                    title="Voir Rapport Technique"
-                  >
-                    <FiFileText size={16} />
-                  </button>
+                  {/* ACTION TRIGGER BUTTONS AREA */}
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* View Report Icon Button */}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation(); 
+                        onSelectWorkflow(activeResource, wf); 
+                      }}
+                      className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all border border-slate-100"
+                      title="Voir Rapport Technique"
+                    >
+                      <FiFileText size={16} />
+                    </button>
+
+                    {/* ADDED: Delete Workflow Session Button */}
+                    <button 
+                      onClick={(e) => handleDeleteWorkflow(e, wf.id)}
+                      className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-all border border-slate-100"
+                      title="Supprimer cette session"
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               ))
             )}

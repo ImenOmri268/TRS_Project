@@ -39,3 +39,62 @@ export async function POST(request) {
   }
 }
 
+export async function DELETE(request) {
+  try {
+    // 1. Extract the 'id' parameter from the request URL string
+    const { searchParams } = new URL(request.url);
+    const idString = searchParams.get("id");
+
+    if (!idString) {
+      return NextResponse.json(
+        { error: "L'identifiant du plan d'action (id) est requis." },
+        { status: 400 }
+      );
+    }
+
+    const planId = parseInt(idString, 10);
+    if (isNaN(planId)) {
+      return NextResponse.json(
+        { error: "L'identifiant fourni n'est pas un nombre valide." },
+        { status: 400 }
+      );
+    }
+
+    // 2. Optional safety check: Verify if the plan actually exists before trying to delete it
+    const existingPlan = await prisma.planAction.findUnique({
+      where: { id: planId },
+    });
+
+    if (!existingPlan) {
+      return NextResponse.json(
+        { error: "Plan d'action introuvable." },
+        { status: 404 }
+      );
+    }
+
+    // 3. DATABASE CASCADE HANDLING:
+    // If your Prisma schema doesn't have `onDelete: Cascade` on the Action model,
+    // we must manually delete all actions belonging to this plan first to avoid foreign key violations.
+    await prisma.action.deleteMany({
+      where: { planId: planId },
+    });
+
+    // 4. Delete the main plan action folder item
+    await prisma.planAction.delete({
+      where: { id: planId },
+    });
+
+    // 5. Return success response status configuration
+    return NextResponse.json(
+      { message: "Plan d'action et ses actions associés supprimés avec succès." },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("Erreur lors de la suppression de l'élément (API):", error);
+    return NextResponse.json(
+      { error: "Une erreur interne est survenue lors de la suppression." },
+      { status: 500 }
+    );
+  }
+}

@@ -46,7 +46,14 @@ enum ParameterCategory {
 enum Statut {
   EN_COURS
   TERMINE
+  A_FAIRE
   EN_RETARD
+}
+
+enum Priorite {
+  HAUT
+  MOYEN
+  BAS
 }
 
 enum AnalyseType {
@@ -293,22 +300,26 @@ model PlanAction {
   workflowId Int      @unique // CHANGED: String -> Int to match Workflow.id
   workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
-  actions  Action[]
+  actions  Action[]   
   promptIA PromptIA?
   tracking Tracking[]
 }
 
 //ACTION
 model Action {
-  id          Int    @id @default(autoincrement())
-  description String
-  statut      Statut
+  id           Int        @id @default(autoincrement())
+  title        String     // Added
+  description  String     
+  priorite     Priorite   @default(MOYEN) // Added
+  impactTrs    Float?     // Added: impact on TRS resources (Float or Int depending on precision requirements)
+  statut       Statut     @default(A_FAIRE)
+  dateLimite   DateTime   // Added: limit date field
 
-  planId Int
-  plan   PlanAction @relation(fields: [planId], references: [id])
+  planId       Int
+  plan         PlanAction @relation(fields: [planId], references: [id])
 
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
+  userId       Int
+  user         User       @relation(fields: [userId], references: [id])
 }
 
 //IA

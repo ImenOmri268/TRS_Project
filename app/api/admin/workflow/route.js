@@ -119,3 +119,62 @@ export async function POST(req) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const idString = searchParams.get("workflowId");
+
+    if (!idString) {
+      return NextResponse.json(
+        { error: "L'identifiant du workflow (workflowId) est requis." },
+        { status: 400 }
+      );
+    }
+
+    const workflowId = parseInt(idString, 10);
+    if (isNaN(workflowId)) {
+      return NextResponse.json(
+        { error: "L'identifiant fourni n'est pas valide." },
+        { status: 400 }
+      );
+    }
+
+    // 1. Verify existence before attempting deletion
+    const existingWorkflow = await prisma.workflow.findUnique({
+      where: { id: workflowId },
+    });
+
+    if (!existingWorkflow) {
+      return NextResponse.json(
+        { error: "Session de workflow introuvable." },
+        { status: 404 }
+      );
+    }
+
+    // 2. DEPENDENCY CASCADE PURGE:
+    // This cleans up your child data matrix records (PARETO, CINQ_POURQUOI, ISHIKAWA, etc.) 
+    // linked to this workflow mapping node before deleting the main entry.
+    // (Safe to keep even if your schema already defines onDelete: Cascade)
+    await prisma.analyse.deleteMany({
+      where: { workflowId: workflowId },
+    });
+
+    // 3. Remove the core workflow session entry
+    await prisma.workflow.delete({
+      where: { id: workflowId },
+    });
+
+    return NextResponse.json(
+      { message: "Workflow et toutes les analyses associées supprimés avec succès." },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("Erreur lors de la suppression du workflow (API):", error);
+    return NextResponse.json(
+      { error: "Une erreur interne est survenue lors de la suppression." },
+      { status: 500 }
+    );
+  }
+}
