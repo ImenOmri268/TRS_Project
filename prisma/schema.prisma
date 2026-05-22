@@ -265,10 +265,11 @@ model Qualite {
 model Workflow {
   id              Int      @id @default(autoincrement())
   nom             String
-  description     String?
-  valeurTrsGlobal Float
   statut          String   @default("EN_COURS")
   dateDebut       DateTime @default(now())
+
+  //rapport 
+  pdfUrl          String?
 
   ressourceId Int
   ressource   Ressource @relation(fields: [ressourceId], references: [id], onDelete: Cascade)

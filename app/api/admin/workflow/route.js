@@ -30,7 +30,8 @@ export async function GET(req) {
         id: true,
         nom: true,
         dateDebut: true,
-        statut: true
+        statut: true,
+        pdfUrl: true,
       }
     });
 
@@ -45,7 +46,7 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { nom, ressourceId, description, workflowId, type, contenu } = body;
+    const { nom, ressourceId, workflowId, type, contenu } = body;
     
     // CASE A: It's a save request for an existing workflow's step data
     if (workflowId && type) {
@@ -100,9 +101,7 @@ export async function POST(req) {
     const workflow = await prisma.workflow.create({
       data: {
         nom: nom,
-        description: description || "", 
         ressourceId: parseInt(ressourceId),
-        valeurTrsGlobal: body.valeurTrsGlobal !== undefined ? parseFloat(body.valeurTrsGlobal) : 0.0,
         statut: "EN_COURS",
         analyse: {
           create: {

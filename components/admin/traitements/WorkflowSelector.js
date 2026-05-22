@@ -36,6 +36,7 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
       if (!activeResource?.id) return;
       setLoadingWorkflows(true);
       try {
+        // Cette route inclut désormais le pdfUrl le plus récent mis à jour en BDD
         const res = await fetch(`/api/admin/workflow?ressourceId=${activeResource.id}`);
         const data = await res.json();
         setWorkflows(Array.isArray(data) ? data : []);
@@ -79,9 +80,8 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
     }
   };
 
-  // ADDED: Isolated Workflow Removal Event Loop
   const handleDeleteWorkflow = async (e, workflowId) => {
-    e.stopPropagation(); // Stop parent onClick from executing selection route
+    e.stopPropagation(); 
 
     if (!confirm("Êtes-vous sûr de vouloir supprimer définitivement cette session ainsi que toutes ses analyses (Pareto, 5P, Ishikawa...) ?")) {
       return;
@@ -93,7 +93,6 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
       });
 
       if (res.ok) {
-        // Remove item instantly from local state array tracking
         setWorkflows(prev => prev.filter(wf => wf.id !== workflowId));
       } else {
         const errData = await res.json();
@@ -102,6 +101,18 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
     } catch (err) {
       console.error("Error deleting workflow execution session loop:", err);
       alert("Une erreur de communication est survenue avec le serveur.");
+    }
+  };
+
+  // ACCÈS DIRECT AU DERNIER RAPPORT GÉNÉRÉ EN BASE DE DONNÉES
+  const handleViewLastReport = (e, workflow) => {
+    e.stopPropagation(); // Évite d'ouvrir l'édition du workflow en tâche de fond
+    
+    if (workflow.pdfUrl) {
+      // Ouvre directement la dernière version enregistrée en BDD
+      window.open(workflow.pdfUrl, "_blank");
+    } else {
+      alert("Aucun rapport PDF n'a été compilé pour cette session. Veuillez ouvrir la session, configurer vos étapes et cliquer sur 'Générer le Rapport'.");
     }
   };
 
@@ -202,19 +213,21 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
 
                   {/* ACTION TRIGGER BUTTONS AREA */}
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* View Report Icon Button */}
+                    
+                    {/* LIEN DIRECT AVEC LA DERNIÈRE VERSION DU RAPPORT TECHNIQUE DE LA BASE DE DONNÉES */}
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation(); 
-                        onSelectWorkflow(activeResource, wf); 
-                      }}
-                      className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all border border-slate-100"
-                      title="Voir Rapport Technique"
+                      onClick={(e) => handleViewLastReport(e, wf)}
+                      className={`p-2 rounded-xl transition-all border ${
+                        wf.pdfUrl 
+                          ? "bg-slate-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100" 
+                          : "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed"
+                      }`}
+                      title={wf.pdfUrl ? "Ouvrir la dernière version du rapport" : "Aucun rapport généré"}
                     >
                       <FiFileText size={16} />
                     </button>
 
-                    {/* ADDED: Delete Workflow Session Button */}
+                    {/* Delete Workflow Session Button */}
                     <button 
                       onClick={(e) => handleDeleteWorkflow(e, wf.id)}
                       className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-all border border-slate-100"

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import AdminLayout from "@/components/admin/adminLayout/AdminLayout";
 import PipelineHeader from "@/components/admin/traitements/PipelineHeader";
 import WorkflowSelector from "@/components/admin/traitements/WorkflowSelector";
-import { FiArrowRight, FiArrowLeft, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { FiArrowRight, FiArrowLeft, FiXCircle } from "react-icons/fi";
 import Brainstorming from "@/components/admin/traitements/steps/Brainstorming";
 import ParetoSchema from "@/components/admin/traitements/steps/ParetoSchema";
 import CinqP from "@/components/admin/traitements/steps/CinqP";
@@ -16,18 +16,21 @@ const TraitementPage = () => {
   const [activeWorkflow, setActiveWorkflow] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  
+  // NOUVEAU : États pour synchroniser les rafraîchissements et l'obsolescence du PDF
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isDirty, setIsDirty] = useState(false);
+
   const totalSteps = 5;
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
-  // Exit pipeline back to workflow selection dashboard view
   const exitPipeline = () => {
     setActiveWorkflow(null);
     setCurrentStep(1);
   };
 
-  // Helper mapping function to safely identify string type based on wizard indices
   const getStepTypeString = (stepIndex) => {
     switch (stepIndex) {
       case 1: return "BRAINSTORMING";
@@ -38,7 +41,7 @@ const TraitementPage = () => {
     }
   };
 
-  // NEW CENTRALIZED SAVE CONTROLLER: Saves specific step data without affecting other step records
+  // Centralized save controller
   const handleSaveStepData = async (stepIndex, dataContent) => {
     const stepType = getStepTypeString(stepIndex);
     if (!activeWorkflow?.id || !stepType) return;
@@ -55,7 +58,11 @@ const TraitementPage = () => {
         })
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        // MODIFICATION : Dès qu'une étape est modifiée et sauvegardée avec succès,
+        // on marque le rapport comme "obsolète" (le bouton repassera sur "Générer")
+        setIsDirty(true);
+      } else {
         console.error(`Failed to automatically save step structure: ${stepType}`);
       }
     } catch (err) {
@@ -65,6 +72,14 @@ const TraitementPage = () => {
     }
   };
 
+  // NOUVEAU : Exécuté lorsque RapportGen a fini de générer et d'enregistrer le PDF en BDD
+  const handlePdfGenerationSuccess = () => {
+    // 1. Force instantanément WorkflowSelector à recharger sa liste via l'API (Active le bouton externe)
+    setRefreshTrigger((prev) => prev + 1);
+    // 2. Le rapport est maintenant parfaitement synchronisé avec les données
+    setIsDirty(false);
+  };
+
   const renderStep = () => {
     const props = { 
       ressourceId: selectedRessource?.id, 
@@ -72,7 +87,6 @@ const TraitementPage = () => {
       setSelectedRessource,
       activeWorkflow,
       setActiveWorkflow,
-      // Shared callback utilities passed down to track modifications seamlessly
       onSaveStep: (data) => handleSaveStepData(currentStep, data),
       isSavingStep: saving
     };
@@ -82,7 +96,15 @@ const TraitementPage = () => {
       case 2: return <ParetoSchema {...props} />;
       case 3: return <CinqP {...props} />;
       case 4: return <Ishikawa {...props} />;
-      case 5: return <RapportGen {...props} />;
+      
+      // CONFIGURATION MODIFIÉE : Transmission des props de contrôle à RapportGen
+      case 5: return (
+        <RapportGen 
+          workflowId={activeWorkflow?.id} 
+          isDirty={isDirty}
+          onGenerationComplete={handlePdfGenerationSuccess}
+        />
+      );
       default: return <Brainstorming {...props} />;
     }
   };
@@ -91,18 +113,18 @@ const TraitementPage = () => {
     <AdminLayout activePage="Traitements">
       <div className="p-8">
         {!activeWorkflow ? (
-          /* Render layout component choice dashboard first if no active workflow session is running */
           <WorkflowSelector 
+            refreshTrigger={refreshTrigger} // AJOUTÉ : Permet de recharger la liste automatiquement
             onSelectWorkflow={(resource, workflow) => {
               setSelectedRessource(resource);
               setActiveWorkflow(workflow);
+              setIsDirty(false); // Reset l'état dirty à l'ouverture d'une session
             }} 
           />
         ) : (
-          /* Render standard step tracking wizard sequence pipeline */
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             
-            {/* Contextual Header containing Resource State */}
+            {/* Contextual Header */}
             <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-100">
@@ -120,7 +142,7 @@ const TraitementPage = () => {
               
               <button 
                 onClick={exitPipeline}
-                className="flex items-center gap-2 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-slate-200/60"
+                className="flex items-center gap-2 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-slate-200/60 cursor-pointer"
               >
                 <FiXCircle size={16} /> Changer Session
               </button>
@@ -140,7 +162,7 @@ const TraitementPage = () => {
                 <button 
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all cursor-pointer ${
                     currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -152,14 +174,15 @@ const TraitementPage = () => {
                 </div>
 
                 <button 
-                  onClick={nextStep}
-                  className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-200 px-10 py-3 rounded-xl font-bold transition-all active:scale-95"
+                  onClick={currentStep === totalSteps ? undefined : nextStep}
+                  disabled={currentStep === totalSteps}
+                  className={`flex items-center gap-2 text-white shadow-xl px-10 py-3 rounded-xl font-bold transition-all active:scale-95 ${
+                    currentStep === totalSteps 
+                      ? 'bg-slate-300 shadow-none opacity-50 cursor-not-allowed' 
+                      : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 cursor-pointer'
+                  }`}
                 >
-                  {currentStep === totalSteps ? (
-                    <span className="flex items-center gap-2">Générer Rapport <FiCheckCircle size={20} /></span>
-                  ) : (
-                    <span className="flex items-center gap-2">Suivant <FiArrowRight size={20} /></span>
-                  )}
+                  <span className="flex items-center gap-2">Suivant <FiArrowRight size={20} /></span>
                 </button>
               </div>
             </div>
