@@ -4,7 +4,7 @@ import { prisma } from '../../../lib/prisma'
 import { verifyToken } from '../../../lib/jwt'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-
+//ia
 export async function POST(request) {
   try {
     const token = request.cookies.get('token')?.value
