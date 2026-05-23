@@ -67,10 +67,10 @@ const CollectePage = () => {
         </div>
 
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-c ols-1 lg:grid-cols-12 gap-8 items-start pb-20">
           
           {/* Left Side: Resource Picker */}
-          <div className="lg:col-span-4 sticky top-8">
+          <div className="lg:col-span-4">
             <ResourceSidebar 
               resources={resources} 
               selectedId={selectedResourceId} 

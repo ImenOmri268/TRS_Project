@@ -28,10 +28,14 @@ const TableRessources = ({ ressources, refresh, canModifier, canSupprimer }) => 
     }
   };
 
-  const getLatestTRSValue = (trsArray, field) => {
-    if (trsArray && trsArray.length > 0) {
-      const val = trsArray[0][field]?.valeur;
-      return val !== undefined ? `${val}%` : "0%";
+  const getDisplayValue = (ressource, category) => {
+    const latestMetric = ressource.metrics?.find(m => m.category === category);
+    if (latestMetric) return `${latestMetric.valeur}%`;
+
+    if (ressource.trs && ressource.trs.length > 0) {
+      const field = category.toLowerCase();
+      const val = ressource.trs[0][field]?.valeur;
+      if (val !== undefined && val !== 0) return `${val}%`;
     }
     return "-";
   };
@@ -68,58 +72,70 @@ const TableRessources = ({ ressources, refresh, canModifier, canSupprimer }) => 
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filteredRessources.map((ressource) => (
-              <tr className="hover:bg-slate-50/80 transition-colors group" key={ressource.id}>
-                <td className="py-5 px-6">
-                  <span className="text-sm font-bold text-slate-800 block">{ressource.nom}</span>
-                  <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">{ressource.type}</span>
-                </td>
-                <td className="py-5 px-6 text-center">
-                  {ressource.statut ? (
-                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">Actif</span>
-                  ) : (
-                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-700">Inactif</span>
-                  )}
-                </td>
-                <td className="py-5 px-6 text-center">
-                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-50 text-emerald-600 border border-emerald-100">
-                    {getLatestTRSValue(ressource.trs, 'disponibilite')}
-                  </span>
-                </td>
-                <td className="py-5 px-6 text-center">
-                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-blue-50 text-blue-600 border border-blue-100">
-                    {getLatestTRSValue(ressource.trs, 'performance')}
-                  </span>
-                </td>
-                <td className="py-5 px-6 text-center">
-                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-50 text-amber-600 border border-amber-100">
-                    {getLatestTRSValue(ressource.trs, 'qualite')}
-                  </span>
-                </td>
-                {(canModifier || canSupprimer) && (
-                  <td className="py-5 px-6 text-right space-x-2">
-                    {canModifier && (
-                      <button onClick={() => setSelectedResource(ressource)} className="p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all">
-                        <FaRegEdit size={18} />
-                      </button>
-                    )}
-                    {canSupprimer && (
-                      <button onClick={() => handleDelete(ressource.id, ressource.nom)} className="p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all">
-                        <FaRegTrashAlt size={18} />
-                      </button>
+            {filteredRessources.map((ressource) => {
+              const disp = getDisplayValue(ressource, 'DISPONIBILITE');
+              const perf = getDisplayValue(ressource, 'PERFORMANCE');
+              const qual = getDisplayValue(ressource, 'QUALITE');
+
+              return (
+                <tr className="hover:bg-slate-50/80 transition-colors group" key={ressource.id}>
+                  <td className="py-5 px-6">
+                    <span className="text-sm font-bold text-slate-800 block">{ressource.nom}</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">{ressource.type}</span>
+                  </td>
+                  <td className="py-5 px-6 text-center">
+                    {ressource.statut ? (
+                      <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700">Actif</span>
+                    ) : (
+                      <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-700">Inactif</span>
                     )}
                   </td>
-                )}
-                <td className="py-5 px-6 text-right">
-                  <button
-                    onClick={() => setSelectedDetails(ressource)}
-                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-black text-[11px] uppercase tracking-tighter transition-all"
-                  >
-                    Détails <FaArrowRightLong />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  <td className="py-5 px-6 text-center">
+                    <span className={`px-3 py-1.5 rounded-xl text-xs font-black border ${
+                      disp !== "-" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                    }`}>
+                      {disp}
+                    </span>
+                  </td>
+                  <td className="py-5 px-6 text-center">
+                    <span className={`px-3 py-1.5 rounded-xl text-xs font-black border ${
+                      perf !== "-" ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                    }`}>
+                      {perf}
+                    </span>
+                  </td>
+                  <td className="py-5 px-6 text-center">
+                    <span className={`px-3 py-1.5 rounded-xl text-xs font-black border ${
+                      qual !== "-" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                    }`}>
+                      {qual}
+                    </span>
+                  </td>
+                  {(canModifier || canSupprimer) && (
+                    <td className="py-5 px-6 text-right space-x-2">
+                      {canModifier && (
+                        <button onClick={() => setSelectedResource(ressource)} className="p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all">
+                          <FaRegEdit size={18} />
+                        </button>
+                      )}
+                      {canSupprimer && (
+                        <button onClick={() => handleDelete(ressource.id, ressource.nom)} className="p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all">
+                          <FaRegTrashAlt size={18} />
+                        </button>
+                      )}
+                    </td>
+                  )}
+                  <td className="py-5 px-6 text-right">
+                    <button
+                      onClick={() => setSelectedDetails(ressource)}
+                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-black text-[11px] uppercase tracking-tighter transition-all"
+                    >
+                      Détails <FaArrowRightLong />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

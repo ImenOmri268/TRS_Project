@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma'
 import { verifyToken } from '../../../lib/jwt'
 
-// --- GET: Fetch all goals for the logged-in admin's resources ---
 export async function GET(request) {
   try {
     const token = request.cookies.get('token')?.value;
@@ -13,7 +12,6 @@ export async function GET(request) {
     const decoded = verifyToken(token);
     const adminId = decoded.id;
 
-    // Fetch objectives linked to resources belonging to this admin
     const objectifs = await prisma.objectif.findMany({
       where: {
         ressource: {

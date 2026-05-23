@@ -5,7 +5,7 @@ import { MdClose, MdSettings, MdAnalytics, MdCheckCircle, MdMemory, MdCategory, 
 import { HiPlus } from "react-icons/hi";
 import { IoReturnUpBack } from "react-icons/io5";
 
-const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/ressources' }) => {
+const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/ressources' }) => {
   const scrollContainerRef = useRef(null);
   const errorTimeoutRef = useRef(null);
   const [error, setError] = useState("");
@@ -26,7 +26,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
   });
 
   const handleInputChange = (field, value) => {
-    if (error) setError(""); 
+    if (error) setError("");
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -40,25 +40,18 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
   const handleSubmit = async () => {
     if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
 
-    // Validation: Ensure identification and all parameter labels are filled
     const allParamsFilled = Object.values(params).flat().every(label => label.trim() !== "");
-    
+
     if (!formData.nom.trim() || !formData.type.trim() || !formData.description.trim() || !allParamsFilled) {
       setError("Champs obligatoires manquants. Veuillez vérifier l'identification et la configuration.");
-      
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
       }
-
-      errorTimeoutRef.current = setTimeout(() => {
-        setError("");
-      }, 4000);
-
+      errorTimeoutRef.current = setTimeout(() => setError(""), 4000);
       return;
     }
 
     try {
-      // Map the dynamic labels to the format expected by the POST API
       const formattedParams = [
         ...params.DISPONIBILITE.map(label => ({ label, category: "DISPONIBILITE" })),
         ...params.PERFORMANCE.map(label => ({ label, category: "PERFORMANCE" })),
@@ -68,7 +61,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           nom: formData.nom,
           type: formData.type,
           description: formData.description,
@@ -76,14 +69,13 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
           initialDisp: formData.initialDisp,
           initialPerf: formData.initialPerf,
           initialQual: formData.initialQual,
-          parameters: formattedParams 
+          parameters: formattedParams
         })
       });
 
       if (response.ok) {
-        refresh(); // Refresh the table list
-        onClose(); // Close modal
-        // Reset state
+        refresh();
+        onClose();
         setFormData({ nom: "", type: "", description: "", initialTRS: "", initialDisp: "", initialPerf: "", initialQual: "" });
         setError("");
       } else {
@@ -103,15 +95,14 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
         <>
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose}  
+            onClick={onClose}
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              
               {/* HEADER */}
               <div className="bg-white px-8 pt-6 pb-3 flex items-center justify-between border-b border-slate-100">
                 <div>
@@ -123,22 +114,16 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
                 </button>
               </div>
 
-              {/* ERROR MESSAGE */}
+              {/* ERROR */}
               <AnimatePresence>
                 {error && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     className="bg-red-50 border-b border-red-100 w-full"
                   >
-                    <motion.div
-                                    initial={{ opacity: 0, y: -8 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -8 }}
-                                    className="bg-red-50 border-b border-red-100 w-full"
-                                  />
-                    <div className=" px-8 py-3 flex items-center gap-5 text-red-600 text-sm font-semibold">
+                    <div className="px-8 py-3 flex items-center gap-5 text-red-600 text-sm font-semibold">
                       <MdErrorOutline className="text-xl shrink-0" />
                       {error}
                     </div>
@@ -147,11 +132,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
               </AnimatePresence>
 
               {/* CONTENT */}
-              <div 
-                ref={scrollContainerRef}
-                className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar"
-              >
-                {/* Identification */}
+              <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
                 <section className="space-y-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Identification *</h3>
                   <div className="grid gap-4">
@@ -161,7 +142,6 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
                   </div>
                 </section>
 
-                {/* Initial Values (Fallback) */}
                 <section className="space-y-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Valeurs Initiales (%) <span className="lowercase font-normal italic opacity-60">(Optionnel)</span></h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -172,12 +152,10 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
                   </div>
                 </section>
 
-                {/* Dynamic Configuration */}
                 <section className="pt-6 border-t border-slate-100 space-y-6">
                   <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
                     <MdEditAttributes className="text-amber-500 text-xl" /> Configuration des paramètres *
                   </h3>
-
                   {Object.keys(params).map((cat) => (
                     <div key={cat} className="space-y-3">
                       <h4 className="text-[10px] font-bold text-slate-500 uppercase ml-1">Champs {cat.toLowerCase()}</h4>
@@ -202,7 +180,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl='/api/admin/resso
                 <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors flex items-center gap-2">
                   <IoReturnUpBack size={20} /> Annuler
                 </button>
-                <button 
+                <button
                   onClick={handleSubmit}
                   className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center gap-2"
                 >

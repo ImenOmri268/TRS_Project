@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
 import {  verifyToken } from '../../../lib/jwt';
 
-// ─── GET: List Resources with Parameters and Daily Values ──────────────────
-// ─── GET: Fetch resources with the LATEST performance metrics ──────────────
 export async function GET(request) {
   try {
     const token = request.cookies.get('token')?.value;
@@ -17,7 +15,6 @@ export async function GET(request) {
         trs: { include: { disponibilite: true, performance: true, qualite: true } },
         metrics: {
           orderBy: { date: 'desc' },
-          // Removed 'take: 3' to get the full history for the table
         }
       }
     });
@@ -28,13 +25,11 @@ export async function GET(request) {
   }
 }
 
-// ─── POST: Create Resource and Initialize Parameters ────────────────────────
 export async function POST(request) {
   try {
     const token = request.cookies.get('token')?.value;
     const decoded = verifyToken(token);
     
-    // 1. Destructure the initial values from the JSON body
     const body = await request.json();
     const { 
       nom, 
@@ -47,7 +42,6 @@ export async function POST(request) {
       initialQual 
     } = body;
 
-    // 2. Now these variables are defined and can be used in the logic
     const newResource = await prisma.ressource.create({
       data: {
         nom,
@@ -61,7 +55,7 @@ export async function POST(request) {
             category: p.category
           }))
         },
-        // This line will now work because the variables are defined above
+        
         trs: (initialTRS || initialDisp || initialPerf || initialQual) ? {
           create: [{
             type: 'INITIAL',
@@ -98,6 +92,7 @@ export async function PUT(request) {
     const { id, dailyEntries, nom, type, description, statut, parameters } = body;
     const resourceId = parseInt(id);
 
+    
     // ─── CRITICAL FIX: SHARED TIMESTAMP ─────────────────────────────────────
     // This variable ensures all metrics from this "Collecte" are linked together.
     const calculationDate = new Date(); 
@@ -112,6 +107,7 @@ export async function PUT(request) {
         }))
       });
 
+      
       // 2. Dynamic Calculation
       const resourceParams = await prisma.resourceParameter.findMany({
         where: { ressourceId: resourceId }
@@ -150,6 +146,7 @@ export async function PUT(request) {
       }
     }
 
+    
     // 4. Update the field names (labels) if modified in the interface
     if (parameters && Array.isArray(parameters)) {
       for (const param of parameters) {
@@ -161,6 +158,7 @@ export async function PUT(request) {
         }
       }
     }
+    
 
     // 5. Update basic resource information
     const updateData = {};
@@ -181,7 +179,6 @@ export async function PUT(request) {
   }
 }
 
-// ─── DELETE: Remove Resource and Cascade Data ───────────────────────────────
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -189,7 +186,6 @@ export async function DELETE(request) {
 
     if (!id) return NextResponse.json({ message: 'ID manquant' }, { status: 400 });
 
-    // onDelete: Cascade in the schema will handle cleaning up Parameters, DailyValues, and TRS
     await prisma.ressource.delete({
       where: { id: parseInt(id) }
     });
