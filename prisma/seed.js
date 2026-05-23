@@ -35,16 +35,18 @@ async function main() {
   console.log('🧹 Database cleaned.');
 
   // 2. CREATE PERMISSIONS
-  const permissionNames = [
-    'Dashboard',
-    'les objectifs',
-    'gestion des utilisateurs',
-    'gestion des ressources',
-    'suivi de trs',
-    'traitements',
-    'Plan d actions',
-    'Controle',
-  ];
+const permissionNames = [
+  'voir_dashboard',
+  'voir_utilisateurs', 'ajouter_utilisateur', 'modifier_utilisateur', 'supprimer_utilisateur',
+  'voir_ressources', 'ajouter_ressource', 'modifier_ressource', 'supprimer_ressource',
+  'voir_objectifs', 'ajouter_objectif', 'modifier_objectif', 'supprimer_objectif',
+  'faire_collecte', 'calculer_trs',
+  'lancer_amelioration', 'ajouter_categorie', 'ajouter_probleme', 'modifier_probleme', 'supprimer_probleme',
+  'voir_pareto', 'cinq_pourquoi', 'ishikawa',
+  'voir_rapport', 'exporter_pdf',
+  'voir_plan_action', 'ajouter_action', 'modifier_action', 'supprimer_action',
+  'accomplir_action', 'suivre_plan_action'
+];
 
   const permissions = [];
   for (const name of permissionNames) {
