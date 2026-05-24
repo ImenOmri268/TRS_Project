@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "../../../lib/prisma";
 import {verifyToken} from "../../../lib/jwt";
 
 export async function GET(request) {

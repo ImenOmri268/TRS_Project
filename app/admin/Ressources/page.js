@@ -52,14 +52,7 @@ export default function Page() {
           </div>
           
           <div className="flex items-center gap-3">
-             {/* Refresh Button */}
-             <button 
-              onClick={fetchRessources}
-              className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
-              title="Actualiser"
-            >
-              <MdRefresh className={`text-xl ${loading ? 'animate-spin' : ''}`} />
-            </button>
+             
             
             {/* Add Action - Passing refresh to trigger re-fetch after creation */}
             <AddRessourceAction refresh={fetchRessources} /> 

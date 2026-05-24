@@ -29,9 +29,8 @@ const nouvelles_permissions = [
   'modifier_probleme',
   'supprimer_probleme',
   
-  'voir_pareto',
-  'cinq_pourquoi',
-  'ishikawa',
+  'voir_traitements',
+  'acceder_traitements',
   
   'voir_rapport',
   'exporter_pdf',

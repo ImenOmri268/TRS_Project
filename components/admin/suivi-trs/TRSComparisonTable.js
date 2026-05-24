@@ -57,7 +57,7 @@ const TRSComparisonTable = ({ machines, loading }) => {
                       </span>
                     </td>
                     <td className="py-4 px-6 text-center text-sm text-slate-900 font-medium">
-                      {targetValue > 0 ? `${targetValue}%` : "Non défini"}
+                      {targetValue > 0 ? `${targetValue}%` : "—"}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${

@@ -59,9 +59,9 @@ export const PERMISSIONS_CONFIG = [
    {
     categorie: "Analyses",
     permissions: [
-      { key: "voir_pareto",       label: "Voir le diagramme Pareto (généré auto)" },
-      { key: "cinq_pourquoi",     label: "Répondre aux 5 Pourquoi" },
-      { key: "ishikawa",          label: "Remplir le diagramme Ishikawa" },
+      { key: "voir_traitements",       label: "Voir les traitements" },
+      { key: "acceder_traitements",   label: "Accéder aux traitements d'analyse" },
+
     ]
   },
 
