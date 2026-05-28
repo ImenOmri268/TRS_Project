@@ -1,6 +1,5 @@
 import React from "react";
 import { HiOutlineArrowTrendingUp } from "react-icons/hi2";
-import { FiEdit3 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 
 const UserTRSComparisonTable = ({ machines, loading }) => {

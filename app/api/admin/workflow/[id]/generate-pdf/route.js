@@ -144,9 +144,9 @@ export async function POST(req, { params }) {
             <div class="bg-blue-50/40 p-3.5 rounded-xl border border-blue-100 flex flex-col justify-center text-center">
               <span class="text-[9px] font-extrabold uppercase tracking-wider text-blue-500 block mb-0.5">Performance Globale</span>
               <span class="text-[11px] font-medium text-slate-600">
-                Valeur TRS Initial
+                Valeur TRS Final
                 <span class="text-xl font-black text-blue-600 block mt-0.5 font-mono">
-                  ${workflow.ressource?.initialTRS !== null && workflow.ressource?.initialTRS !== undefined ? `${workflow.ressource.initialTRS}%` : '0%'}
+                  ${workflow.ressource?.finalTRS !== null && workflow.ressource?.finalTRS !== undefined ? `${workflow.ressource.finalTRS}%` : '0%'}
                 </span>
               </span>
             </div>
@@ -157,7 +157,7 @@ export async function POST(req, { params }) {
               <span class="w-1 h-1 bg-emerald-500 rounded-full"></span>
               Généré le: ${new Date().toLocaleDateString('fr-FR')}
             </div>
-            <div>Plateforme Optimisée TRS Pro</div>
+            <div>Application Optimisée TRS Pro</div>
           </div>
         </div>
 

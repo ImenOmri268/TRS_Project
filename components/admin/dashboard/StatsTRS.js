@@ -1,5 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { GoAlertFill } from 'react-icons/go'
+import { HiUsers } from 'react-icons/hi'
+import { IoSettingsOutline, IoStatsChartSharp } from 'react-icons/io5'
 
 const StatsTRS = () => {
   const [stats, setStats] = useState(null)
@@ -30,7 +33,7 @@ const StatsTRS = () => {
       couleur: 'text-blue-600',
       bg: 'bg-blue-50',
       bordure: 'border-blue-100',
-      icone: '📊'
+      icone:<IoStatsChartSharp className="text-blue-600" />
     },
     {
       titre: 'Machines',
@@ -38,7 +41,7 @@ const StatsTRS = () => {
       couleur: 'text-green-600',
       bg: 'bg-green-50',
       bordure: 'border-green-100',
-      icone: '⚙️'
+      icone: <IoSettingsOutline className="text-green-600" />
     },
     {
       titre: 'Utilisateurs',
@@ -46,7 +49,7 @@ const StatsTRS = () => {
       couleur: 'text-purple-600',
       bg: 'bg-purple-50',
       bordure: 'border-purple-100',
-      icone: '👥'
+      icone: <HiUsers className="text-purple-600" />
     },
     {
       titre: 'Actions en retard',
@@ -54,7 +57,7 @@ const StatsTRS = () => {
       couleur: 'text-red-600',
       bg: 'bg-red-50',
       bordure: 'border-red-100',
-      icone: '⚠️'
+      icone: <GoAlertFill className="text-red-600" />
     },
   ]
 

@@ -1,9 +1,8 @@
 'use client'
-import AdminLayout from "@/components/admin/adminLayout/AdminLayout";
 import UserLayout from "@/components/user/userLayout/UserLayout";
 import TableUtilisateur from "@/components/user/utilisateurs/TableUtilisateur";
 import AjoutButton from "@/components/admin/adminLayout/AjoutButton";
-import AjoutUserForm from "@/components/admin/utilisateurs/AjoutUserForm";
+import AjoutUserForm from "@/components/user/utilisateurs/AjoutUserForm";
 import { MdOutlinePeopleAlt } from "react-icons/md";
 import { useState, useEffect } from "react";
 import { usePermissions } from "@/app/lib/hooks/usePermissions";

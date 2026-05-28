@@ -41,53 +41,33 @@ export const PERMISSIONS_CONFIG = [
     categorie: "Collecte TRS",
     permissions: [
       { key: "faire_collecte",  label: "Saisir les données TRS" },
-      { key: "calculer_trs",    label: "Calculer le TRS" },
+
     ]
   },
 
- {
-    categorie: "Identification des problèmes",
+  {
+    categorie: "Suivi TRS",
     permissions: [
-      { key: "lancer_amelioration",      label: "Lancer un processus d'amélioration" },
-      { key: "ajouter_categorie",        label: "Ajouter une catégorie de problème" },
-      { key: "ajouter_probleme",         label: "Ajouter un problème" },
-      { key: "modifier_probleme",        label: "Modifier un problème" },
-      { key: "supprimer_probleme",       label: "Supprimer un problème" },
+      { key: "suivre_trs",  label: "Suivre les indicateurs TRS" },
     ]
   },
 
-   {
+  {
     categorie: "Analyses",
     permissions: [
-      { key: "voir_traitements",       label: "Voir les traitements" },
-      { key: "acceder_traitements",   label: "Accéder aux traitements d'analyse" },
+      { key: "consulter_traitement",       label: "Voir les traitements" },
+      { key: "generer_traitements",   label: "Générer les traitements" },
 
     ]
   },
 
-   {
-    categorie: "Rapports",
-    permissions: [
-      { key: "voir_rapport",   label: "Voir le rapport d'analyse" },
-      { key: "exporter_pdf",   label: "Télécharger le rapport en PDF" },
-    ]
-  },
 
     {
     categorie: "Plan d'actions (IA)",
     permissions: [
       { key: "voir_plan_action",     label: "Voir le plan d'action proposé par l'IA" },
-      { key: "ajouter_action",       label: "Ajouter une action au plan" },
-      { key: "modifier_action",      label: "Modifier une action" },
-      { key: "supprimer_action",     label: "Supprimer une action" },
     ]
   },
 
-    {
-    categorie: "Suivi des actions",
-    permissions: [
-      { key: "accomplir_action",   label: "Changer l'état d'une action" },
-      { key: "suivre_plan_action", label: "Suivre l'avancement global du plan" },
-    ]
-  },
+ 
 ]

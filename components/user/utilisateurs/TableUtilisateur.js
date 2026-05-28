@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { CiSearch } from "react-icons/ci";
 import { FaRegTrashAlt, FaRegEdit } from "react-icons/fa";
 import { FaArrowRightLong } from "react-icons/fa6";
-import AjoutUserForm from "@/components/admin/utilisateurs/AjoutUserForm";
-import DetailsUtilisateur from "@/components/admin/utilisateurs/DetailsUtilisateur";
+import AjoutUserForm from "@/components/user/utilisateurs/AjoutUserForm";
+import DetailsUtilisateur from "@/components/user/utilisateurs/DetailsUtilisateur";
 
 const TableUtilisateur = ({ utilisateurs, refresh, canModifier, canSupprimer }) => {
   const [selectedUserForEdit, setSelectedUserForEdit] = useState(null);

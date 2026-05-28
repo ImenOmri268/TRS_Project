@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from "react";
 import UserLayout from "@/components/user/userLayout/UserLayout";
 import { MdSettingsInputComponent } from "react-icons/md";
-import ResourceSidebar from "@/components/admin/collecte/ResourceSidebar ";
-import CollectForm from "@/components/admin/collecte/CollectForm";
+import UserResourceSidebar from "@/components/user/collect/UserResourceSidebar";
+import UserCollectForm from "@/components/user/collect/UserCollectForm";
+
 
 const CollectePage = () => {
   const [resources, setResources] = useState([]);
@@ -52,7 +53,7 @@ const CollectePage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-20">
           <div className="lg:col-span-4">
-            <ResourceSidebar
+            <UserResourceSidebar
               resources={resources}
               selectedId={selectedResourceId}
               onSelect={setSelectedResourceId}
@@ -60,7 +61,7 @@ const CollectePage = () => {
             />
           </div>
           <div className="lg:col-span-8">
-            <CollectForm
+            <UserCollectForm
               resource={selectedResource}
               onSuccess={fetchResources}
               apiUrl="/api/user/ressources"

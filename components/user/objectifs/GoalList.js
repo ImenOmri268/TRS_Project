@@ -16,7 +16,7 @@ const GoalList = ({ goals, onGoalClick, onEditClick, onDeleteClick, canModifier,
             <span className="px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter bg-blue-50 text-blue-600">
               {goal.ressource?.nom || "Indéfini"}
             </span>
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-2 ">
               {canModifier && (
                 <button 
                   onClick={(e) => { e.stopPropagation(); onEditClick(goal); }}

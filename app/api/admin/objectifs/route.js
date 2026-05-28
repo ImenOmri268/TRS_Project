@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma'
-import { verifyToken } from '../../../lib/jwt'
+import { prisma } from '../../../lib/prisma';
+import { verifyToken } from '../../../lib/jwt';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
@@ -10,7 +12,7 @@ export async function GET(request) {
     }
 
     const decoded = verifyToken(token);
-    const adminId = decoded.id;
+    const adminId = decoded.id; // An admin's ID matches the resource's adminId perfectly
 
     const objectifs = await prisma.objectif.findMany({
       where: {
@@ -24,13 +26,13 @@ export async function GET(request) {
         },
       },
       orderBy: {
-        dateDebut: 'desc',
+        dateDebut: 'desc', // Ordered using your schema configuration
       },
     });
 
     return NextResponse.json(objectifs);
   } catch (error) {
-    console.error('[OBJECTIFS_GET_ERROR]', error);
+    console.error('[ADMIN_OBJECTIFS_GET_ERROR]', error);
     return NextResponse.json({ message: 'Erreur serveur' }, { status: 500 });
   }
 }

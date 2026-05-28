@@ -110,7 +110,7 @@ const DetailsRessource = ({ resourceData, setSelectedDetails }) => {
                           <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Dispo.</th>
                           <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Perf.</th>
                           <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Qualité</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-right">TRS Global</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-right">TRS </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">

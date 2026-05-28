@@ -4,6 +4,12 @@ const prisma = new PrismaClient()
 const nouvelles_permissions = [
   
   'voir_dashboard',
+
+
+  'voir_objectifs',
+  'ajouter_objectif',
+  'modifier_objectif',
+  'supprimer_objectif',
   
   'voir_utilisateurs',
   'ajouter_utilisateur',
@@ -15,33 +21,19 @@ const nouvelles_permissions = [
   'modifier_ressource',
   'supprimer_ressource',
   
-  'voir_objectifs',
-  'ajouter_objectif',
-  'modifier_objectif',
-  'supprimer_objectif',
   
+  'suivre_trs', 
+  
+
   'faire_collecte',
-  'calculer_trs',
+
   
-  'lancer_amelioration',
-  'ajouter_categorie',
-  'ajouter_probleme',
-  'modifier_probleme',
-  'supprimer_probleme',
+  'consulter_traitement',
+  'generer_traitements',
   
-  'voir_traitements',
-  'acceder_traitements',
-  
-  'voir_rapport',
-  'exporter_pdf',
-  
+
   'voir_plan_action',
-  'ajouter_action',
-  'modifier_action',
-  'supprimer_action',
-  
-  'accomplir_action',
-  'suivre_plan_action',
+
 ]
 
 async function main() {

@@ -1,5 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { GoAlertFill } from 'react-icons/go'
+import { HiUsers } from 'react-icons/hi'
+import { IoSettingsOutline, IoStatsChartSharp } from 'react-icons/io5'
 
 const StatsTRS = () => {
   const [stats, setStats] = useState(null)
@@ -25,37 +28,37 @@ const StatsTRS = () => {
 
   const cards = [
     {
-      titre: 'TRS Moyen',
-      valeur: `${stats?.trsMoyen ?? 0}%`,
-      couleur: 'text-blue-600',
-      bg: 'bg-blue-50',
-      bordure: 'border-blue-100',
-      icone: '📊'
-    },
-    {
-      titre: 'Machines',
-      valeur: stats?.nbMachines ?? 0,
-      couleur: 'text-green-600',
-      bg: 'bg-green-50',
-      bordure: 'border-green-100',
-      icone: '⚙️'
-    },
-    {
-      titre: 'Utilisateurs',
-      valeur: stats?.nbUsers ?? 0,
-      couleur: 'text-purple-600',
-      bg: 'bg-purple-50',
-      bordure: 'border-purple-100',
-      icone: '👥'
-    },
-    {
-      titre: 'Actions en retard',
-      valeur: stats?.actionsEnRetard ?? 0,
-      couleur: 'text-red-600',
-      bg: 'bg-red-50',
-      bordure: 'border-red-100',
-      icone: '⚠️'
-    },
+          titre: 'TRS Moyen',
+          valeur: `${stats?.trsMoyen ?? 0}%`,
+          couleur: 'text-blue-600',
+          bg: 'bg-blue-50',
+          bordure: 'border-blue-100',
+          icone:<IoStatsChartSharp  className="text-blue-600" />
+        },
+        {
+          titre: 'Machines',
+          valeur: stats?.nbMachines ?? 0,
+          couleur: 'text-green-600',
+          bg: 'bg-green-50',
+          bordure: 'border-green-100',
+          icone: <IoSettingsOutline className="text-green-600" />
+        },
+        {
+          titre: 'Utilisateurs',
+          valeur: stats?.nbUsers ?? 0,
+          couleur: 'text-purple-600',
+          bg: 'bg-purple-50',
+          bordure: 'border-purple-100',
+          icone: <HiUsers className="text-purple-600" />
+        },
+        {
+          titre: 'Actions en retard',
+          valeur: stats?.actionsEnRetard ?? 0,
+          couleur: 'text-red-600',
+          bg: 'bg-red-50',
+          bordure: 'border-red-100',
+          icone: <GoAlertFill className="text-red-600" />
+        },
   ]
 
   return (

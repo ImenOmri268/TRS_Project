@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from "react";
 import UserLayout from "@/components/user/userLayout/UserLayout";
 import GoalList from "@/components/user/objectifs/GoalList";
-import GoalDetails from "@/components/admin/objectifs/GoalDetails";
-import GoalEdit from "@/components/admin/objectifs/GoalEdit";
-import AjoutGoalForm from "@/components/admin/objectifs/AjoutGoalForm";
+import GoalDetails from "@/components/user/objectifs/GoalDetails";
+import GoalEdit from "@/components/user/objectifs/GoalEdit";
+import AjoutGoalForm from "@/components/user/objectifs/AjoutGoalForm";
 import AjoutButton from "@/components/admin/adminLayout/AjoutButton";
 import { MdOutlineTrackChanges } from "react-icons/md";
 import { usePermissions } from "@/app/lib/hooks/usePermissions";
@@ -17,10 +17,16 @@ const GoalsPage = () => {
   const [editingGoal, setEditingGoal] = useState(null);
   const { can } = usePermissions();
 
-  const fetchGoals = async () => {
+const fetchGoals = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/user/objectifs');
+      // Added header rule to explicitly ensure fresh database retrieval without caching
+      const res = await fetch('/api/user/objectifs', {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       const data = await res.json();
       setGoals(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -37,7 +43,7 @@ const GoalsPage = () => {
   const handleDelete = async (id) => {
     if (window.confirm(`Voulez-vous vraiment supprimer cet objectif ?`)) {
       try {
-        const res = await fetch(`/api/admin/objectifs?id=${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/user/objectifs?id=${id}`, { method: 'DELETE' });
         if (res.ok) fetchGoals();
       } catch (error) {
         console.error("Delete error:", error);

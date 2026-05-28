@@ -30,6 +30,7 @@ enum TypeNotification {
   REUNION
   RETARD
   ACTION
+  SYSTEM_AUDIT 
 }
 
 enum TRSType {
@@ -148,11 +149,15 @@ model Notification {
   id      Int              @id @default(autoincrement())
   message String
   date    DateTime         @default(now())
-  type    TypeNotification
+  type    TypeNotification @default(SYSTEM_AUDIT)
   lu      Boolean          @default(false)
 
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
+  // L'utilisateur qui reçoit/cible la notification (ici l'admin)
+  userId  Int
+  user    User             @relation(fields: [userId], references: [id])
+
+  // OPTIONNEL : Nom ou ID de l'utilisateur ayant fait l'action pour faciliter le rendu front
+  createdBy String?        // Ex: "Malek Najjar"
 }
 
 //EMAIL

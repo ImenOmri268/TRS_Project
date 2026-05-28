@@ -37,14 +37,17 @@ async function main() {
   // 2. CREATE PERMISSIONS
 const permissionNames = [
   'voir_dashboard',
+  'voir_objectifs', 'ajouter_objectif', 'modifier_objectif', 'supprimer_objectif',
   'voir_utilisateurs', 'ajouter_utilisateur', 'modifier_utilisateur', 'supprimer_utilisateur',
   'voir_ressources', 'ajouter_ressource', 'modifier_ressource', 'supprimer_ressource',
-  'voir_objectifs', 'ajouter_objectif', 'modifier_objectif', 'supprimer_objectif',
-  'faire_collecte', 'calculer_trs',
-  'lancer_amelioration', 'ajouter_categorie', 'ajouter_probleme', 'modifier_probleme', 'supprimer_probleme',
-  'voir_traitements', 'acceder_traitements',
-  'voir_plan_action', 'ajouter_action', 'modifier_action', 'supprimer_action',
-  'accomplir_action', 'suivre_plan_action'
+  'faire_collecte',
+
+  'consulter_traitements', 'generer_traitements',
+  'voir_plan_action',
+  'suivre_trs'
+  
+
+  
 ];
 
   const permissions = [];

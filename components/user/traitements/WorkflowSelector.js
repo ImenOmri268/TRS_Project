@@ -38,7 +38,8 @@ const WorkflowSelector = ({ onSelectWorkflow, refreshTrigger=0 }) => {
       if (!activeResource?.id) return;
       setLoadingWorkflows(true);
       try {
-        const res = await fetch(`/api/user/workflow?ressourceId=${activeResource.id}`);
+        // ADAPTATION : Point d'accès unifié vers le pipeline
+        const res = await fetch(`/api/user/workflow/pipeline?ressourceId=${activeResource.id}`);
         const data = await res.json();
         setWorkflows(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -57,7 +58,8 @@ const WorkflowSelector = ({ onSelectWorkflow, refreshTrigger=0 }) => {
 
     setCreating(true);
     try {
-      const res = await fetch("/api/user/workflow", {
+      // ADAPTATION : Point d'accès unifié vers le pipeline en POST
+      const res = await fetch("/api/user/workflow/pipeline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -89,7 +91,8 @@ const WorkflowSelector = ({ onSelectWorkflow, refreshTrigger=0 }) => {
     }
 
     try {
-      const res = await fetch(`/api/user/workflow?workflowId=${workflowId}`, {
+      // ADAPTATION : Point d'accès unifié et paramètre d'URL "workflowId"
+      const res = await fetch(`/api/user/workflow/pipeline?workflowId=${workflowId}`, {
         method: "DELETE"
       });
 
@@ -205,7 +208,8 @@ const WorkflowSelector = ({ onSelectWorkflow, refreshTrigger=0 }) => {
                         {wf.nom}
                       </h4>
                       <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
-                        Lancé le : {new Date(wf.createdAt || Date.now()).toLocaleDateString('fr-FR')}
+                        {/* ADAPTATION : Utilisation de la propriété de date renvoyée par le schéma Prisma (dateDebut) */}
+                        Lancé le : {new Date(wf.dateDebut || Date.now()).toLocaleDateString('fr-FR')}
                       </p>
                     </div>
                   </div>

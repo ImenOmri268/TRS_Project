@@ -60,7 +60,7 @@ const GoalEdit = ({ editingGoal, onClose, refresh }) => {
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
             onClick={onClose} 
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[70]" 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm h-full z-[70]" 
           />
 
           {/* Sidebar */}

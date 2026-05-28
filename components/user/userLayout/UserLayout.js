@@ -7,22 +7,23 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { GoGoal } from "react-icons/go"
 import { IoIosGitCompare } from "react-icons/io"
 import { MdSettingsInputComponent } from "react-icons/md"
-import { HiOutlineDocumentReport } from "react-icons/hi"
 import SignOut from "@/components/authentification/SignOut"
 import NotifButton from '../../notification/NotifButton'
 import NotifBar from '../../notification/NotifBar'
-import MenuButton from '../../../components/admin/adminLayout/MenuButton'
+import MenuButton from '../../../components/admin/adminLayout/MenuButton' 
 
 const MENU_ITEMS = [
-  { label: 'Dashboard',      href: '/user/Dashboard',   permission: 'voir_dashboard',      icon: '/dashboard.svg' },
-  { label: 'Utilisateurs', href: '/user/Utilisateurs', permission: 'voir_utilisateurs', icon: '/utilisateur.svg' },
-  { label: 'Collecte TRS',   href: '/user/CollecteTRS', permission: 'faire_collecte',      icon: <MdSettingsInputComponent className="w-5 h-5" /> },
-  { label: 'Traitements',    href: '/user/Traitements', permission: 'lancer_amelioration', icon: '/pipeline.svg' },
-  { label: "Plan d'actions", href: '/user/PlanAction',  permission: 'voir_plan_action',    icon: '/plan.svg' },
-  { label: 'Objectifs',      href: '/user/Objectifs',   permission: 'voir_objectifs',      icon: <GoGoal className="w-5 h-5" /> },
-  { label: 'Ressources',     href: '/user/Ressources',  permission: 'voir_ressources',     icon: '/machine.svg' },
-  { label: 'Suivi TRS',      href: '/user/SuiviTRS',    permission: 'voir_dashboard',      icon: <IoIosGitCompare className="w-5 h-5" /> },
-  { label: 'Rapports',       href: '/user/Rapports',    permission: 'voir_rapport',        icon: <HiOutlineDocumentReport className="w-5 h-5" /> },
+  { label: 'Dashboard',      href: '/user/Dashboard',     permission: 'voir_dashboard',      icon: '/dashboard.svg' },
+  { label: 'Objectifs',      href: '/user/Objectifs',     permission: ['voir_objectifs', 'ajouter_objectif', 'modifier_objectif', 'supprimer_objectif'],      icon: <GoGoal className="w-5 h-5" /> },
+  { label: 'Utilisateurs',   href: '/user/Utilisateurs',  permission: ['voir_utilisateurs', 'ajouter_utilisateur', 'modifier_utilisateur', 'supprimer_utilisateur'], icon: '/utilisateur.svg' },
+  { label: 'Ressources',     href: '/user/Ressources',    permission: ['voir_ressources', 'ajouter_ressource', 'modifier_ressource', 'supprimer_ressource'],    icon: '/machine.svg' },
+  { label: 'Collecte de données',   href: '/user/CollecteTRS', permission: 'faire_collecte',       icon: <MdSettingsInputComponent className="w-5 h-5" /> },
+  { label: 'Suivi TRS',      href: '/user/SuiviTRS',    permission: 'suivre_trs',      icon: <IoIosGitCompare className="w-5 h-5" /> },
+  { label: 'traitements',    href: '/user/Traitements', permission: ['consulter_traitements', 'generer_traitements'], icon: '/pipeline.svg' },
+  { label: "Mes actions", href: '/user/PlanAction',  permission: 'voir_plan_action',    icon: '/plan.svg' },
+  
+  
+ 
 ]
 
 export default function UserLayout({ children, activePage }) {
@@ -39,9 +40,15 @@ export default function UserLayout({ children, activePage }) {
       .catch(() => setLoading(false))
   }, [])
 
-  const menuVisible = MENU_ITEMS.filter(item =>
-    profil?.permissions?.includes(item.permission)
-  )
+  const menuVisible = MENU_ITEMS.filter(item => {
+    if (Array.isArray(item.permission)) {
+      // L'utilisateur doit avoir au moins une des permissions listées
+      return item.permission.some(perm => profil?.permissions?.includes(perm))
+    } else {
+      // Permission unique sous forme de chaîne
+      return profil?.permissions?.includes(item.permission)
+    }
+  })
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center">

@@ -5,14 +5,14 @@ const publicRoutes = ['/', '/SignUp', '/resetPassword', '/EmailSend']
 
 const userPagePermissions = {
   '/user/Dashboard'    : 'voir_dashboard',
-  '/user/Objectifs'    : 'voir_objectifs',
-  '/user/Ressources'   : 'voir_ressources',
-  '/user/Utilisateurs' : 'voir_utilisateurs',
+  '/user/Objectifs'    : ['voir_objectifs', 'ajouter_objectif', 'modifier_objectif', 'supprimer_objectif'],
+  '/user/Ressources'   : ['voir_ressources', 'ajouter_ressource', 'modifier_ressource', 'supprimer_ressource'],
+  '/user/Utilisateurs' : ['voir_utilisateurs', 'ajouter_utilisateur', 'modifier_utilisateur', 'supprimer_utilisateur'],
   '/user/CollecteTRS'  : 'faire_collecte',
-  '/user/Traitements'  : 'lancer_amelioration',
+  '/user/SuiviTRS'     : 'suivre_trs',
+  '/user/Traitements'  : ['consulter_traitements', 'generer_traitements'],
   '/user/PlanAction'   : 'voir_plan_action',
-  '/user/SuiviTRS'     : 'voir_dashboard',
-  '/user/Rapports'     : 'voir_rapport',
+
 }
 
 export async function middleware(request) {
@@ -74,7 +74,9 @@ export async function middleware(request) {
             return NextResponse.redirect(new URL('/user/Dashboard', request.url))
           }
           const profil = await profilRes.json()
-          const hasPermission = profil.permissions?.includes(permissionRequise)
+          const hasPermission = Array.isArray(permissionRequise)
+            ? permissionRequise.some((perm) => profil.permissions?.includes(perm))
+            : profil.permissions?.includes(permissionRequise)
           if (!hasPermission) {
             return NextResponse.redirect(new URL('/user/Dashboard', request.url))
           }

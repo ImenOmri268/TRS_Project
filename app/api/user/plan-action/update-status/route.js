@@ -28,6 +28,15 @@ export async function PUT(request) {
       data: { statut }
     });
 
+    await prisma.notification.create({
+      data: {
+        message: `A créé une nouvelle ressource: ${nomRessource}`,
+        type: "SYSTEM_AUDIT",
+        userId: user.adminId, // L'ID de l'admin rattaché à cet utilisateur
+        createdBy: user.name, // Le nom de l'utilisateur courant
+      }
+    });
+
     return NextResponse.json({ 
       message: 'Statut mis à jour avec succès', 
       action: actionMiseAJour 

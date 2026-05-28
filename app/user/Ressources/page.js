@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import UserLayout from "@/components/user/userLayout/UserLayout";
 import TableRessources from "@/components/user/ressources/TableRessources";
-import AjoutRessourceForm from "@/components/admin/ressources/AjoutRessourceForm";
+import AjoutRessourceForm from "@/components/user/ressources/AjoutRessourceForm";
 import AjoutButton from "@/components/admin/adminLayout/AjoutButton";
 import { HiOutlineCpuChip } from "react-icons/hi2";
 import { usePermissions } from "@/app/lib/hooks/usePermissions";

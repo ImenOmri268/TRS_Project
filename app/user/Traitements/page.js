@@ -3,14 +3,14 @@ import React, { useState, useEffect } from "react";
 import UserLayout from "@/components/user/userLayout/UserLayout";
 import TableTraitements from "@/components/user/traitements/TableTraitements";
 
-// Composants du pipeline importés pour la vue interactive (acceder_traitements)
+// Composants du pipeline importés pour la vue interactive (generer_traitements)
 import PipelineHeader from "@/components/admin/traitements/PipelineHeader";
 import WorkflowSelector from "@/components/user/traitements/WorkflowSelector";
-import Brainstorming from "@/components/admin/traitements/steps/Brainstorming";
-import ParetoSchema from "@/components/admin/traitements/steps/ParetoSchema";
-import CinqP from "@/components/admin/traitements/steps/CinqP";
-import Ishikawa from "@/components/admin/traitements/steps/Ishikawa";
-import RapportGen from "@/components/admin/traitements/steps/RapportGen";
+import Brainstorming from "@/components/user/traitements/userSteps/Brainstorming";
+import ParetoSchema from "@/components/user/traitements/userSteps/ParetoSchema";
+import CinqP from "@/components/user/traitements/userSteps/CinqP";
+import Ishikawa from "@/components/user/traitements/userSteps/Ishikawa";
+import RapportGen from "@/components/user/traitements/userSteps/RapportGen";
 
 import { usePermissions } from "@/app/lib/hooks/usePermissions";
 import { FiLock, FiLayers, FiRefreshCw, FiArrowRight, FiArrowLeft, FiXCircle } from "react-icons/fi";
@@ -49,19 +49,13 @@ export default function TraitementsPage() {
     }
   };
 
-  // Chargement de l'historique global en lecture seule pour 'voir_traitements'
+  // Chargement de l'historique global en lecture seule pour 'consulter_traitements'
   const fetchTraitementsReadOnly = async () => {
     setLoading(true);
     try {
-      // On construit l'URL de manière sécurisée
-      const url = selectedRessource?.id 
-        ? `/api/user/workflow/view?ressourceId=${selectedRessource.id}`
-        : `/api/user/workflow/view`;
-
-      const res = await fetch(url);
+      const res = await fetch(`/api/user/workflow/list`);
       if (res.ok) {
         const data = await res.json();
-        // On cible précisément la clé .workflows configurée dans l'API
         setWorkflows(data.workflows || []);
       }
     } catch (err) {
@@ -73,46 +67,45 @@ export default function TraitementsPage() {
   };
 
   useEffect(() => {
-    if (!permissionsLoading && can('voir_traitements') && !can('acceder_traitements')) {
+    if (!permissionsLoading && can('consulter_traitements')) {
       fetchTraitementsReadOnly();
+    } else if (!permissionsLoading) {
+      setLoading(false);
     }
-  }, [permissionsLoading, refreshTrigger, selectedRessource]);
+  }, [permissionsLoading]);
 
   const handleOuvrirTraitementTableau = async (workflow) => {
     if (!workflow) return;
     
-    // Si l'URL du PDF existe déjà, on l'ouvre directement
     if (workflow.pdfUrl) {
       window.open(workflow.pdfUrl, "_blank");
       return;
     }
 
-    // Sinon, on tente de charger dynamiquement les détails et les analyses via l'API "View"
     try {
-      const res = await fetch(`/api/user/workflow/view?workflowId=${workflow.id}`);
+      const res = await fetch(`/api/user/workflow/list?workflowId=${workflow.id}`);
       if (res.ok) {
         const fullDetails = await res.json();
         if (fullDetails.pdfUrl) {
           window.open(fullDetails.pdfUrl, "_blank");
         } else {
-          alert("Aucun rapport PDF n'a été compilé pour cette session. Les étapes enregistrées en base de données restent consultables par un agent autorisé.");
+          alert("Aucun rapport PDF n'a été compilé pour cette session. Les étapes enregistrées en base de données restent consultables.");
         }
       } else {
-        alert("Impossible de charger les détails de ce traitement (Erreur 404/500).");
+        alert("Impossible de charger les détails de ce traitement.");
       }
     } catch (err) {
       console.error("Erreur lors de la récupération des détails du workflow:", err);
     }
   };
 
-  // Sauvegarde interactive des étapes (Uniquement pour 'acceder_traitements')
   const handleSaveStepData = async (stepIndex, dataContent) => {
     const stepType = getStepTypeString(stepIndex);
     if (!activeWorkflow?.id || !stepType) return;
 
     setSaving(true);
     try {
-      const response = await fetch("/api/user/workflow", {
+      const response = await fetch("/api/user/workflow/pipeline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,8 +117,6 @@ export default function TraitementsPage() {
 
       if (response.ok) {
         setIsDirty(true);
-      } else {
-        console.error(`Failed to automatically save step structure: ${stepType}`);
       }
     } catch (err) {
       console.error("Communication error saving step sequence structural block:", err);
@@ -137,6 +128,7 @@ export default function TraitementsPage() {
   const handlePdfGenerationSuccess = () => {
     setRefreshTrigger((prev) => prev + 1);
     setIsDirty(false);
+    fetchTraitementsReadOnly();
   };
 
   const renderStep = () => {
@@ -174,7 +166,7 @@ export default function TraitementsPage() {
     );
   }
 
-  if (!can('voir_traitements') && !can('acceder_traitements')) {
+  if (!can('consulter_traitements') && !can('generer_traitements')) {
     return (
       <UserLayout activePage="Sécurité">
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center bg-white rounded-[2.5rem] border border-slate-200 shadow-sm max-w-2xl mx-auto mt-12">
@@ -183,7 +175,7 @@ export default function TraitementsPage() {
           </div>
           <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Accès Privilégié</h2>
           <p className="text-sm text-slate-500 mt-2 max-w-md">
-            Habilitation insuffisante. Vous devez posséder le droit d&apos;inspection ou de modification des analyses industrielles pour accéder aux Traitements.
+            Habilitation insuffisante. Vous devez posséder le droit d&apos;inspection ou de modification des analyses pour accéder à cet espace.
           </p>
         </div>
       </UserLayout>
@@ -192,7 +184,7 @@ export default function TraitementsPage() {
 
   return (
     <UserLayout activePage="Traitements">
-      {can('acceder_traitements') ? (
+      {can('generer_traitements') ? (
         <div className="p-2">
           {!activeWorkflow ? (
             <WorkflowSelector 

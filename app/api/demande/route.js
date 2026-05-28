@@ -73,13 +73,12 @@ export async function POST(request) {
                 pass: process.env.EMAIL_PASS
             }
         })
-
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,                    
             subject: 'Vos identifiants de connexion - TRS',
             html: `
-                <h2>Bienvenue sur la plateforme TRS !</h2>
+                <h2>Bienvenue sur l'application TRS !</h2>
                 <p>Votre demande a été acceptée. Voici vos identifiants :</p>
                 <br/>
                 <p><strong>Email :</strong> ${email}</p>
