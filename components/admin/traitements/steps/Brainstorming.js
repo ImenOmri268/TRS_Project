@@ -145,7 +145,7 @@ const Brainstorming = ({ selectedRessource, activeWorkflow, onSaveStep }) => {
       {/* Workspace Header Panel */}
       <div className="flex justify-between items-center border-b border-slate-100 pb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-800">Identification des Problèmes (Brainstorming)</h3>
+          <h3 className="text-lg font-bold text-slate-800">Identification des Problèmes</h3>
           <p className="text-xs text-slate-400 mt-0.5">
             Classifiez par catégories les anomalies détectées pour la ressource <span className="font-semibold text-blue-600">{selectedRessource?.nom}</span>.
           </p>

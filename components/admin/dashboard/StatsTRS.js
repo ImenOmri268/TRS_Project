@@ -1,8 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { GoAlertFill } from 'react-icons/go'
+import { IoStatsChartSharp } from 'react-icons/io5'
+import { IoSettingsOutline } from 'react-icons/io5'
 import { HiUsers } from 'react-icons/hi'
-import { IoSettingsOutline, IoStatsChartSharp } from 'react-icons/io5'
 
 const StatsTRS = () => {
   const [stats, setStats] = useState(null)
@@ -33,7 +34,7 @@ const StatsTRS = () => {
       couleur: 'text-blue-600',
       bg: 'bg-blue-50',
       bordure: 'border-blue-100',
-      icone:<IoStatsChartSharp className="text-blue-600" />
+      icone: <IoStatsChartSharp className="text-blue-600"/>
     },
     {
       titre: 'Machines',

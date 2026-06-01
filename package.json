@@ -15,6 +15,7 @@
     "@puppeteer/browsers": "^3.0.3",
     "@sparticuz/chromium-min": "^147.0.0",
     "bcryptjs": "^3.0.3",
+    "groq-sdk": "^1.2.0",
     "jose": "^6.2.3",
     "jsonwebtoken": "^9.0.3",
     "motion": "^12.38.0",

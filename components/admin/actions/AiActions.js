@@ -1,75 +1,166 @@
 'use client'
-import React, { useState } from "react";
-import { MdAutoAwesome, MdSend, MdLightbulbOutline, MdCheckCircle } from "react-icons/md";
+import React, { useState, useEffect } from "react";
+import { MdAutoAwesome, MdSend, MdLightbulbOutline, MdCheckCircle, MdClose } from "react-icons/md";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 const AiActions = ({ planId }) => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  // Récupérer le user connecté
+  useEffect(() => {
+    fetch('/api/user/profil')
+      .then(res => res.json())
+      .then(data => setCurrentUserId(data.id))
+      .catch(err => console.error("Erreur profil:", err))
+  }, [])
+
+  useEffect(() => {
+    if (planId) {
+      setPrompt("Propose-moi un plan d'action pour améliorer le TRS basé sur les analyses effectuées.");
+    }
+  }, [planId]);
 
   const handleGenerate = async () => {
     if (!prompt || !planId) return;
     setIsGenerating(true);
-    
+    setSuggestions([]);
     try {
       const response = await fetch("/api/admin/ai-generate", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, planId })
       });
       const data = await response.json();
-      setSuggestions(data.actions); 
+      if (response.ok) {
+        setSuggestions(data.actions.map(a => ({ ...a, status: 'pending' })));
+      } else {
+        toast.error(data.message || "Erreur IA");
+      }
     } catch (error) {
-      console.error("AI Generation failed");
+      toast.error("Erreur de connexion à l'IA");
     } finally {
       setIsGenerating(false);
     }
   };
 
+  const handleAccept = async (index) => {
+    const action = suggestions[index];
+
+    if (!currentUserId) {
+      toast.error("Utilisateur non identifié");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/actions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: action.description.substring(0, 50),
+          description: action.description,
+          planId: planId,
+          userId: currentUserId,
+          priorite: "MOYEN",
+          dateLimite: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        })
+      });
+
+      if (res.ok) {
+        setSuggestions(prev => prev.map((s, i) =>
+          i === index ? { ...s, status: 'accepted' } : s
+        ));
+        toast.success("Action ajoutée au plan !");
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Erreur lors de l'ajout");
+      }
+    } catch (err) {
+      toast.error("Erreur lors de l'acceptation");
+    }
+  };
+
+  const handleRefuse = (index) => {
+    setSuggestions(prev => prev.map((s, i) =>
+      i === index ? { ...s, status: 'refused' } : s
+    ));
+  };
+
   return (
     <div className="w-full bg-slate-900 rounded-3xl shadow-xl overflow-hidden flex flex-col h-full border border-slate-800 min-h-[500px]">
-      
-      {/* HEADER SECTION: Responsive internal padding */}
       <div className="p-4 sm:p-6 border-b border-slate-800 bg-slate-800/30">
         <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
           <MdAutoAwesome className="text-amber-400 flex-shrink-0 animate-pulse" />
-          <span>Assistant Intelligent TRS</span>
+          Assistant Intelligent TRS
         </h3>
-        <p className="text-xs text-slate-400 mt-1 leading-relaxed">Génère automatiquement des correctifs pour ton plan.</p>
+        <p className="text-xs text-slate-400 mt-1">
+          {planId
+            ? "Plan initialisé — générez des actions correctives IA."
+            : "Veuillez d'abord créer un Plan d'Action."}
+        </p>
       </div>
 
-      {/* WORKSPACE AREA: Dynamic container height tracking */}
-      <div className="flex-1 p-4 sm:p-6 overflow-y-auto max-h-[400px] lg:max-h-none">
+      <div className="flex-1 p-4 sm:p-6 overflow-y-auto max-h-[400px]">
         {suggestions.length === 0 ? (
           <div className="h-full min-h-[200px] flex flex-col justify-center items-center text-center space-y-4 p-4">
-            <div className="space-y-2 opacity-40 max-w-xs">
-              <MdLightbulbOutline size={40} className="mx-auto text-slate-500 sm:w-12 sm:h-12" />
-              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
-                Décrivez le problème TRS pour obtenir des solutions IA...
-              </p>
-            </div>
+            <MdLightbulbOutline size={40} className="text-slate-500 opacity-40" />
+            <p className="text-slate-400 text-xs sm:text-sm">
+              {planId
+                ? "Cliquez sur envoyer pour générer des suggestions IA..."
+                : "Créez d'abord un plan d'action."}
+            </p>
           </div>
         ) : (
-          <div className="space-y-3 sm:space-y-4">
-             {suggestions.map((s, idx) => (
-               <motion.div 
-                initial={{ opacity: 0, x: 20 }} 
-                animate={{ opacity: 1, x: 0 }} 
+          <div className="space-y-3">
+            {suggestions.map((s, idx) => (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
                 key={idx}
-
-                className="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex items-start justify-between gap-3 transition-colors hover:border-slate-600"
-               >
-                 <div className="text-slate-200 text-xs sm:text-sm leading-relaxed break-words flex-1">
-                   {s.description}
-                 </div>
-                 <MdCheckCircle className="text-emerald-500 flex-shrink-0 mt-0.5" size={20} />
-               </motion.div>
-             ))}
+                className={`p-4 rounded-2xl border flex items-start justify-between gap-3 transition-all ${
+                  s.status === 'accepted'
+                    ? 'bg-emerald-900/30 border-emerald-700'
+                    : s.status === 'refused'
+                    ? 'bg-red-900/20 border-red-900 opacity-50'
+                    : 'bg-slate-800 border-slate-700'
+                }`}
+              >
+                <div className="text-slate-200 text-xs sm:text-sm leading-relaxed flex-1">
+                  {s.description}
+                </div>
+                {s.status === 'pending' && (
+                  <div className="flex flex-col gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleAccept(idx)}
+                      className="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-all"
+                      title="Accepter"
+                    >
+                      <MdCheckCircle size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleRefuse(idx)}
+                      className="p-1.5 bg-red-700 hover:bg-red-600 text-white rounded-lg transition-all"
+                      title="Refuser"
+                    >
+                      <MdClose size={16} />
+                    </button>
+                  </div>
+                )}
+                {s.status === 'accepted' && (
+                  <MdCheckCircle className="text-emerald-500 flex-shrink-0" size={20} />
+                )}
+                {s.status === 'refused' && (
+                  <MdClose className="text-red-500 flex-shrink-0" size={20} />
+                )}
+              </motion.div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* FOOTER ACTIONS AREA: Textarea overlap defense */}
       <div className="p-4 sm:p-6 bg-slate-800/50 border-t border-slate-800">
         <div className="relative flex items-center">
           <textarea
@@ -77,17 +168,17 @@ const AiActions = ({ planId }) => {
             onChange={(e) => setPrompt(e.target.value)}
             disabled={!planId || isGenerating}
             placeholder={planId ? "Ex: Propose-moi un plan pour réduire les pannes..." : "Veuillez d'abord créer un Plan..."}
-            className="w-full bg-slate-950 border border-slate-700 rounded-2xl pl-4 pr-14 sm:pl-5 py-3.5 sm:py-4 text-xs sm:text-sm text-slate-200 placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/50 outline-none transition-all resize-none min-h-[100px] sm:min-h-[120px] disabled:opacity-50 disabled:bg-slate-950/40"
+            className="w-full bg-slate-950 border border-slate-700 rounded-2xl pl-4 pr-14 py-3.5 text-xs sm:text-sm text-slate-200 placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/50 outline-none transition-all resize-none min-h-[100px] disabled:opacity-50"
           />
-          <button 
+          <button
             onClick={handleGenerate}
             disabled={isGenerating || !prompt.trim() || !planId}
-            className="absolute right-3 bottom-3 sm:right-4 sm:bottom-4 bg-blue-600 hover:bg-blue-500 disabled:hover:bg-blue-600 text-white p-2.5 sm:p-3 rounded-xl transition-all shadow-lg active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed"
+            className="absolute right-3 bottom-3 bg-blue-600 hover:bg-blue-500 disabled:hover:bg-blue-600 text-white p-2.5 rounded-xl transition-all shadow-lg active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed"
           >
             {isGenerating ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <MdSend size={18} className="sm:w-5 sm:h-5" />
+              <MdSend size={18} />
             )}
           </button>
         </div>

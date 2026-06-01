@@ -17,12 +17,13 @@ async function sendWelcomeEmail({ to, name,userRole, adminName, tempPassword  })
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to,
-    subject: 'Vos identifiants de connexion - Applications TRS',
+    subject: 'Vos identifiants de connexion - Application TRS',
     html: `
       <div style="font-family: sans-serif; color: #334155; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px;">
         <h2 style="color: #1e293b;">Bienvenue sur l'application TRS !</h2>
+        <h2 style="color: #1e293b;">Bienvenue sur l'application TRS !</h2>
         <p>Bonjour <strong>${name}</strong>,</p>
-        <p>Votre compte a été créé par l'administrateur : <strong>${adminName}</strong>  et ton role sera <strong>${userRole}</strong>.</p>
+        <p>Votre compte a été créé et ton role sera <strong>${userRole}</strong>.</p>
         <div style="background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px dashed #cbd5e1;">
           <p style="margin: 0; color: #475569;"><strong>Email :</strong> ${to}</p>
           <p style="margin: 0; color: #475569;"><strong>Mot de passe temporaire :</strong> ${tempPassword}</p>
@@ -31,6 +32,7 @@ async function sendWelcomeEmail({ to, name,userRole, adminName, tempPassword  })
         <div style="text-align: center; margin-top: 30px;">
           <a href="${process.env.APP_URL}/EmailSend" 
              style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+            Accéder à l'application
             Accéder à l'application
           </a>
         </div>
