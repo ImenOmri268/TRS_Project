@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Groq from 'groq-sdk'
 import { prisma } from '../../../lib/prisma'
 import { verifyToken } from '../../../lib/jwt'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-//ia
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+
 export async function POST(request) {
   try {
     const token = request.cookies.get('token')?.value
@@ -18,12 +18,11 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Prompt et planId requis' }, { status: 400 })
     }
 
-    // Récupérer les données du plan et workflow
     const plan = await prisma.planAction.findUnique({
       where: { id: parseInt(planId) },
       include: {
         workflow: {
-          include: { analyses: true }
+          include: { analyse: true }
         },
         actions: true
       }
@@ -33,12 +32,10 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Plan non trouvé' }, { status: 404 })
     }
 
-    // Construire le contexte depuis les analyses du workflow
-    const analysesContext = plan.workflow?.analyses?.map(a =>
+    const analysesContext = plan.workflow?.analyse?.map(a =>
       `- ${a.type}: ${a.contenu}`
     ).join('\n') || 'Aucune analyse disponible'
 
-    // Prompt enrichi avec le contexte
     const fullPrompt = `
 Tu es un expert en amélioration industrielle TRS (Taux de Rendement Synthétique).
 
@@ -61,38 +58,32 @@ Réponds UNIQUEMENT en JSON valide, sans texte avant ou après :
 Génère entre 3 et 6 actions pertinentes et réalisables.
 `
 
-    // Appeler Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-    const result = await model.generateContent(fullPrompt)
-    const rawText = result.response.text()
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: fullPrompt }],
+      temperature: 0.7,
+      max_tokens: 1024,
+    })
 
-    // Parser la réponse JSON
+    const rawText = completion.choices[0].message.content
+
     const jsonMatch = rawText.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
-      return NextResponse.json(
-        { message: 'Réponse IA invalide' },
-        { status: 500 }
-      )
+      return NextResponse.json({ message: 'Réponse IA invalide' }, { status: 500 })
     }
 
     const parsed = JSON.parse(jsonMatch[0])
 
-    // Sauvegarder le prompt en DB
     await prisma.promptIA.upsert({
       where: { planId: parseInt(planId) },
       update: { contenu: prompt, reponse: rawText },
       create: { contenu: prompt, reponse: rawText, planId: parseInt(planId) }
     })
 
-    return NextResponse.json({
-      actions: parsed.actions
-    })
+    return NextResponse.json({ actions: parsed.actions })
 
   } catch (error) {
     console.error('[AI GENERATE ERROR]', error)
-    return NextResponse.json(
-      { message: 'Erreur lors de la génération IA' },
-      { status: 500 }
-    )
+    return NextResponse.json({ message: 'Erreur lors de la génération IA' }, { status: 500 })
   }
 }

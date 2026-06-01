@@ -86,9 +86,11 @@ export async function DELETE(request) {
     }
 
     // 3. DATABASE CASCADE HANDLING:
-    // If your Prisma schema doesn't have `onDelete: Cascade` on the Action model,
-    // we must manually delete all actions belonging to this plan first to avoid foreign key violations.
     await prisma.action.deleteMany({
+      where: { planId: planId },
+    });
+
+    await prisma.promptIA.deleteMany({
       where: { planId: planId },
     });
 
