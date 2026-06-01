@@ -36,7 +36,7 @@ const GraphiqueTRS = () => {
   return (
     <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm mb-8">
       <h2 className="text-xl font-semibold text-slate-700 mb-6">
-        TRS Initial vs Final par machine
+        TRS Initial vs Final par ressource
       </h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>

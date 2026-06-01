@@ -5,6 +5,7 @@ import AddRessourceAction from "@/components/admin/ressources/AddRessourceAction
 import TableRessources from "@/components/admin/ressources/TableRessources";
 import { HiOutlineCpuChip } from "react-icons/hi2";
 import { MdRefresh } from "react-icons/md";
+import { Toaster } from "react-hot-toast";
 
 export default function Page() {
   const [ressources, setRessources] = useState([]);
@@ -37,6 +38,7 @@ export default function Page() {
 
   return (
     <AdminLayout activePage="Gestion des Ressources">
+      <Toaster position="top-center"  />
       <div className="p-8 space-y-8 animate-in fade-in duration-700">
         
         {/* Page Header */}
@@ -47,7 +49,7 @@ export default function Page() {
               GESTION DES RESSOURCES
             </h1>
             <p className="text-slate-500 font-medium">
-              Supervisez la performance et l&apos;état opérationnel de vos machines.
+              Supervisez les indicateurs de performance de vos ressources.
             </p>
           </div>
           

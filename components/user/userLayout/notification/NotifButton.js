@@ -1,30 +1,30 @@
 import { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa";
 
-const NotifButton = ({ showNotif, setShowNotif, adminId }) => {
+const NotifButton = ({ showNotif, setShowNotif }) => {
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
-    if (!adminId) return;
-
     const checkUnread = async () => {
       try {
-        const res = await fetch(`/api/admin/notifications?adminId=${adminId}`);
+        // Points directly to the user notifications endpoint
+        const res = await fetch(`/api/user/notifications`);
         if (res.ok) {
           const notifications = await res.json();
-          // Vérifie s'il y a au moins une notification non lue
+          // Checks if there is at least one notification where lu is false
           setHasUnread(notifications.some(n => !n.lu));
         }
       } catch (err) {
-        console.error(err);
+        console.error("Erreur vérification notifications utilisateur:", err);
       }
     };
 
     checkUnread();
-    // Optionnel : polling toutes les 30 secondes pour mettre à jour la cloche
+    
+    // Polling setup checking every 30 seconds
     const interval = setInterval(checkUnread, 30000);
     return () => clearInterval(interval);
-  }, [adminId, showNotif]);
+  }, [showNotif]);
 
   return (
     <button 

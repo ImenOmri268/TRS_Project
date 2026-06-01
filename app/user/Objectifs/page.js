@@ -8,6 +8,7 @@ import AjoutGoalForm from "@/components/user/objectifs/AjoutGoalForm";
 import AjoutButton from "@/components/admin/adminLayout/AjoutButton";
 import { MdOutlineTrackChanges } from "react-icons/md";
 import { usePermissions } from "@/app/lib/hooks/usePermissions";
+import { Toaster } from "react-hot-toast";
 
 const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
@@ -53,6 +54,7 @@ const fetchGoals = async () => {
 
   return (
     <UserLayout activePage="Objectifs">
+      <Toaster position="top-center"  />
       <div className="p-8 space-y-8 animate-in fade-in duration-700 pb-20">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">

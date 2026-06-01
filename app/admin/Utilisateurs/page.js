@@ -4,6 +4,7 @@ import AddUserAction from "@/components/admin/utilisateurs/AddUserAction";
 import TableUtilisateur from "@/components/admin/utilisateurs/TableUtilisateur";
 import { MdOutlinePeopleAlt } from "react-icons/md";
 import { useState, useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 
 export default function Page() {
   const [utilisateurs, setUtilisateurs] = useState([]);
@@ -64,6 +65,7 @@ export default function Page() {
 
   return (
     <AdminLayout activePage="Liste des utilisateurs">
+        <Toaster position="top-center"  />
       <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
         {/* Header Section */}

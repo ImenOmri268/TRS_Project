@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { CiSearch } from "react-icons/ci";
 import { FaRegTrashAlt, FaRegEdit } from "react-icons/fa";
 import { FaArrowRightLong } from "react-icons/fa6";
-import ModifRessource from "@/components/admin/ressources/ModifRessource";
-import DetailsRessource from "@/components/admin/ressources/DetailsRessource";
+import ModifRessource from "@/components/user/ressources/ModifRessource";
+import DetailsRessource from "@/components/user/ressources/DetailsRessource";
 
 const TableRessources = ({ ressources, refresh, canModifier, canSupprimer }) => {
   const [selectedResource, setSelectedResource] = useState(null);
@@ -19,9 +19,15 @@ const TableRessources = ({ ressources, refresh, canModifier, canSupprimer }) => 
   const handleDelete = async (id, nom) => {
     if (window.confirm(`Voulez-vous vraiment supprimer la ressource "${nom}" ?`)) {
       try {
-        const res = await fetch(`/api/admin/ressources?id=${id}`, { method: 'DELETE' });
-        if (res.ok) refresh();
-        else alert("Erreur lors de la suppression");
+        const res = await fetch(`/api/user/ressources?id=${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          // Safe timeout synchronization block
+          setTimeout(() => {
+            refresh(); // Re-runs data pulls for both inventory rows and notification counts
+          }, 300);
+        } else {
+          alert("Erreur lors de la suppression");
+        }
       } catch (error) {
         console.error("Erreur réseau:", error);
       }

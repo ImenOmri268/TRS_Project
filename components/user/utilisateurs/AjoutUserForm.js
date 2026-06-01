@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdClose, MdPersonOutline, MdMailOutline, MdToggleOn, MdToggleOff, MdErrorOutline } from "react-icons/md";
 import { HiPlus, HiSave } from "react-icons/hi";  
 import { IoReturnUpBack } from "react-icons/io5";
+import toast from "react-hot-toast";
 
 const AjoutUserForm = ({ isOpen, onClose, refresh, userToEdit = null, apiUrl = '/api/admin/utilisateurs' }) => {
   const [loading, setLoading] = useState(false);
@@ -90,6 +91,14 @@ const AjoutUserForm = ({ isOpen, onClose, refresh, userToEdit = null, apiUrl = '
       });
 
       if (res.ok) {
+        toast.success("Utilisateur créé avec succès !", {
+          duration: 1000,
+          style: {
+            borderRadius: '15px',
+            background: '#8BE78B',
+            color: '#FFFFFF',
+          },
+        });
         onClose();
         refresh();
       } else {

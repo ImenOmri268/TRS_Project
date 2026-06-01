@@ -110,16 +110,7 @@ const RapportGen = ({ workflowId, onGenerationComplete, isDirty }) => {
       
       {/* Action Card Wrapper Panel */}
       <div className="w-full max-w-sm bg-white border border-slate-100 p-6 rounded-[2rem] shadow-xl shadow-slate-100/50 transition-all">
-        <div className="flex justify-between items-center mb-5">
-          <span className="text-xs font-black uppercase tracking-wider text-slate-400">Résumé du traitement</span>
-          <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${
-            pdfUrl 
-              ? "text-emerald-600 bg-emerald-50 border border-emerald-100" 
-              : "text-amber-600 bg-amber-50 border border-amber-100 animate-pulse"
-          }`}>
-            {pdfUrl ? "Archivé (À jour)" : "Modifié / Prêt"}
-          </span>
-        </div>
+        
 
         <button 
           onClick={handleGenerateOrDownload}

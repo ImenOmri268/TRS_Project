@@ -6,6 +6,7 @@ import AjoutUserForm from "@/components/user/utilisateurs/AjoutUserForm";
 import { MdOutlinePeopleAlt } from "react-icons/md";
 import { useState, useEffect } from "react";
 import { usePermissions } from "@/app/lib/hooks/usePermissions";
+import { Toaster } from "react-hot-toast";
 
 export default function Page() {
   const [utilisateurs, setUtilisateurs] = useState([]);
@@ -31,6 +32,7 @@ export default function Page() {
 
   return (
     <UserLayout activePage="Liste des utilisateurs">
+      <Toaster position="top-right" />
       <div className="p-8 space-y-8 animate-in fade-in duration-700">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">

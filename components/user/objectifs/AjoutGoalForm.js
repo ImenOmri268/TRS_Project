@@ -65,25 +65,21 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh, ressourcesApiUrl='/api/admin/
   }, [ressources, formData.ressourceId]);
 
   const handleSubmit = async () => {
-    // Clear existing timer
     if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
 
-    // Validation
     if (!formData.title.trim() || !formData.valeurCible.trim() || !formData.dateFin || !formData.ressourceId) {
       setError("Champs obligatoires manquants. Veuillez remplir tous les champs marqués.");
       
-      // Auto-scroll to top to see error
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      // Hide after 4 seconds
       errorTimeoutRef.current = setTimeout(() => setError(""), 4000);
       return;
     }
 
     try {
-      const res = await fetch('/api/admin/objectifs', {
+      const res = await fetch('/api/user/objectifs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -92,9 +88,21 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh, ressourcesApiUrl='/api/admin/
       const data = await res.json();
 
       if (res.ok) {
-        refresh(); 
-        resetForm();
-        onClose();
+        toast.success("Objectif créé avec succès !", {
+          duration: 1000,
+          style: {
+            borderRadius: '15px',
+            background: '#8BE78B',
+            color: '#FFFFFF',
+          },
+        });
+        // 🛠️ FIX: Give the backend 300ms to finalize the notification insertion row
+        setTimeout(() => {
+          refresh(); // Refreshes both objectives and notification panel states
+          resetForm();
+          onClose();
+        }, 300);
+        
       } else {
         setError(data.message || "Erreur lors de la création");
         errorTimeoutRef.current = setTimeout(() => setError(""), 4000);
@@ -147,7 +155,7 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh, ressourcesApiUrl='/api/admin/
                   exit={{ opacity: 0, y: -8 }}
                   className="bg-red-50 border-b border-red-100 w-full"
                 >
-                  <div className="px-8 py-3  items-center gap-3 text-red-600 text-sm font-semibold">
+                  <div className="px-8 py-3 flex items-center gap-3 text-red-600 text-sm font-semibold">
                     <MdErrorOutline className="text-xl shrink-0" />
                     {error}
                   </div>

@@ -85,7 +85,7 @@ const DetailsUtilisateur = ({ userData, onClose, isOpen }) => {
 
               <section className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
                 <p className="text-xs text-blue-600 leading-relaxed italic">
-                  Note: Ces permissions permettent à {userData.name} d&apos;accéder aux modules spécifiques du tableau de bord. Toute modification doit être effectuée par un administrateur.
+                  Note: Ces permissions permettent à {userData.name }&nbsp; d&apos;accéder aux modules spécifiques de l&apos;application. Toute modification doit être effectuée par l&apos;administrateur.
                 </p>
               </section>
             </div>

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { MdClose, MdSettings, MdAnalytics, MdCheckCircle, MdMemory, MdCategory, MdEditAttributes, MdDescription, MdErrorOutline } from "react-icons/md";
 import { HiPlus } from "react-icons/hi";
 import { IoReturnUpBack } from "react-icons/io5";
+import toast from "react-hot-toast";
 
 const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/ressources' }) => {
   const scrollContainerRef = useRef(null);
@@ -74,6 +75,14 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/res
       });
 
       if (response.ok) {
+        toast.success("Ressource créée avec succès !", {
+          duration: 1000,
+          style: {
+            borderRadius: '15px',
+            background: '#8BE78B',
+            color: '#FFFFFF',
+          },
+        });
         refresh();
         onClose();
         setFormData({ nom: "", type: "", description: "", initialTRS: "", initialDisp: "", initialPerf: "", initialQual: "" });

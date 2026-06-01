@@ -36,7 +36,7 @@ const StatsTRS = () => {
       icone:<IoStatsChartSharp className="text-blue-600" />
     },
     {
-      titre: 'Machines',
+      titre: 'Ressources',
       valeur: stats?.nbMachines ?? 0,
       couleur: 'text-green-600',
       bg: 'bg-green-50',

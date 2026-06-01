@@ -105,7 +105,7 @@ const GoalEdit = ({ editingGoal, onClose, refresh }) => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Échéance</label>
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Date limite</label>
                 <input 
                   type="date" 
                   value={formData.dateFin} 

@@ -49,16 +49,37 @@ export async function POST(req, { params }) {
   }
 
   try {
+    // CRITICAL FIX: include "metrics" inside the resource object so we can calculate the real TRS
     const workflow = await prisma.workflow.findUnique({
       where: { id: workflowId },
       include: {
-        ressource: true,
+        ressource: {
+          include: {
+            metrics: {
+              orderBy: { date: 'desc' }
+            }
+          }
+        },
         analyse: true, 
       },
     });
 
     if (!workflow) {
       return NextResponse.json({ error: "Workflow introuvable." }, { status: 404 });
+    }
+
+    // --- REAL-TIME TRS CALCULATION LOGIC (Mirrors Frontend Details Modal) ---
+    let finalTRSDisplay = "0%";
+    if (workflow.ressource?.metrics && workflow.ressource.metrics.length > 0) {
+      // Find the most recent logged values for each individual metric category
+      const latestDisp = workflow.ressource.metrics.find(m => m.category === 'DISPONIBILITE')?.valeur || 0;
+      const latestPerf = workflow.ressource.metrics.find(m => m.category === 'PERFORMANCE')?.valeur || 0;
+      const latestQual = workflow.ressource.metrics.find(m => m.category === 'QUALITE')?.valeur || 0;
+
+      if (latestDisp > 0 && latestPerf > 0 && latestQual > 0) {
+        const calculatedTrs = ((latestDisp / 100) * (latestPerf / 100) * (latestQual / 100)) * 100;
+        finalTRSDisplay = `${calculatedTrs.toFixed(2)}%`;
+      }
     }
 
     const brainstormingRaw = workflow.analyse.find(a => a.type === "BRAINSTORMING")?.contenu;
@@ -128,12 +149,27 @@ export async function POST(req, { params }) {
                   ${workflow.ressource.description ? `<p><span class="font-semibold text-slate-700">Description :</span> ${workflow.ressource.description}</p>` : ''}
                   ${workflow.ressource.type ? `<p><span class="font-semibold text-slate-700">Type :</span> ${workflow.ressource.type}</p>` : ''}
                   
-                  ${(workflow.ressource.initialQualite !== null || workflow.ressource.initialDisponibilite !== null || workflow.ressource.initialPerformance !== null) ? `
+                  ${(workflow.ressource.metrics && workflow.ressource.metrics.length > 0) ? `
                     <div class="mt-1.5 pt-1.5 border-t border-slate-200/40">
                       <div class="grid grid-cols-3 gap-1.5 text-center bg-white p-1 rounded-lg border border-slate-200/40">
-                        ${workflow.ressource.initialQualite !== null ? `<div><span class="text-slate-400 block text-[8px]">Qualité</span><span class="font-mono font-bold text-slate-800 text-xs">${workflow.ressource.initialQualite}%</span></div>` : ''}
-                        ${workflow.ressource.initialDisponibilite !== null ? `<div><span class="text-slate-400 block text-[8px]">Dispo.</span><span class="font-mono font-bold text-slate-800 text-xs">${workflow.ressource.initialDisponibilite}%</span></div>` : ''}
-                        ${workflow.ressource.initialPerformance !== null ? `<div><span class="text-slate-400 block text-[8px]">Perform.</span><span class="font-mono font-bold text-slate-800 text-xs">${workflow.ressource.initialPerformance}%</span></div>` : ''}
+                        <div>
+                          <span class="text-slate-400 block text-[8px]">Dispo.</span>
+                          <span class="font-mono font-bold text-slate-800 text-xs">
+                            ${workflow.ressource.metrics.find(m => m.category === 'DISPONIBILITE')?.valeur || "-"}%
+                          </span>
+                        </div>
+                        <div>
+                          <span class="text-slate-400 block text-[8px]">Perform.</span>
+                          <span class="font-mono font-bold text-slate-800 text-xs">
+                            ${workflow.ressource.metrics.find(m => m.category === 'PERFORMANCE')?.valeur || "-"}%
+                          </span>
+                        </div>
+                        <div>
+                          <span class="text-slate-400 block text-[8px]">Qualité</span>
+                          <span class="font-mono font-bold text-slate-800 text-xs">
+                            ${workflow.ressource.metrics.find(m => m.category === 'QUALITE')?.valeur || "-"}%
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ` : ''}
@@ -146,7 +182,7 @@ export async function POST(req, { params }) {
               <span class="text-[11px] font-medium text-slate-600">
                 Valeur TRS Final
                 <span class="text-xl font-black text-blue-600 block mt-0.5 font-mono">
-                  ${workflow.ressource?.finalTRS !== null && workflow.ressource?.finalTRS !== undefined ? `${workflow.ressource.finalTRS}%` : '0%'}
+                  ${finalTRSDisplay}
                 </span>
               </span>
             </div>
@@ -188,7 +224,7 @@ export async function POST(req, { params }) {
             </div>
           ` : `
             <div class="p-4 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
-              <span class="italic text-slate-400 text-xs">Aucune donnée de brainstorming enregistrée pour cette étape.</span>
+              <span class="italic text-slate-400 text-xs">Aucune donnée d'identification des problèmes enregistrée pour cette étape.</span>
             </div>
           `}
         </div>
@@ -225,10 +261,6 @@ export async function POST(req, { params }) {
                   `).join('')}
                 </tbody>
               </table>
-            </div>
-            <div class="bg-amber-50/60 rounded-xl p-2.5 border border-amber-200/50 flex items-start gap-2 text-[10px] text-amber-800">
-              <span class="font-bold">💡 Info:</span>
-              <p>Les lignes surlignées représentent les causes prioritaires de la zone critique des 80% cumulés.</p>
             </div>
           ` : `
             <div class="p-4 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
@@ -403,7 +435,6 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: "ID invalide" }, { status: 400 });
     }
 
-    // On efface la référence de l'ancien PDF dans le workflow
     await prisma.workflow.update({
       where: { id },
       data: { pdfUrl: null }

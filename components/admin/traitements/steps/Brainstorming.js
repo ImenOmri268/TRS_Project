@@ -126,7 +126,7 @@ const Brainstorming = ({ selectedRessource, activeWorkflow, onSaveStep }) => {
         if (typeof onSaveStep === "function") {
           onSaveStep(filteredContent);
         }
-        alert("Brainstorming et identification des problèmes enregistrés avec succès !");
+        alert("identification des problèmes enregistrés avec succès !");
       } else {
         const errorData = await response.json();
         alert(`Erreur de sauvegarde: ${errorData.error || "Inconnue"}`);
@@ -145,7 +145,7 @@ const Brainstorming = ({ selectedRessource, activeWorkflow, onSaveStep }) => {
       {/* Workspace Header Panel */}
       <div className="flex justify-between items-center border-b border-slate-100 pb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-800">Identification des Problèmes (Brainstorming)</h3>
+          <h3 className="text-lg font-bold text-slate-800">Identification des Problèmes </h3>
           <p className="text-xs text-slate-400 mt-0.5">
             Classifiez par catégories les anomalies détectées pour la ressource <span className="font-semibold text-blue-600">{selectedRessource?.nom}</span>.
           </p>
@@ -176,7 +176,7 @@ const Brainstorming = ({ selectedRessource, activeWorkflow, onSaveStep }) => {
                   type="text"
                   value={cat.name}
                   onChange={(e) => updateCategoryName(cat.id, e.target.value)}
-                  placeholder={`Nom de la Catégorie #${catIdx + 1} (ex: Matériel, Méthode, Milieu, Main d'œuvre)...`}
+                  placeholder={`Nom de la Catégorie #${catIdx + 1} `}
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/5 transition-all"
                 />
               </div>
@@ -233,7 +233,7 @@ const Brainstorming = ({ selectedRessource, activeWorkflow, onSaveStep }) => {
           <MdAddCircleOutline size={18} /> Nouvelle Catégorie
         </button>
         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-3 py-1.5 rounded-lg">
-          {categories.reduce((acc, curr) => acc + curr.problems.filter(p => p.text.trim() !== "").length, 0)} Faits Répertoriés
+          {categories.reduce((acc, curr) => acc + curr.problems.filter(p => p.text.trim() !== "").length, 0)} problemes en total
         </div>
       </div>
 

@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { MdClose } from "react-icons/md";
 
-const NotifBar = ({ showNotif, setShowNotif, adminId }) => {
+const NotifBar = ({ showNotif, setShowNotif }) => {
   const [notifications, setNotifications] = useState([]);
 
-  // 1. Charger les notifications
   const fetchNotifications = async () => {
-    if (!adminId) return;
     try {
-      const res = await fetch(`/api/admin/notifications?adminId=${adminId}`);
+      const res = await fetch(`/api/admin/notifications`);
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
@@ -19,17 +17,14 @@ const NotifBar = ({ showNotif, setShowNotif, adminId }) => {
     }
   };
 
-  // 2. Marquer comme lu à l'ouverture de la barre
   const markAsRead = async () => {
-    if (!adminId) return;
     try {
       await fetch("/api/admin/notifications", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adminId })
+        headers: { "Content-Type": "application/json" }
       });
     } catch (err) {
-      console.error(err);
+      console.error("Error marking notifications as read:", err);
     }
   };
 
@@ -38,13 +33,11 @@ const NotifBar = ({ showNotif, setShowNotif, adminId }) => {
       fetchNotifications();
       markAsRead();
     }
-  }, [showNotif, adminId]);
+  }, [showNotif]);
 
-  // 3. Tout supprimer
   const handleDeleteAll = async () => {
-    if (!adminId) return;
     try {
-      const res = await fetch(`/api/admin/notifications?adminId=${adminId}`, {
+      const res = await fetch(`/api/admin/notifications`, {
         method: "DELETE"
       });
       if (res.ok) {
@@ -62,7 +55,7 @@ const NotifBar = ({ showNotif, setShowNotif, adminId }) => {
           initial={{ opacity: 0, y: 10, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-          className="absolute top-12 right-3 w-80 bg-white shadow-xl border border-slate-200 rounded-xl z-100 overflow-hidden"
+          className="absolute top-12 right-3 w-80 bg-white shadow-xl border border-slate-200 rounded-xl z-50 overflow-hidden"
         >
           <div className="flex items-center justify-between p-4 border-b border-slate-100 ">
             <span className="font-semibold text-slate-800">Notifications</span>
@@ -78,10 +71,10 @@ const NotifBar = ({ showNotif, setShowNotif, adminId }) => {
                 {notifications.map((notif) => (
                   <div key={notif.id} className="text-xs border-b border-slate-50 pb-2 last:border-none">
                     <p className="text-slate-700 font-medium">
-                      <span className="text-blue-600 font-semibold">{notif.createdBy || "Utilisateur"}</span> : {notif.message}
+                      <span className="text-blue-600 font-semibold">{notif.createdBy || "Système"}</span> : {notif.message}
                     </p>
                     <span className="text-[10px] text-slate-400 block mt-1">
-                      {new Date(notif.date).toLocaleDateString()} à {new Date(notif.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(notif.date || notif.createdAt).toLocaleDateString()} à {new Date(notif.date || notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                 ))}

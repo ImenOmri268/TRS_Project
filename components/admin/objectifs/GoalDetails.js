@@ -37,11 +37,11 @@ const GoalDetails = ({ selectedGoal, onClose }) => {
                 <div className="flex items-center gap-3">
                   <MdInfoOutline className="text-slate-400" />
                   <span className="text-sm font-bold text-slate-500 uppercase">titre de l&apos;objectif:</span>
-                  <p className="text-slate-900 text-sm leading-relaxed font-medium ">{selectedGoal.title}</p>
                 </div>
+                <p className="text-slate-900 text-sm leading-relaxed font-medium  ">{selectedGoal.title}</p>
               </div>
+
               <div className="p-6 bg-slate-50 rounded-4xl border border-slate-100 space-y-4">
-                 
                 <div className="flex items-center gap-3">
                   <MdInfoOutline className="text-slate-400" />
                   <span className="text-sm font-bold text-slate-500 uppercase">description:</span>
@@ -59,7 +59,7 @@ const GoalDetails = ({ selectedGoal, onClose }) => {
                 <div className="p-5 bg-slate-50 border border-slate-100 rounded-3xl shadow-sm">
                   <div className="flex items-center gap-3">
                       <MdInfoOutline className="text-slate-400" />
-                      <p className="text-sm font-bold text-slate-500 uppercase mb-1">Échéance</p>
+                      <p className="text-sm font-bold text-slate-500 uppercase mb-1">Date limite</p>
                    </div> 
                    <p className="text-xl font-black text-slate-800">
                     {selectedGoal.dateFin ? new Date(selectedGoal.dateFin).toLocaleDateString() : '—'}

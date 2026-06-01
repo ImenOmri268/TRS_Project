@@ -26,12 +26,7 @@ enum StatutDemande {
   EN_ATTENTE
 }
 
-enum TypeNotification {
-  REUNION
-  RETARD
-  ACTION
-  SYSTEM_AUDIT 
-}
+
 
 enum TRSType {
   INITIAL
@@ -149,7 +144,6 @@ model Notification {
   id      Int              @id @default(autoincrement())
   message String
   date    DateTime         @default(now())
-  type    TypeNotification @default(SYSTEM_AUDIT)
   lu      Boolean          @default(false)
 
   // L'utilisateur qui reçoit/cible la notification (ici l'admin)
@@ -270,7 +264,6 @@ model Qualite {
 model Workflow {
   id              Int      @id @default(autoincrement())
   nom             String
-  statut          String   @default("EN_COURS")
   dateDebut       DateTime @default(now())
 
   //rapport 
@@ -298,8 +291,8 @@ model Analyse {
 // PLAN ACTION
 model PlanAction {
   id          Int       @id @default(autoincrement())
+  title       String
   description String
-  statut      Statut    @default(EN_COURS)
   dateDebut   DateTime  @default(now())
   dateFin     DateTime?
 
@@ -308,7 +301,6 @@ model PlanAction {
 
   actions  Action[]   
   promptIA PromptIA?
-  tracking Tracking[]
 }
 
 //ACTION
@@ -317,7 +309,6 @@ model Action {
   title        String     // Added
   description  String     
   priorite     Priorite   @default(MOYEN) // Added
-  impactTrs    Float?     // Added: impact on TRS resources (Float or Int depending on precision requirements)
   statut       Statut     @default(A_FAIRE)
   dateLimite   DateTime   // Added: limit date field
 
@@ -338,17 +329,7 @@ model PromptIA {
   plan   PlanAction @relation(fields: [planId], references: [id])
 }
 
-//TRACKING
-model Tracking {
-  id          Int       @id @default(autoincrement())
-  progression Int
-  commentaire String
-  dateDebut   DateTime
-  dateFin     DateTime?
 
-  planId Int
-  plan   PlanAction @relation(fields: [planId], references: [id])
-}
 
 //OBJECTIF TRS
 model Objectif {
@@ -358,6 +339,7 @@ model Objectif {
   valeurCible Float
   dateDebut   DateTime  @default(now())
   dateFin     DateTime?
+  
 
   ressourceId Int
   ressource   Ressource @relation(fields: [ressourceId], references: [id], onDelete: Cascade)

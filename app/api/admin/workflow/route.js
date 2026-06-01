@@ -30,7 +30,6 @@ export async function GET(req) {
         id: true,
         nom: true,
         dateDebut: true,
-        statut: true,
         pdfUrl: true,
       }
     });
@@ -102,7 +101,6 @@ export async function POST(req) {
       data: {
         nom: nom,
         ressourceId: parseInt(ressourceId),
-        statut: "EN_COURS",
         analyse: {
           create: {
             type: "BRAINSTORMING",

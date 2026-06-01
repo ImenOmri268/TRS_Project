@@ -1,19 +1,44 @@
 import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
+import { verifyToken } from "@/app/lib/jwt";
 
-// 1. GET: Récupérer les notifications de l'admin
-export async function GET(req) {
+// Helper function to extract a validated adminId integer from token
+async function getValidatedAdminId(request) {
+  const token = request.cookies.get('token')?.value;
+  if (!token) return null;
+
   try {
-    const { searchParams } = new URL(req.url);
-    const adminId = searchParams.get("adminId"); // Idéalement extrait de votre session/JWT
+    const decoded = verifyToken(token);
+    // If your DB uses integers for IDs, wrap this in parseInt. If strings, remove parseInt.
+    const decodedId = parseInt(decoded.id, 10); 
+    
+    let adminId = decoded.type === 'ADMIN' ? decodedId : null;
 
     if (!adminId) {
-      return NextResponse.json({ error: "adminId requis" }, { status: 400 });
+      const user = await prisma.user.findUnique({
+        where: { id: decodedId },
+        select: { adminId: true }
+      });
+      adminId = user?.adminId;
+    }
+    return adminId;
+  } catch (err) {
+    console.error("Token verification failed:", err);
+    return null;
+  }
+}
+
+// 1. GET: Fetch notifications
+export async function GET(request) {
+  try {
+    const adminId = await getValidatedAdminId(request);
+    if (!adminId) {
+      return NextResponse.json({ error: "Non authentifié ou Admin introuvable" }, { status: 401 });
     }
 
     const notifications = await prisma.notification.findMany({
-      where: { userId: parseInt(adminId) },
-      orderBy: { date: "desc" },
+      where: { userId: adminId },
+      orderBy: { date: "desc" }, // Verify if your schema field is 'date' or 'createdAt'
     });
 
     return NextResponse.json(notifications);
@@ -23,18 +48,16 @@ export async function GET(req) {
   }
 }
 
-// 2. PUT: Marquer les notifications comme lues
-export async function PUT(req) {
+// 2. PUT: Mark all as read
+export async function PUT(request) {
   try {
-    const body = await req.json();
-    const { adminId } = body;
-
+    const adminId = await getValidatedAdminId(request);
     if (!adminId) {
-      return NextResponse.json({ error: "adminId requis" }, { status: 400 });
+      return NextResponse.json({ error: "Non authentifié ou Admin introuvable" }, { status: 401 });
     }
 
     await prisma.notification.updateMany({
-      where: { userId: parseInt(adminId), lu: false },
+      where: { userId: adminId, lu: false },
       data: { lu: true },
     });
 
@@ -44,18 +67,16 @@ export async function PUT(req) {
   }
 }
 
-// 3. DELETE: Tout supprimer pour cet admin
-export async function DELETE(req) {
+// 3. DELETE: Clear history
+export async function DELETE(request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const adminId = searchParams.get("adminId");
-
+    const adminId = await getValidatedAdminId(request);
     if (!adminId) {
-      return NextResponse.json({ error: "adminId requis" }, { status: 400 });
+      return NextResponse.json({ error: "Non authentifié ou Admin introuvable" }, { status: 401 });
     }
 
     await prisma.notification.deleteMany({
-      where: { userId: parseInt(adminId) },
+      where: { userId: adminId },
     });
 
     return NextResponse.json({ success: true });

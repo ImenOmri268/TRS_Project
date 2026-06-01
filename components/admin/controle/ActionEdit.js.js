@@ -10,7 +10,6 @@ const ActionEdit = ({ editingAction, onClose, onSuccess }) => {
     description: "",
     statut: "A_FAIRE",
     priorite: "MOYEN",
-    impactTrs: "",
     dateLimite: "",
     userId: ""
   });
@@ -53,7 +52,6 @@ const ActionEdit = ({ editingAction, onClose, onSuccess }) => {
         description: editingAction.description || "",
         statut: editingAction.statut || "A_FAIRE",
         priorite: editingAction.priorite || "MOYEN",
-        impactTrs: editingAction.impactTrs !== null && editingAction.impactTrs !== undefined ? editingAction.impactTrs.toString() : "",
         dateLimite: formattedDate,
         userId: editingAction.userId ? editingAction.userId.toString() : ""
       });
@@ -81,7 +79,6 @@ const ActionEdit = ({ editingAction, onClose, onSuccess }) => {
           description: formData.description.trim(),
           statut: formData.statut,
           priorite: formData.priorite,
-          impactTrs: formData.impactTrs !== "" ? parseFloat(formData.impactTrs) : null,
           dateLimite: formData.dateLimite ? new Date(formData.dateLimite).toISOString() : null,
           userId: formData.userId !== "" ? parseInt(formData.userId, 10) : null
         })
@@ -181,22 +178,7 @@ const ActionEdit = ({ editingAction, onClose, onSuccess }) => {
                 </div>
               </div>
 
-              {/* IMPACT TRS */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Impact TRS (%)</label>
-                <div className="relative">
-                  <input 
-                    type="number" 
-                    step="0.01"
-                    name="impactTrs"
-                    value={formData.impactTrs}
-                    onChange={handleChange}
-                    placeholder="Ex: 1.2"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pl-10 text-sm focus:bg-white focus:border-blue-500 outline-none transition-all font-semibold text-slate-700"
-                  />
-                  <MdTrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                </div>
-              </div>
+              
             </div>
 
             {/* STATUS SELECT */}

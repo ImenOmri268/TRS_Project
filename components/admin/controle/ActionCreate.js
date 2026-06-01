@@ -13,7 +13,6 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
     planId: "",
     userId: "",
     priorite: "MOYEN",
-    impactTrs: "",
     dateLimite: ""
   });
 
@@ -59,7 +58,6 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
           planId: parseInt(formData.planId, 10),
           userId: parseInt(formData.userId, 10),
           priorite: formData.priorite,
-          impactTrs: formData.impactTrs !== "" ? parseFloat(formData.impactTrs) : null,
           dateLimite: new Date(formData.dateLimite).toISOString(),
         }),
       });
@@ -72,7 +70,6 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
           planId: "", 
           userId: "", 
           priorite: "MOYEN", 
-          impactTrs: "", 
           dateLimite: "" 
         });
         onSuccess(); 
@@ -131,7 +128,7 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
           {/* PLAN D'ACTION SOURCE SELECT */}
           <div>
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-              Dossier Source (Plan d&apos;action) *
+              Plan d&apos;action à selectionner *
             </label>
             <div className="relative">
               <select 
@@ -143,7 +140,7 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
                 <option value="">Sélectionner le plan d&apos;action...</option>
                 {plans.map(p => (
                   <option key={p.id} value={p.id}>
-                    {p.description}
+                    {p.title}
                   </option>
                 ))}
               </select>
@@ -154,7 +151,7 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
           {/* ASSIGNED COLLABORATOR SELECT */}
           <div>
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-              Responsable Assigné *
+              Utilisateur Assigné *
             </label>
             <div className="relative">
               <select 
@@ -194,43 +191,30 @@ const ActionCreate = ({ isOpen, onClose, onSuccess }) => {
               </div>
             </div>
 
-            {/* IMPACT AU RESSOURCE TRS */}
-            <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-                Impact TRS (%)
-              </label>
-              <div className="relative">
-                <input 
-                  type="number"
-                  step="0.01"
-                  value={formData.impactTrs}
-                  onChange={(e) => setFormData({...formData, impactTrs: e.target.value})}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-blue-50 outline-none font-bold text-slate-700"
-                  placeholder="Ex: 2.5"
-                />
-                <MdTrendingUp className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={20} />
+            {/* PRIORITE SELECTION */}
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
+                  Priorité
+                </label>
+                <div className="relative">
+                  <select 
+                    value={formData.priorite}
+                    onChange={(e) => setFormData({...formData, priorite: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-blue-50 outline-none appearance-none font-bold text-slate-700 cursor-pointer"
+                  >
+                    <option value="BAS">Bas</option>
+                    <option value="MOYEN">Moyen</option>
+                    <option value="HAUT">Haut</option>
+                  </select>
+                  <MdFlag className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={20} />
+                </div>
               </div>
-            </div>
+
+
           </div>
 
-          {/* PRIORITE SELECTION */}
-          <div>
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-              Priorité
-            </label>
-            <div className="relative">
-              <select 
-                value={formData.priorite}
-                onChange={(e) => setFormData({...formData, priorite: e.target.value})}
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-blue-50 outline-none appearance-none font-bold text-slate-700 cursor-pointer"
-              >
-                <option value="BAS">Bas</option>
-                <option value="MOYEN">Moyen</option>
-                <option value="HAUT">Haut</option>
-              </select>
-              <MdFlag className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={20} />
-            </div>
-          </div>
+          
+
 
           {/* DESCRIPTION */}
           <div>

@@ -7,6 +7,7 @@ import GoalEdit from "@/components/admin/objectifs/GoalEdit";
 import { MdOutlineTrackChanges } from "react-icons/md";
 import AjoutButton from "@/components/admin/adminLayout/AjoutButton";
 import AjoutGoalForm from "@/components/admin/objectifs/AjoutGoalForm";
+import { Toaster } from "react-hot-toast";
 
 const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
@@ -45,6 +46,7 @@ const GoalsPage = () => {
 
   return (
     <AdminLayout activePage="Les Objectifs">
+      <Toaster position="top-center"  />
       <div className="p-8 space-y-8 animate-in fade-in duration-700 pb-20">
         
         {/* Header Section */}
@@ -54,7 +56,7 @@ const GoalsPage = () => {
               <MdOutlineTrackChanges className="text-blue-600" />
               GESTION DES OBJECTIFS
             </h1>
-            <p className="text-slate-500 font-medium">Définissez et suivez vos indicateurs de performance clés.</p>
+            <p className="text-slate-500 font-medium">Fixez les valeurs cibles de TRS pour chaque ressource.</p>
           </div>
           
           <AjoutButton setIsOpen={setIsOpen} title={'Nouvel Objectif'} />

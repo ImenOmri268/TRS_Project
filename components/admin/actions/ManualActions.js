@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from "react";
-import { MdAssignmentAdd, MdDescription, MdSettings } from "react-icons/md";
+import { MdAssignmentAdd, MdDescription, MdSettings, MdTitle } from "react-icons/md";
 
 const CreatePlanForm = ({ onPlanCreated }) => {
   const [loading, setLoading] = useState(false);
@@ -10,6 +10,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
   const [fetchingResources, setFetchingResources] = useState(true);
   
   const [planData, setPlanData] = useState({
+    title: "",
     description: "",
     ressourceId: "",
     workflowId: "", 
@@ -61,6 +62,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
 
   const handleCreatePlan = async (e) => {
     e.preventDefault();
+    if (!planData.title.trim()) return alert("Veuillez saisir un titre.");
     if (!planData.ressourceId) return alert("Veuillez sélectionner une ressource.");
     if (!planData.workflowId) return alert("Veuillez sélectionner un workflow.");
     
@@ -84,6 +86,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
 
         alert("Plan d'action initialisé avec succès !");
         setPlanData({ 
+          title: "",
           description: "", 
           ressourceId: "", 
           workflowId: "", 
@@ -99,7 +102,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
 
   return (
     <div className="w-full bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full transition-all hover:shadow-md">
-      {/* HEADER SECTION: Text auto-wraps cleanly on ultra-small mobile displays */}
+      {/* HEADER SECTION */}
       <div className="bg-slate-50 p-4 sm:p-6 border-b border-slate-100">
          <h3 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2">
             <MdAssignmentAdd className="text-blue-600 flex-shrink-0" size={24} /> 
@@ -114,13 +117,30 @@ const CreatePlanForm = ({ onPlanCreated }) => {
       <form onSubmit={handleCreatePlan} className="p-4 sm:p-6 space-y-5 sm:space-y-6 flex-1 flex flex-col justify-between">
         <div className="space-y-5">
           
-          {/* GRIDS: 1 column on mobile layout structures, 2 columns on tablet/desktop layout lines */}
+          {/* TITRE DU PLAN */}
+          <div>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
+              Titre du plan d&apos;action
+            </label>
+            <div className="relative">
+              <input 
+                type="text"
+                required
+                placeholder="Ex: Plan de maintenance corrective - Ligne A"
+                value={planData.title}
+                onChange={(e) => setPlanData({...planData, title: e.target.value})}
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-sm focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all text-slate-700 font-medium placeholder:text-slate-300"
+              />
+            </div>
+          </div>
+          
+          {/* SELECTORS GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
             
             {/* SELECT RESOURCE */}
             <div className="col-span-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-                Sélectionner la ressource (à suivre)
+                Sélectionner la ressource
               </label>
               <div className="relative">
                 <select 
@@ -145,7 +165,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
             {/* SELECT WORKFLOW */}
             <div className="col-span-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-                Sélectionner le Workflow (Analyse)
+                Sélectionner le Workflow
               </label>
               <div className="relative">
                 <select 
@@ -166,7 +186,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
                       <option value="">-- Choisir un workflow --</option>
                       {workflows.map((wf) => (
                         <option key={wf.id} value={wf.id}>
-                          {wf.nom} ({wf.statut})
+                          {wf.nom} 
                         </option>
                       ))}
                     </>
@@ -183,12 +203,12 @@ const CreatePlanForm = ({ onPlanCreated }) => {
           {/* OBJECTIF DU PLAN */}
           <div>
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-              Objectif du plan
+              Description du plan
             </label>
             <div className="relative">
               <textarea 
                 required
-                placeholder="Quelle est la finalité de ce plan ?"
+                placeholder="Quelle est la finalité de ce plan d'action ?"
                 value={planData.description}
                 onChange={(e) => setPlanData({...planData, description: e.target.value})}
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-sm min-h-[100px] sm:min-h-[120px] focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all text-slate-700 placeholder:text-slate-300 resize-y"
@@ -218,7 +238,7 @@ const CreatePlanForm = ({ onPlanCreated }) => {
         <div className="pt-4 mt-auto">
           <button 
             type="submit"
-            disabled={loading || fetchingWorkflows || !planData.workflowId}
+            disabled={loading || fetchingWorkflows || !planData.workflowId || !planData.title.trim()}
             className="w-full bg-slate-900 hover:bg-blue-600 text-white font-black py-3.5 sm:py-4 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.99] disabled:opacity-35 disabled:bg-slate-800 disabled:cursor-not-allowed shadow-lg shadow-slate-100 uppercase text-[11px] sm:text-xs tracking-[0.15em]"
           >
             {loading ? "Initialisation..." : "Lancer le Plan d'Action"}

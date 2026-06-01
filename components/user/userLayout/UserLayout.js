@@ -8,9 +8,12 @@ import { GoGoal } from "react-icons/go"
 import { IoIosGitCompare } from "react-icons/io"
 import { MdSettingsInputComponent } from "react-icons/md"
 import SignOut from "@/components/authentification/SignOut"
-import NotifButton from '../../notification/NotifButton'
-import NotifBar from '../../notification/NotifBar'
 import MenuButton from '../../../components/admin/adminLayout/MenuButton' 
+import NotifButton from './notification/NotifButton'
+import NotifBar from './notification/NotifBar'
+
+
+
 
 const MENU_ITEMS = [
   { label: 'Dashboard',      href: '/user/Dashboard',     permission: 'voir_dashboard',      icon: '/dashboard.svg' },
@@ -21,9 +24,6 @@ const MENU_ITEMS = [
   { label: 'Suivi TRS',      href: '/user/SuiviTRS',    permission: 'suivre_trs',      icon: <IoIosGitCompare className="w-5 h-5" /> },
   { label: 'traitements',    href: '/user/Traitements', permission: ['consulter_traitements', 'generer_traitements'], icon: '/pipeline.svg' },
   { label: "Mes actions", href: '/user/PlanAction',  permission: 'voir_plan_action',    icon: '/plan.svg' },
-  
-  
- 
 ]
 
 export default function UserLayout({ children, activePage }) {
@@ -42,10 +42,8 @@ export default function UserLayout({ children, activePage }) {
 
   const menuVisible = MENU_ITEMS.filter(item => {
     if (Array.isArray(item.permission)) {
-      // L'utilisateur doit avoir au moins une des permissions listées
       return item.permission.some(perm => profil?.permissions?.includes(perm))
     } else {
-      // Permission unique sous forme de chaîne
       return profil?.permissions?.includes(item.permission)
     }
   })
@@ -113,9 +111,14 @@ export default function UserLayout({ children, activePage }) {
         <header className="h-16 flex items-center px-4 md:px-8 bg-white border-b border-slate-200 top-0 z-30">
           <div className="flex items-center gap-4 w-full">
             <MenuButton open={open} setOpen={setOpen} />
-            <div className="flex-1 flex items-center justify-end gap-4">
-              <NotifButton showNotif={showNotif} setShowNotif={setShowNotif} />
-              <NotifBar showNotif={showNotif} setShowNotif={setShowNotif} />
+            <div className="flex-1 flex items-center justify-end">
+              
+              {/* Conteneur RELATIVE pour aligner correctement la NotifBar sous la cloche */}
+              <div className="relative">
+                <NotifButton showNotif={showNotif} setShowNotif={setShowNotif} />
+                <NotifBar showNotif={showNotif} setShowNotif={setShowNotif} />
+              </div>
+
             </div>
           </div>
         </header>

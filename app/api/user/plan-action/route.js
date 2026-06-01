@@ -47,6 +47,7 @@ export async function GET(request) {
       if (!plansMap[plan.id]) {
         plansMap[plan.id] = {
           id: plan.id,
+          title: plan.title,
           description: plan.description,
           statut: plan.statut,
           dateDebut: plan.dateDebut,
@@ -65,7 +66,6 @@ export async function GET(request) {
         priorite: action.priorite,
         statut: action.statut,
         dateLimite: action.dateLimite,
-        impactTrs: action.impactTrs
       });
     });
 

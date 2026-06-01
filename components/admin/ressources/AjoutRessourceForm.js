@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { MdClose, MdSettings, MdAnalytics, MdCheckCircle, MdMemory, MdCategory, MdEditAttributes, MdDescription, MdErrorOutline } from "react-icons/md";
 import { HiPlus } from "react-icons/hi";
 import { IoReturnUpBack } from "react-icons/io5";
+import toast from "react-hot-toast";
 
 const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/ressources' }) => {
   const scrollContainerRef = useRef(null);
@@ -74,6 +75,14 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/res
       });
 
       if (response.ok) {
+        toast.success("Ressource créée avec succès !", {
+          duration: 1000,
+          style: {
+            borderRadius: '15px',
+            background: '#8BE78B',
+            color: '#FFFFFF',
+          },
+        });
         refresh();
         onClose();
         setFormData({ nom: "", type: "", description: "", initialTRS: "", initialDisp: "", initialPerf: "", initialQual: "" });
@@ -136,14 +145,14 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/res
                 <section className="space-y-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Identification *</h3>
                   <div className="grid gap-4">
-                    <ModalInput icon={MdMemory} placeholder="Nom de la machine" value={formData.nom} onChange={(e) => handleInputChange('nom', e.target.value)} />
+                    <ModalInput icon={MdMemory} placeholder="Nom de la ressource" value={formData.nom} onChange={(e) => handleInputChange('nom', e.target.value)} />
                     <ModalInput icon={MdCategory} placeholder="Type (ex: Laser, Presse...)" value={formData.type} onChange={(e) => handleInputChange('type', e.target.value)} />
                     <ModalInput icon={MdDescription} placeholder="Description technique..." value={formData.description} onChange={(e) => handleInputChange('description', e.target.value)} />
                   </div>
                 </section>
 
                 <section className="space-y-4">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Valeurs Initiales (%) <span className="lowercase font-normal italic opacity-60">(Optionnel)</span></h3>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Valeurs Initiales (%) </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <ModalInput icon={MdSettings} placeholder="TRS" type="number" value={formData.initialTRS} onChange={(e) => handleInputChange('initialTRS', e.target.value)} />
                     <ModalInput icon={MdSettings} placeholder="Disp." type="number" value={formData.initialDisp} onChange={(e) => handleInputChange('initialDisp', e.target.value)} />

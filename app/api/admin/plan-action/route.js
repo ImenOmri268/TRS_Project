@@ -21,21 +21,34 @@ export async function GET() {
 // POST: Create the main PlanAction container
 export async function POST(request) {
   try {
-    const { workflowId, description, dateDebut } = await request.json();
+    const body = await request.json();
+    const { title, description, workflowId, dateDebut } = body;
 
-    const plan = await prisma.planAction.create({
+    // Validation checks
+    if (!title || !description || !workflowId) {
+      return NextResponse.json(
+        { error: "Champs obligatoires manquants" },
+        { status: 400 }
+      );
+    }
+
+    // Create the plan action with the new title attribute
+    const newPlanAction = await prisma.planAction.create({
       data: {
+        title: title,
+        description: description,
         workflowId: parseInt(workflowId),
-        description: description || "Plan d'amélioration",
-        statut: "EN_COURS",
         dateDebut: dateDebut ? new Date(dateDebut) : new Date(),
-      }
+      },
     });
 
-    return NextResponse.json(plan, { status: 201 });
+    return NextResponse.json(newPlanAction, { status: 201 });
   } catch (error) {
-    console.error("[PLAN_POST_ERROR]:", error);
-    return NextResponse.json({ error: "Impossible de créer le plan" }, { status: 500 });
+    console.error("Erreur lors de la création du plan d'action:", error);
+    return NextResponse.json(
+      { error: "Erreur interne du serveur" },
+      { status: 500 }
+    );
   }
 }
 

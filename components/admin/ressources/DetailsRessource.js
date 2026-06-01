@@ -59,7 +59,7 @@ const DetailsRessource = ({ resourceData, setSelectedDetails }) => {
               <div className="px-8 py-6 flex items-center justify-between border-b border-slate-100 bg-white">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-100">
-                    <MdLayers size={24}/>
+                      <MdLayers size={24}/>
                   </div>
                   <div>
                     <div className="flex items-center gap-3">

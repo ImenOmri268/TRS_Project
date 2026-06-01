@@ -54,11 +54,12 @@ export async function POST(request) {
 
     const decoded = verifyToken(token);
 
-    const currentUser = await prisma.user.findUnique({
+    // Fetch the acting user to get both their name and adminId
+    const actor = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { adminId: true }
+      select: { name: true, adminId: true }
     });
-    const adminId = currentUser?.adminId;
+    const adminId = actor?.adminId;
 
     if (!adminId) return NextResponse.json({ message: 'Admin introuvable' }, { status: 404 });
 
@@ -93,6 +94,22 @@ export async function POST(request) {
       return u;
     });
 
+    // --- NOTIFICATION CODE ---
+    try {
+      if (actor?.adminId) {
+        await prisma.notification.create({
+          data: {
+            message: `L'utilisateur ${actor.name} a créé un nouveau compte collaborateur : ${name} (${userRole}).`,
+            userId: actor.adminId,
+            createdBy: actor.name,
+          },
+        });
+      }
+    } catch (notifError) {
+      console.error('[POST_USER_NOTIF_ERROR]', notifError);
+    }
+    // -------------------------
+
     const { password, ...safeUser } = newUser;
     return NextResponse.json(safeUser, { status: 201 });
   } catch (error) {
@@ -100,6 +117,7 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Erreur de création' }, { status: 500 });
   }
 }
+
 export async function PUT(request) {
   try {
     const token = request.cookies.get('token')?.value;
@@ -125,6 +143,27 @@ export async function PUT(request) {
       })
     ]);
 
+    // --- NOTIFICATION CODE ---
+    try {
+      const actor = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { name: true, adminId: true }
+      });
+
+      if (actor?.adminId) {
+        await prisma.notification.create({
+          data: {
+            message: `L'utilisateur ${actor.name} a mis à jour les informations du compte de ${name}.`,
+            userId: actor.adminId,
+            createdBy: actor.name,
+          },
+        });
+      }
+    } catch (notifError) {
+      console.error('[PUT_USER_NOTIF_ERROR]', notifError);
+    }
+    // -------------------------
+
     return NextResponse.json({ message: 'Utilisateur mis à jour' });
   } catch (error) {
     console.error('[USER_UTILISATEURS_PUT_ERROR]', error);
@@ -145,7 +184,7 @@ export async function DELETE(request) {
     // Vérifier que ce user appartient bien à l'admin du user connecté
     const currentUser = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { adminId: true }
+      select: { name: true, adminId: true }
     });
 
     const targetUser = await prisma.user.findFirst({
@@ -158,6 +197,23 @@ export async function DELETE(request) {
     if (!targetUser) return NextResponse.json({ message: 'Introuvable' }, { status: 404 });
 
     await prisma.user.delete({ where: { id: parseInt(id) } });
+
+    // --- NOTIFICATION CODE ---
+    try {
+      if (currentUser?.adminId && targetUser) {
+        await prisma.notification.create({
+          data: {
+            message: `L'utilisateur ${currentUser.name} a supprimé le compte collaborateur de ${targetUser.name}.`,
+            userId: currentUser.adminId,
+            createdBy: currentUser.name,
+          },
+        });
+      }
+    } catch (notifError) {
+      console.error('[DELETE_USER_NOTIF_ERROR]', notifError);
+    }
+    // -------------------------
+
     return NextResponse.json({ message: 'Supprimé' });
   } catch (error) {
     console.error('[USER_UTILISATEURS_DELETE_ERROR]', error);

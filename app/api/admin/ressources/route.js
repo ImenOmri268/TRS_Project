@@ -129,7 +129,7 @@ export async function PUT(request) {
           const v1 = parseFloat(relevantEntries[0].value);
           const v2 = parseFloat(relevantEntries[1].value);
 
-          if (v1 !== 0) {
+          if (v1 !== 0  && v1>= v2) { // Prevent division by zero and ensure logical values
             const resultPourcentage = ((v1 - v2) / v1) * 100;
 
             // 3. Create CalculatedMetric with the shared calculationDate

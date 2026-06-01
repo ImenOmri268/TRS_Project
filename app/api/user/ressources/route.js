@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma'
-import { verifyToken } from '../../../lib/jwt'
+import { prisma } from '../../../lib/prisma';
+import { verifyToken } from '../../../lib/jwt';
 
+// === GET: Fetch all resources ===
 export async function GET(request) {
   try {
     const token = request.cookies.get('token')?.value;
@@ -47,9 +48,12 @@ export async function GET(request) {
   }
 }
 
+// === POST: Create a new resource ===
 export async function POST(request) {
   try {
     const token = request.cookies.get('token')?.value;
+    if (!token) return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
+    
     const decoded = verifyToken(token);
 
     let adminId;
@@ -91,6 +95,25 @@ export async function POST(request) {
       }
     });
 
+    try {
+      const actor = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { name: true, adminId: true }
+      });
+
+      if (actor?.adminId) {
+        await prisma.notification.create({
+          data: {
+            message: `L'utilisateur ${actor.name} a créé une nouvelle ressource : ${nom} (${type}).`,
+            userId: actor.adminId,
+            createdBy: actor.name
+          }
+        });
+      }
+    } catch (notifError) {
+      console.error('[POST_RESSOURCE_NOTIF_ERROR]', notifError);
+    }
+
     return NextResponse.json(newResource, { status: 201 });
   } catch (error) {
     console.error('[USER_RESSOURCES_POST_ERROR]', error);
@@ -98,11 +121,19 @@ export async function POST(request) {
   }
 }
 
+// === PUT: Update an existing resource ===
 export async function PUT(request) {
   try {
+    const token = request.cookies.get('token')?.value;
+    if (!token) return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
+    
+    const decoded = verifyToken(token);
+
     const body = await request.json();
     const { id, dailyEntries, nom, type, description, statut, parameters } = body;
     const resourceId = parseInt(id);
+
+    let notificationMessage = "";
 
     if (dailyEntries && dailyEntries.length > 0) {
       await prisma.dailyValue.createMany({
@@ -146,6 +177,9 @@ export async function PUT(request) {
           }
         }
       }
+      notificationMessage = "collecté de nouvelles données et mis à jour les indicateurs de";
+    } else {
+      notificationMessage = "mis à jour les informations de";
     }
 
     if (parameters && Array.isArray(parameters)) {
@@ -170,9 +204,86 @@ export async function PUT(request) {
       data: updateData
     });
 
+    // 🛠️ FIX: Fetch actor details down here safely
+    try {
+      const actor = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { name: true, adminId: true }
+      });
+
+      if (actor?.adminId) {
+        await prisma.notification.create({
+          data: {
+            message: `L'utilisateur ${actor.name} a ${notificationMessage} la ressource : ${updated.nom}.`,
+            userId: actor.adminId,
+            createdBy: actor.name
+          }
+        });
+      }
+    } catch (notifError) {
+      console.error('[PUT_RESSOURCE_NOTIF_ERROR]', notifError);
+    }
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error('[USER_RESSOURCES_PUT_ERROR]', error);
     return NextResponse.json({ message: 'Erreur de mise à jour' }, { status: 500 });
+  }
+}
+
+// === DELETE: Remove a resource completely ===
+export async function DELETE(request) {
+  try {
+    const token = request.cookies.get('token')?.value;
+    if (!token) return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
+
+    const decoded = verifyToken(token);
+    const { searchParams } = new URL(request.url);
+    const id = parseInt(searchParams.get('id'));
+
+    if (!id || isNaN(id)) {
+      return NextResponse.json({ message: 'ID ressource invalide' }, { status: 400 });
+    }
+
+    // 1. Get resource name and verification info BEFORE executing deletion cascade
+    const targetResource = await prisma.ressource.findUnique({
+      where: { id },
+      select: { nom: true }
+    });
+
+    if (!targetResource) {
+      return NextResponse.json({ message: 'Ressource introuvable' }, { status: 404 });
+    }
+
+    // 2. Fetch actor profile tracking parameters
+    const actor = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { name: true, adminId: true }
+    });
+
+    // 3. Delete from Database
+    await prisma.ressource.delete({
+      where: { id }
+    });
+
+    // 4. Record Notification row using local execution strings
+    if (actor?.adminId) {
+      try {
+        await prisma.notification.create({
+          data: {
+            message: `L'utilisateur ${actor.name} a supprimé la ressource : ${targetResource.nom}.`,
+            userId: actor.adminId,
+            createdBy: actor.name
+          }
+        });
+      } catch (notifError) {
+        console.error('[DELETE_RESSOURCE_NOTIF_ERROR]', notifError);
+      }
+    }
+
+    return NextResponse.json({ message: 'Ressource supprimée avec succès' });
+  } catch (error) {
+    console.error('[USER_RESSOURCES_DELETE_ERROR]', error);
+    return NextResponse.json({ message: 'Erreur lors de la suppression' }, { status: 500 });
   }
 }

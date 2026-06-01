@@ -5,6 +5,7 @@ import { MdClose, MdOutlineTrackChanges, MdOutlineFlag, MdOutlineEvent, MdOutlin
 import { HiPlus } from "react-icons/hi";
 import { IoReturnUpBack } from "react-icons/io5";
 import ModalSelect from "./ModalSelect";
+import toast from "react-hot-toast";
 
 const AjoutGoalForm = ({ isOpen, onClose, refresh, ressourcesApiUrl='/api/admin/ressources' }) => {
   const [error, setError] = useState("");
@@ -92,6 +93,14 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh, ressourcesApiUrl='/api/admin/
       const data = await res.json();
 
       if (res.ok) {
+        toast.success("Objectif créé avec succès !", {
+          duration: 1000,
+          style: {
+            borderRadius: '15px',
+            background: '#8BE78B',
+            color: '#FFFFFF',
+          },
+        });
         refresh(); 
         resetForm();
         onClose();
@@ -182,7 +191,7 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh, ressourcesApiUrl='/api/admin/
                     />
                     <ModalInput 
                       icon={MdOutlineEvent} 
-                      label="Échéance" 
+                      label="Date limite" 
                       type="date"
                       value={formData.dateFin} 
                       onChange={(e) => { setError(""); setFormData({...formData, dateFin: e.target.value})}}
@@ -206,7 +215,7 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh, ressourcesApiUrl='/api/admin/
                   <MdOutlineDescription className="text-2xl text-slate-400 mt-1" />
                   <textarea 
                     className="w-full bg-transparent text-slate-900 font-medium focus:outline-none placeholder:text-slate-300 min-h-[120px] resize-none"
-                    placeholder="Décrivez les étapes ou la méthodologie (ex: Méthode SMED, Analyse des causes...)"
+                    placeholder="Fournissez une description détaillée de l'objectif."
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                   ></textarea>

@@ -114,18 +114,7 @@ const ActionDetails = ({ selectedAction, onClose }) => {
               </div>
             </div>
 
-            {/* TRS ESTIMATE METRIC PANEL */}
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50/30 rounded-2xl border border-blue-100/50">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white rounded-xl shadow-sm text-blue-600">
-                  <MdAnalytics size={18} />
-                </div>
-                <span className="text-xs font-bold text-slate-600">Impact TRS estimé</span>
-              </div>
-              <span className="text-lg font-black text-blue-700">
-                {selectedAction.impactTrs !== null && selectedAction.impactTrs !== undefined ? `${selectedAction.impactTrs}%` : "0%"}
-              </span>
-            </div>
+
 
             <hr className="border-slate-100" />
 

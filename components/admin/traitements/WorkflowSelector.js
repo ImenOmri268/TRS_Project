@@ -134,7 +134,7 @@ const WorkflowSelector = ({ onSelectWorkflow }) => {
           <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
             <FiCpu className="text-blue-600" /> Ressources Disponibles
           </h3>
-          <p className="text-xs text-slate-400 font-medium mt-0.5">Sélectionnez un appareil ou un axe à analyser.</p>
+          <p className="text-xs text-slate-400 font-medium mt-0.5">Sélectionnez une ressource à analyser.</p>
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-2 max-h-[55vh] pr-1">

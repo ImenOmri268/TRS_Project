@@ -1,11 +1,9 @@
+import { verifyToken } from "@/app/lib/jwt";
 import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
+ // Adjusted path to match your JWT utility placement
 
-/**
- * 1. GET : Gère le WorkflowSelector de l'utilisateur
- * - Soit il charge toutes les sessions d'une ressource spécifique.
- * - Soit il récupère les analyses (étapes enregistrées) d'un traitement sélectionné.
- */
+
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
@@ -37,7 +35,6 @@ export async function GET(req) {
         id: true,
         nom: true,
         dateDebut: true,
-        statut: true,
         pdfUrl: true,
       }
     });
@@ -55,19 +52,32 @@ export async function GET(req) {
  */
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { 
-      nom, 
-      ressourceId, 
-      workflowId, 
-      type, 
-      contenu,
-      userName, // Optionnel : Nom de l'utilisateur pour le log d'audit
-      adminId   // Optionnel : ID de l'administrateur rattaché pour la notification
-    } = body;
+    // 🔐 Extraction et vérification sécurisée du Token
+    const token = req.cookies.get('token')?.value;
+    if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-    const traceName = userName || "Un responsable";
-    const targetAdminId = adminId ? parseInt(adminId, 10) : null;
+    const decoded = verifyToken(token);
+
+    // Récupération de l'identité de l'utilisateur en BDD
+    const actor = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { name: true, adminId: true }
+    });
+
+    let targetAdminId;
+    if (decoded.type === 'ADMIN') {
+      targetAdminId = decoded.id;
+    } else {
+      targetAdminId = actor?.adminId;
+    }
+
+    if (!targetAdminId) {
+      return NextResponse.json({ error: "Admin introuvable ou non lié" }, { status: 404 });
+    }
+
+    const traceName = actor?.name || "Un utilisateur";
+    const body = await req.json();
+    const { nom, ressourceId, workflowId, type, contenu } = body;
 
     // =========================================================
     // SOUS-CAS 2.1 : Sauvegarde/Mise à jour des données d'une étape Lean
@@ -95,10 +105,7 @@ export async function POST(req) {
       });
 
       let stepResult;
-      let actionVerb = "créé";
-
       if (existingAnalysis) {
-        actionVerb = "mis à jour";
         stepResult = await prisma.analyse.update({
           where: { id: existingAnalysis.id },
           data: { contenu: JSON.stringify(parsedContenu) }
@@ -119,23 +126,32 @@ export async function POST(req) {
         select: { nom: true }
       });
 
-      // Création de la notification d'audit système
-      if (targetAdminId) {
+      // 🛠️ Traducteur dynamique pour correspondre précisément à tes outils Lean
+      let actionLabel = `les données de l'étape ${type}`;
+      if (type === "BRAINSTORMING") actionLabel = "des données au brainstorming";
+      if (type === "PARETO") actionLabel = "des données du diagramme de Pareto";
+      if (type === "5_POURQUOI" || type === "5_WHYS") actionLabel = "des données des 5 Pourquoi";
+      if (type === "ISHIKAWA") actionLabel = "des données du diagramme d'Ishikawa";
+      if (type === "RAPPORT" || type === "REPORT") actionLabel = "un rapport d'analyse";
+
+      // Création de la notification de type ACTION
+      try {
         await prisma.notification.create({
           data: {
-            message: `A ${actionVerb} l'étape [${type}] pour le traitement : "${targetWorkflow?.nom || workflowId}"`,
-            type: "SYSTEM_AUDIT",
+            message: `L'utilisateur ${traceName} a enregistré ${actionLabel} pour le traitement : "${targetWorkflow?.nom || workflowId}".`,
             userId: targetAdminId,
             createdBy: traceName
           }
         });
+      } catch (nErr) {
+        console.error('[WORKFLOW_STEP_NOTIF_ERROR]', nErr);
       }
 
       return NextResponse.json({ success: true, data: stepResult });
     }
 
     // =========================================================
-    // SOUS-CAS 2.2 : Initialisation d'un traitement depuis le sélecteur (si autorisé)
+    // SOUS-CAS 2.2 : Initialisation d'un traitement depuis le sélecteur
     // =========================================================
     if (!nom || !ressourceId) {
       return NextResponse.json({ error: "Données manquantes pour l'initialisation du traitement." }, { status: 400 });
@@ -145,7 +161,6 @@ export async function POST(req) {
       data: {
         nom: nom,
         ressourceId: parseInt(ressourceId, 10),
-        statut: "EN_COURS",
         analyse: {
           create: {
             type: "BRAINSTORMING",
@@ -156,15 +171,16 @@ export async function POST(req) {
       include: { ressource: { select: { nom: true } } }
     });
 
-    if (targetAdminId) {
+    try {
       await prisma.notification.create({
         data: {
-          message: `A démarré une nouvelle session de traitement "${nom}" sur la ressource [${newWorkflow.ressource?.nom || ressourceId}]`,
-          type: "SYSTEM_AUDIT",
+          message: `L'utilisateur ${traceName} a créé un workflow "${nom}" concernant la ressource : ${newWorkflow.ressource?.nom || ressourceId}.`,
           userId: targetAdminId,
           createdBy: traceName
         }
       });
+    } catch (nErr) {
+      console.error('[WORKFLOW_CREATE_NOTIF_ERROR]', nErr);
     }
 
     return NextResponse.json(newWorkflow);
@@ -180,10 +196,27 @@ export async function POST(req) {
  */
 export async function DELETE(request) {
   try {
+    // 🔐 Extraction et vérification sécurisée du Token
+    const token = request.cookies.get('token')?.value;
+    if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+
+    const decoded = verifyToken(token);
+
+    const actor = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { name: true, adminId: true }
+    });
+
+    let targetAdminId;
+    if (decoded.type === 'ADMIN') {
+      targetAdminId = decoded.id;
+    } else {
+      targetAdminId = actor?.adminId;
+    }
+
     const { searchParams } = new URL(request.url);
     const idString = searchParams.get("workflowId");
-    const adminId = searchParams.get("adminId");
-    const userName = searchParams.get("userName") || "Un responsable";
+    const traceName = actor?.name || "Un utilisateur";
 
     if (!idString) {
       return NextResponse.json({ error: "Le paramètre workflowId est requis." }, { status: 400 });
@@ -202,16 +235,19 @@ export async function DELETE(request) {
     await prisma.analyse.deleteMany({ where: { workflowId: workflowId } });
     await prisma.workflow.delete({ where: { id: workflowId } });
 
-    // Envoi du log de suppression
-    if (adminId) {
-      await prisma.notification.create({
-        data: {
-          message: `A supprimé la session de traitement en cours "${existingWorkflow.nom}"`,
-          type: "SYSTEM_AUDIT",
-          userId: parseInt(adminId, 10),
-          createdBy: userName
-        }
-      });
+    // Envoi de la notification de suppression
+    if (targetAdminId) {
+      try {
+        await prisma.notification.create({
+          data: {
+            message: `L'utilisateur ${traceName} a supprimé la session de traitement : "${existingWorkflow.nom}".`,
+            userId: targetAdminId,
+            createdBy: traceName
+          }
+        });
+      } catch (nErr) {
+        console.error('[WORKFLOW_DELETE_NOTIF_ERROR]', nErr);
+      }
     }
 
     return NextResponse.json({ message: "Session supprimée avec succès." }, { status: 200 });

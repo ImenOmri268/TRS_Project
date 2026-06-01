@@ -85,9 +85,7 @@ const ModifRessource = ({ resourceData, setSelectedResource, refresh }) => {
               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                 <div>
                   <p className="text-sm font-bold text-slate-700">Statut de la ressource</p>
-                  <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
-                    {formData.statut ? "Visible sur le tableau" : "Masqué / Désactivé"}
-                  </p>
+                  
                 </div>
                 <button 
                   onClick={() => setFormData({...formData, statut: !formData.statut})}

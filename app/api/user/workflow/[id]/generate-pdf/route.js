@@ -5,6 +5,7 @@ import chromium from "@sparticuz/chromium-min";
 import { computeExecutablePath } from "@puppeteer/browsers";
 import fs from "fs";
 import path from "path";
+import { verifyToken } from "../../../../../lib/jwt"; // Adjust the path level back to your jwt utility location
 
 const prisma = new PrismaClient();
 
@@ -14,7 +15,8 @@ const prisma = new PrismaClient();
 export async function GET(req, { params }) {
   try {
     const resolvedParams = await params; 
-    const id = parseInt(resolvedParams.workflowId, 10); // Extrait selon l'arborescence [workflowId]
+    // Fix: Using .id because your dynamic folder name is [id]
+    const id = parseInt(resolvedParams.id, 10); 
 
     if (isNaN(id)) {
       return NextResponse.json({ error: "ID de session invalide." }, { status: 400 });
@@ -42,18 +44,32 @@ export async function GET(req, { params }) {
 export async function POST(req, { params }) {
   try {
     const resolvedParams = await params; 
-    const workflowId = parseInt(resolvedParams.workflowId, 10);
+    // Fix: Using .id because your dynamic folder name is [id]
+    const workflowId = parseInt(resolvedParams.id, 10);
 
     if (isNaN(workflowId)) {
       return NextResponse.json({ error: "ID de session invalide." }, { status: 400 });
     }
+
+    // 🔐 Extraction sécurisée de l'identité utilisateur via Cookie Token
+    const token = req.cookies.get('token')?.value;
+    if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+
+    const decoded = verifyToken(token);
+    const actor = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { name: true, adminId: true }
+    });
+
+    let targetAdminId = decoded.type === 'ADMIN' ? decoded.id : actor?.adminId;
+    const traceName = actor?.name || "Un utilisateur";
 
     // Récupération complète de la session avec la relation 'analyse'
     const workflow = await prisma.workflow.findUnique({
       where: { id: workflowId },
       include: {
         ressource: true,
-        analyse: true, // S'assure de matcher l'architecture de ton endpoint admin
+        analyse: true, 
       },
     });
 
@@ -77,7 +93,7 @@ export async function POST(req, { params }) {
     const whysData = safeParse(whysRaw);
     const ishikawaData = safeParse(ishikawaRaw);
 
-    // Template HTML structuré et moderne pour l'export
+    // Template HTML
     const htmlTemplate = `
       <!DOCTYPE html>
       <html lang="fr">
@@ -248,7 +264,7 @@ export async function POST(req, { params }) {
                           <div class="text-[8px] font-extrabold text-blue-600 uppercase tracking-wide mb-0.5">Pourquoi n°${index + 1} : "${s.why || '...'}"</div>
                           <div class="font-bold text-slate-800"><span class="text-slate-400 font-normal">Réponse fournie :</span> ${s.answer || '...'}</div>
                         </div>
-                      `).join('') : '<p class="text-xs text-slate-400 italic">Chaîne d\'itération vide.</p>'}
+                      `).join('') : '<p class="text-xs text-slate-400 italic">Chaîne d\'itération vuide.</p>'}
                     </div>
                   </div>
                 `;
@@ -320,7 +336,7 @@ export async function POST(req, { params }) {
       </html>
     `;
 
-    // Lancement de l'instance Puppeteer avec la configuration isolée (Prod vs Local)
+    // Lancement de Puppeteer
     let browser;
     if (process.env.NODE_ENV === "production") {
       browser = await puppeteer.launch({
@@ -359,7 +375,7 @@ export async function POST(req, { params }) {
 
     await browser.close();
 
-    // Gestion de l'écriture physique du document compilé sur le serveur local/Vercel
+    // Enregistrement physique du fichier PDF
     const reportsDir = path.join(process.cwd(), "public", "reports");
     if (!fs.existsSync(reportsDir)) {
       fs.mkdirSync(reportsDir, { recursive: true });
@@ -377,6 +393,21 @@ export async function POST(req, { params }) {
       data: { pdfUrl: savedPublicUrl }
     });
 
+    // ⚡ Envoi de la notification de type ACTION vers l'administrateur rattaché
+    if (targetAdminId) {
+      try {
+        await prisma.notification.create({
+          data: {
+            message: `L'utilisateur ${traceName} a généré un rapport d'analyse final pour le traitement : "${workflow.nom}".`,
+            userId: targetAdminId,
+            createdBy: traceName
+          }
+        });
+      } catch (nErr) {
+        console.error('[PDF_NOTIF_ERROR]', nErr);
+      }
+    }
+
     return NextResponse.json({ success: true, pdfUrl: updatedWorkflow.pdfUrl });
 
   } catch (error) {
@@ -391,7 +422,7 @@ export async function POST(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     const resolvedParams = await params;
-    const id = parseInt(resolvedParams.workflowId, 10);
+    const id = parseInt(resolvedParams.id, 10); // Fix: Using .id
 
     if (isNaN(id)) {
       return NextResponse.json({ error: "ID invalide" }, { status: 400 });

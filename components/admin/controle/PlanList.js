@@ -1,12 +1,16 @@
 'use client'
 import React, { useState, useEffect } from "react";
 import { MdAssignment, MdChevronRight, MdDeleteOutline } from "react-icons/md";
+import PlanDetailsSidebar from "./PlanDetailsSidebar"; // Adjust path dynamically based on directory structure
 
 const PlanList = ({ onPlanSelect, selectedPlanId }) => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Sidebar visibility controls
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [detailedPlan, setDetailedPlan] = useState(null);
 
-  // Fetch all plans
   const fetchPlans = async () => {
     try {
       const res = await fetch("/api/admin/plan-action");
@@ -25,10 +29,8 @@ const PlanList = ({ onPlanSelect, selectedPlanId }) => {
     fetchPlans();
   }, []);
 
-  // Delete individual plan handle
   const handleDeletePlan = async (e, planId) => {
-    e.stopPropagation(); // Prevents triggering onPlanSelect when clicking delete
-    
+    e.stopPropagation();
     if (!confirm("Êtes-vous sûr de vouloir supprimer ce plan d'action ?")) return;
 
     try {
@@ -37,11 +39,13 @@ const PlanList = ({ onPlanSelect, selectedPlanId }) => {
       });
 
       if (res.ok) {
-        // Optimistically update UI or refresh data
         setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== planId));
-        // If the deleted plan was currently selected, reset it
         if (selectedPlanId === planId) {
           onPlanSelect(null);
+        }
+        if (detailedPlan?.id === planId) {
+          setSidebarOpen(false);
+          setDetailedPlan(null);
         }
       } else {
         alert("Erreur lors de la suppression du plan.");
@@ -50,6 +54,13 @@ const PlanList = ({ onPlanSelect, selectedPlanId }) => {
       console.error("Erreur suppression:", err);
       alert("Une erreur est survenue.");
     }
+  };
+
+  // Explicit side Drawer initialization command handler
+  const handleOpenDetails = (e, plan) => {
+    e.stopPropagation(); // Stops core selection row active switches
+    setDetailedPlan(plan);
+    setSidebarOpen(true);
   };
 
   return (
@@ -62,7 +73,7 @@ const PlanList = ({ onPlanSelect, selectedPlanId }) => {
           <span>PLANS D&apos;ACTIONS</span>
         </h3>
         <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">
-          Sélectionnez un dossier
+          Sélectionnez un dossier ou inspectez les détails
         </p>
       </div>
 
@@ -80,58 +91,69 @@ const PlanList = ({ onPlanSelect, selectedPlanId }) => {
           plans.map((plan) => (
             <div
               key={plan.id}
-              className={`w-full group rounded-2xl border transition-all flex items-center justify-between p-3 sm:p-4 gap-2 
+              onClick={() => onPlanSelect(plan.id)}
+              className={`w-full group rounded-2xl border transition-all flex items-center justify-between p-3 sm:p-4 gap-2 cursor-pointer
                 ${selectedPlanId === plan.id 
                   ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-900/20' 
                   : 'bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700'}`}
             >
-              {/* Main Interactive Button Area */}
-              <button
-                onClick={() => onPlanSelect(plan.id)}
-                className="flex-1 text-left flex items-center justify-between min-w-0"
-              >
-                <div className="flex flex-col gap-1 min-w-0 pr-2">
-                  <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider truncate
-                    ${selectedPlanId === plan.id ? 'text-blue-200' : 'text-slate-400'}`}>
-                    {plan.workflow?.nom || 'Sans Workflow'}
+              {/* Info Column Description Node Area */}
+              <div className="flex flex-col gap-1 min-w-0 flex-1 pr-2">
+                <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider truncate
+                  ${selectedPlanId === plan.id ? 'text-blue-200' : 'text-slate-400'}`}>
+                  {plan.title ? plan.title : (plan.workflow?.nom || 'Sans Title')}
+                </span>
+                
+                <p className="text-xs sm:text-sm font-bold text-slate-100 group-hover:text-white truncate max-w-[160px] xs:max-w-[220px] sm:max-w-xs md:max-w-[180px] lg:max-w-[140px] xl:max-w-[200px]">
+                  {plan.description}
+                </p>
+                
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className={`text-[9px] px-2 py-0.5 rounded-md font-bold backdrop-blur-sm
+                    ${selectedPlanId === plan.id ? 'bg-blue-700/60 text-blue-100' : 'bg-slate-950/50 text-slate-400'}`}>
+                    {plan._count?.actions || 0} Actions
                   </span>
-                  
-                  {/* Fluid Responsive Text Truncation Thresholds */}
-                  <p className="text-xs sm:text-sm font-bold text-slate-100 group-hover:text-white truncate max-w-[180px] xs:max-w-[240px] sm:max-w-xs md:max-w-[200px] lg:max-w-[160px] xl:max-w-[220px]">
-                    {plan.description}
-                  </p>
-                  
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className={`text-[9px] px-2 py-0.5 rounded-md font-bold backdrop-blur-sm
-                      ${selectedPlanId === plan.id ? 'bg-blue-700/60 text-blue-100' : 'bg-slate-950/50 text-slate-400'}`}>
-                      {plan._count?.actions || 0} Actions
-                    </span>
-                  </div>
                 </div>
+              </div>
 
-                {/* Desktop Chevron helper visual indicator */}
-                <MdChevronRight 
-                  className={`hidden sm:block transition-transform flex-shrink-0
-                    ${selectedPlanId === plan.id ? 'translate-x-1 text-white' : 'opacity-0 group-hover:opacity-100 text-slate-400'}`} 
-                  size={20} 
-                />
-              </button>
+              {/* Action Buttons Container */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {/* UPGRADED CHEVRON: Now an explicit clickable details drawer trigger button */}
+                <button
+                  onClick={(e) => handleOpenDetails(e, plan)}
+                  title="Voir les détails complets"
+                  className={`p-2 rounded-xl transition-all text-slate-400 hover:text-white active:scale-95
+                    ${selectedPlanId === plan.id ? 'hover:bg-blue-700/50' : 'hover:bg-slate-700/40'}`}
+                >
+                  <MdChevronRight className="transition-transform group-hover:translate-x-0.5" size={22} />
+                </button>
 
-              {/* ISOLATED RESPONSIVE DELETE INTERACTIVE CAP */}
-              <button
-                onClick={(e) => handleDeletePlan(e, plan.id)}
-                title="Supprimer le plan d'action"
-                className={`p-2 rounded-xl transition-all flex-shrink-0 text-slate-400 hover:text-rose-400 active:scale-95
-                  ${selectedPlanId === plan.id 
-                    ? 'hover:bg-blue-700/50 hover:text-rose-200' 
-                    : 'hover:bg-slate-700/40'}`}
-              >
-                <MdDeleteOutline size={18} className="sm:w-[20px] sm:h-[20px]" />
-              </button>
+                {/* DELETE BUTTON */}
+                <button
+                  onClick={(e) => handleDeletePlan(e, plan.id)}
+                  title="Supprimer le plan d'action"
+                  className={`p-2 rounded-xl transition-all text-slate-400 hover:text-rose-400 active:scale-95
+                    ${selectedPlanId === plan.id 
+                      ? 'hover:bg-blue-700/50 hover:text-rose-200' 
+                      : 'hover:bg-slate-700/40'}`}
+                >
+                  <MdDeleteOutline size={18} className="sm:w-[20px] sm:h-[20px]" />
+                </button>
+              </div>
             </div>
           ))
         )}
       </div>
+
+      {/* RENDER SIDEBAR DRAWER PANEL */}
+      <PlanDetailsSidebar 
+        plan={detailedPlan} 
+        isOpen={sidebarOpen} 
+        onClose={() => {
+          setSidebarOpen(false);
+          setDetailedPlan(null);
+        }} 
+      />
     </div>
   );
 };

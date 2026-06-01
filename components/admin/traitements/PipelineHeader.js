@@ -39,10 +39,7 @@ const PipelineHeader = ({ currentStep, onStepClick }) => {
                     {isActive || isCompleted ? step.icon : step.id}
                   </span>
                   
-                  {/* Completed Success Indicator Ring Overlay */}
-                  {isCompleted && (
-                    <div className="absolute inset-0 rounded-full border-2 border-blue-800 animate-ping opacity-25 pointer-events-none" />
-                  )}
+                  
                 </div>
 
                 {/* Micro-Typography Step Subtitle Label */}

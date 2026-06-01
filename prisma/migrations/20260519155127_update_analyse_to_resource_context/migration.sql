@@ -33,7 +33,6 @@ DROP COLUMN "type",
 ADD COLUMN     "type" TEXT NOT NULL;
 
 -- AlterTable
-ALTER TABLE "PlanAction" ALTER COLUMN "statut" SET DEFAULT 'EN_COURS',
 ALTER COLUMN "dateDebut" SET DEFAULT CURRENT_TIMESTAMP;
 
 -- AlterTable
@@ -41,7 +40,6 @@ ALTER TABLE "Ressource" ADD COLUMN     "initialDisponibilite" DOUBLE PRECISION,
 ADD COLUMN     "initialPerformance" DOUBLE PRECISION,
 ADD COLUMN     "initialQualite" DOUBLE PRECISION,
 ADD COLUMN     "initialTRS" DOUBLE PRECISION,
-ADD COLUMN     "statut" BOOLEAN NOT NULL DEFAULT true;
 
 -- AlterTable
 ALTER TABLE "Workflow" DROP COLUMN "ressourceId",
@@ -49,8 +47,7 @@ ADD COLUMN     "description" TEXT,
 ADD COLUMN     "nom" TEXT NOT NULL,
 ADD COLUMN     "valeurTrsGlobal" DOUBLE PRECISION NOT NULL,
 ALTER COLUMN "dateDebut" SET DEFAULT CURRENT_TIMESTAMP,
-DROP COLUMN "statut",
-ADD COLUMN     "statut" TEXT NOT NULL DEFAULT 'EN_COURS';
+
 
 -- CreateTable
 CREATE TABLE "CalculatedMetric" (

@@ -11,8 +11,10 @@ const TableTraitements = ({ workflows, onOuvrirTraitement }) => {
     STOPPE: "bg-slate-100 text-slate-600 border-slate-200"
   };
 
+  const identification = "IDENTPROBLEME";
+
   const badgeAnalyseStyle = {
-    BRAINSTORMING: "bg-purple-50 text-purple-600 border-purple-100",
+    IDENTPROBLEME: "bg-purple-50 text-purple-600 border-purple-100",
     PARETO: "bg-orange-50 text-orange-600 border-orange-100",
     CINQ_POURQUOI: "bg-sky-50 text-sky-600 border-sky-100",
     ISHIKAWA: "bg-teal-50 text-teal-600 border-teal-100"
@@ -28,7 +30,6 @@ const TableTraitements = ({ workflows, onOuvrirTraitement }) => {
               <th className="py-4 px-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Ressource Impliquée</th>
               <th className="py-4 px-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Analyses Effectuées</th>
               <th className="py-4 px-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">actions requises</th>
-              <th className="py-4 px-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100">Statut</th>
               <th className="py-4 px-6 border-b border-slate-100"></th>
             </tr>
           </thead>
@@ -61,14 +62,21 @@ const TableTraitements = ({ workflows, onOuvrirTraitement }) => {
                   {/* Étapes d'analyse */}
                   <td className="py-4 px-6">
                     <div className="flex flex-wrap gap-1.5 max-w-xs">
+                      {/* FIXED LOGIC: Check for > 0 instead of > 1 so single analysis blocks show correctly */}
                       {w.analyse && w.analyse.length > 0 ? (
                         w.analyse.map((a) => (
-                          <span key={a.id} className={`px-2 py-0.5 border text-[9px] font-extrabold rounded-md uppercase tracking-wide ${badgeAnalyseStyle[a.type] || 'bg-slate-50 text-slate-600'}`}>
-                            {a.type.replace('_', ' ')}
-                          </span>
+                          a.type === 'BRAINSTORMING' ? (
+                            <span key={a.id} className={`px-2 py-0.5 border text-[9px] font-extrabold rounded-md uppercase tracking-wide ${badgeAnalyseStyle[identification] || 'bg-slate-50 text-slate-600'}`}>
+                              {identification.replace('_', ' ')}
+                            </span>
+                          ) : (
+                            <span key={a.id} className={`px-2 py-0.5 border text-[9px] font-extrabold rounded-md uppercase tracking-wide ${badgeAnalyseStyle[a.type] || 'bg-slate-50 text-slate-600'}`}>
+                              {a.type.replace('_', ' ')}
+                            </span>
+                          )
                         ))
                       ) : (
-                        <span className="text-xs text-slate-400 italic">Aucune analyse générée</span>
+                        <span className="text-xs text-slate-400 italic"></span>
                       )}
                     </div>
                   </td>
@@ -83,13 +91,6 @@ const TableTraitements = ({ workflows, onOuvrirTraitement }) => {
                     ) : (
                       <span className="text-xs text-slate-300 font-medium italic">Pas de plan</span>
                     )}
-                  </td>
-
-                  {/* Statut du Workflow */}
-                  <td className="py-4 px-6 text-center">
-                    <span className={`px-3 py-1 border rounded-full text-[10px] font-black uppercase tracking-wider ${statusStyle[w.statut] || statusStyle.EN_COURS}`}>
-                      {w.statut ? w.statut.replace('_', ' ') : 'EN COURS'}
-                    </span>
                   </td>
 
                   {/* Bouton d'action */}

@@ -57,13 +57,7 @@ const CollectePage = () => {
             </p>
           </div>
           
-          {/* Optional: Last Sync Indicator or Refresh Button */}
-          <button 
-            onClick={fetchResources}
-            className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors"
-          >
-            Actualiser les ressources
-          </button>
+          
         </div>
 
         {/* Main Grid Layout */}

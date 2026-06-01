@@ -2,8 +2,11 @@
 import { useState } from 'react'
 import ResponsiveMenu from './ResponsiveMenu'
 import MenuButton from './MenuButton'
-import NotifButton from '../../notification/NotifButton'
-import NotifBar from '../../notification/NotifBar'
+import NotifButton from './notification/NotifButton'
+import NotifBar from './notification/NotifBar'
+
+
+
 
 export default function AdminLayout({ activePage, children }) {
   const [open, setOpen] = useState(false) 
@@ -22,7 +25,7 @@ export default function AdminLayout({ activePage, children }) {
               <MenuButton open={open} setOpen={setOpen} />
             </div>
             
-            <div className='flex-1 flex items-center justify-end gap-4'>
+            <div className='flex-1 flex items-center justify-end gap-4 relative'>
               <NotifButton showNotif={showNotif} setShowNotif={setShowNotif} />
               <NotifBar showNotif={showNotif} setShowNotif={setShowNotif} />
             </div>

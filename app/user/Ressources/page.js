@@ -6,6 +6,7 @@ import AjoutRessourceForm from "@/components/user/ressources/AjoutRessourceForm"
 import AjoutButton from "@/components/admin/adminLayout/AjoutButton";
 import { HiOutlineCpuChip } from "react-icons/hi2";
 import { usePermissions } from "@/app/lib/hooks/usePermissions";
+import { Toaster } from "react-hot-toast";
 
 export default function Page() {
   const [ressources, setRessources] = useState([]);
@@ -32,6 +33,7 @@ export default function Page() {
 
   return (
     <UserLayout activePage="Ressources">
+      <Toaster position="top-center"  />
       <div className="p-8 space-y-8 animate-in fade-in duration-700">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
