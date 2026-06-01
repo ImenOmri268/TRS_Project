@@ -76,7 +76,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/res
 
       if (response.ok) {
         toast.success("Ressource créée avec succès !", {
-          duration: 1000,
+          duration: 2000,
           style: {
             borderRadius: '15px',
             background: '#8BE78B',

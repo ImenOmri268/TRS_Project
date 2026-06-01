@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import { FiCalendar, FiCheck, FiX, FiEdit2, FiInfo, FiAlertCircle, FiClock, FiCheckCircle } from "react-icons/fi";
 
 // ─── NEW COMPONENT: ACTION DETAILS DRAWER ──────────────────────────────────
@@ -123,6 +124,14 @@ const TableActionsDroite = ({ actions, refresh }) => {
       });
 
       if (res.ok) {
+        toast.success("action modifiée avec succès !", {
+          duration: 2000,
+          style: {
+            borderRadius: '15px',
+            background: '#8BE78B',
+            color: '#FFFFFF',
+          },
+        });
         setEditingActionId(null); 
         // Sync open drawer state context values dynamically if the edited object is actively rendered inside drawer
         if (selectedActionForDrawer?.id === actionId) {
@@ -179,7 +188,6 @@ const TableActionsDroite = ({ actions, refresh }) => {
                     >
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{action.title}</span>
-                        <span className="text-xs text-slate-400 line-clamp-2 mt-0.5">{action.description || 'Aucune consigne rédigée.'}</span>
                       </div>
                     </td>
                     <td className="py-4 px-6 text-center">

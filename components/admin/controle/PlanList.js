@@ -99,13 +99,10 @@ const PlanList = ({ onPlanSelect, selectedPlanId }) => {
             >
               {/* Info Column Description Node Area */}
               <div className="flex flex-col gap-1 min-w-0 flex-1 pr-2">
-                <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider truncate
-                  ${selectedPlanId === plan.id ? 'text-blue-200' : 'text-slate-400'}`}>
-                  {plan.title ? plan.title : (plan.workflow?.nom || 'Sans Title')}
-                </span>
+                
                 
                 <p className="text-xs sm:text-sm font-bold text-slate-100 group-hover:text-white truncate max-w-[160px] xs:max-w-[220px] sm:max-w-xs md:max-w-[180px] lg:max-w-[140px] xl:max-w-[200px]">
-                  {plan.description}
+                  {plan.title}
                 </p>
                 
                 <div className="flex items-center gap-2 mt-0.5">

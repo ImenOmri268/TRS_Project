@@ -26,7 +26,7 @@ const MENU_ITEMS = [
   { label: "Mes actions", href: '/user/PlanAction',  permission: 'voir_plan_action',    icon: '/plan.svg' },
 ]
 
-export default function UserLayout({ children, activePage }) {
+export default function UserLayout({ children }) {
   const [profil, setProfil] = useState(null)
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)

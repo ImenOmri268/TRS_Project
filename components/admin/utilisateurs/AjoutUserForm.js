@@ -92,7 +92,7 @@ const AjoutUserForm = ({ isOpen, onClose, refresh, userToEdit = null, apiUrl = '
 
       if (res.ok) {
         toast.success("Utilisateur créé avec succès !", {
-          duration: 1000,
+          duration: 2000,
           style: {
             borderRadius: '15px',
             background: '#8BE78B',

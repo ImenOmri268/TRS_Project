@@ -94,7 +94,7 @@ const AjoutGoalForm = ({ isOpen, onClose, refresh, ressourcesApiUrl='/api/admin/
 
       if (res.ok) {
         toast.success("Objectif créé avec succès !", {
-          duration: 1000,
+          duration: 2000,
           style: {
             borderRadius: '15px',
             background: '#8BE78B',

@@ -7,6 +7,7 @@ import { usePermissions } from "@/app/lib/hooks/usePermissions";
 import { RiTodoLine } from "react-icons/ri";
 import { FiLock } from "react-icons/fi";
 import { MdClose } from "react-icons/md";
+import { Toaster } from "react-hot-toast";
 
 
 export default function PlanActionPage() {
@@ -66,7 +67,7 @@ export default function PlanActionPage() {
 
   if (!can('voir_plan_action')) {
     return (
-      <UserLayout activePage="Sécurité">
+      <UserLayout >
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center bg-white rounded-[2.5rem] border border-slate-200 shadow-sm max-w-2xl mx-auto mt-12">
           <div className="p-4 bg-rose-50 text-rose-500 rounded-full mb-4">
             <FiLock size={40} />
@@ -82,6 +83,7 @@ export default function PlanActionPage() {
 
   return (
     <UserLayout activePage="Plan d'actions">
+      <Toaster position="top-center"  />
       <div className="space-y-6 animate-in fade-in duration-300">
         
         {/* EN-TÊTE DE PAGE */}
