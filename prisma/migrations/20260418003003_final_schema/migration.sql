@@ -159,7 +159,6 @@ CREATE TABLE "Workflow" (
     "id" SERIAL NOT NULL,
     "dateDebut" TIMESTAMP(3) NOT NULL,
     "dateFin" TIMESTAMP(3),
-    "statut" "Statut" NOT NULL,
     "ressourceId" INTEGER NOT NULL,
 
     CONSTRAINT "Workflow_pkey" PRIMARY KEY ("id")
@@ -179,7 +178,7 @@ CREATE TABLE "Analyse" (
 CREATE TABLE "PlanAction" (
     "id" SERIAL NOT NULL,
     "description" TEXT NOT NULL,
-    "statut" "Statut" NOT NULL,
+
     "dateDebut" TIMESTAMP(3) NOT NULL,
     "dateFin" TIMESTAMP(3),
     "workflowId" INTEGER NOT NULL,

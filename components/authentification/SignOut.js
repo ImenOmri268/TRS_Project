@@ -5,45 +5,41 @@ import {toast} from "sonner";
 
 const SignOut = () => {
   const router = useRouter();
+  
   async function handlerLogout(event) {
     event.preventDefault();
-    try{
-      const res = await fetch ('/api/auth/logout',{
-        method:'POST'
+    try {
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST'
       });
-      if (res.ok){
+      if (res.ok) {
         toast.success('Déconnexion réussie !');
         router.push('/');
-      }else{
+      } else {
         toast.error('Erreur lors de la déconnexion');
       }
-    }catch(error){
+    } catch (error) {
       toast.error('Erreur lors de la déconnexion')
     }
   }
 
   return (
-    <form className="grid mt-[25%] rounded-lg cursor-pointer"  onSubmit={handlerLogout} >
-
-        <hr className="text-gray-500  "  />
-
-        <div className="flex gap-4 hover:text-[rgb(70,71,75)] m-5  cursor-pointer    ">  
+    <form onSubmit={handlerLogout} className="w-full">
+      <button 
+        type="submit"
+        className="flex items-center gap-3 px-6 py-3 w-full text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-colors group"
+      >
+        <div className="relative w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity">
           <Image
             src="/logout.svg"
-            alt="dashboard icon"
-            width={45}
-            height={45}
-            className="md:h-[35] w-[35]"
-            >
-            </Image>
-            <button 
-            className="text-[#8B8F98] font-inter md:text-xl lg:text-2xl  my-0.5 cursor-pointer   " 
-            type="submit"
-            >
-                  Déconnexion
-            </button>
+            alt="logout icon"
+            fill
+            className="brightness-200"
+          />
         </div>
-      </form>
+        <span className="text-sm font-medium">Déconnexion</span>
+      </button>
+    </form>
   );
 };
 

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { GoGoal } from "react-icons/go";
 import { IoIosGitCompare } from "react-icons/io";
+import { MdSettingsInputComponent } from "react-icons/md";
 
 const ResponsiveMenu = ({ open, page }) => {
   const menuItems = [
@@ -12,6 +13,7 @@ const ResponsiveMenu = ({ open, page }) => {
     { name: "Les Objectifs", href: "/admin/Objectifs", icon: <GoGoal className="w-5 h-5" /> },
     { name: "Liste des utilisateurs", href: "/admin/Utilisateurs", icon: "/utilisateur.svg" },
     { name: "Gestion des Ressources", href: "/admin/Ressources", icon: "/machine.svg" },
+    {name:  "Collecte des données",href:"/admin/Collecte",icon:<MdSettingsInputComponent className="w-5 h-5" />},
     { name: "Suivi-TRS", href: "/admin/Suivi-TRS", icon: <IoIosGitCompare className="w-5 h-5" /> },
     { name: "Traitements", href: "/admin/Traitements", icon: "/pipeline.svg" },
     { name: "Plan d'actions", href: "/admin/Actions", icon: "/plan.svg" },

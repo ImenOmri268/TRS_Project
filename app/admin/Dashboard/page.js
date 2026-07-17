@@ -1,26 +1,18 @@
-import React from "react";
+import AdminLayout from "@/components/admin/adminLayout/AdminLayout"
+import StatsTRS from "@/components/admin/dashboard/StatsTRS"
+import GraphiqueTRS from "@/components/admin/dashboard/GraphiqueTRS"
+import RessourcesTRS from "@/components/admin/dashboard/RessourcesTRS"
 
-import AdminLayout from "@/components/admin/adminLayout/AdminLayout";
-import StatsTRS from "@/components/admin/dashboard/StatsTRS";
-import PinnedMachine from "@/components/admin/dashboard/PinnedMachine";
-import PinnedActions from "@/components/admin/dashboard/PinnedActions";
-
-
-
-const page =  () => {
-
-  
+const page = () => {
   return (
     <AdminLayout activePage="Dashboard">
-      
+
       <StatsTRS />
-      <PinnedMachine />
-
-      <PinnedActions/>
-      
-
+      <RessourcesTRS />
+      <GraphiqueTRS />
     </AdminLayout>
-   
+    
   )
-};
-export default page;
+}
+
+export default page

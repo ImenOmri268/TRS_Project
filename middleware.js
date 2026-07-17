@@ -3,16 +3,16 @@ import { jwtVerify } from 'jose'
 
 const publicRoutes = ['/', '/SignUp', '/resetPassword', '/EmailSend']
 
-// Permissions requises pour chaque page
-const pagePermissions = {
-  '/admin/Dashboard'    : 'voir_dashboard',
-  '/admin/Objectifs'    : 'voir_objectifs',
-  '/admin/Utilisateurs' : 'voir_utilisateurs',
-  '/admin/Ressources'   : 'voir_ressources',
-  '/admin/Suivi-TRS'    : 'voir_suivi_trs',
-  '/admin/Traitements'  : 'voir_traitements',
-  '/admin/Actions'      : 'voir_plan_action',
-  '/admin/Controle'     : 'voir_controle',
+const userPagePermissions = {
+  '/user/Dashboard'    : 'voir_dashboard',
+  '/user/Objectifs'    : ['voir_objectifs', 'ajouter_objectif', 'modifier_objectif', 'supprimer_objectif'],
+  '/user/Ressources'   : ['voir_ressources', 'ajouter_ressource', 'modifier_ressource', 'supprimer_ressource'],
+  '/user/Utilisateurs' : ['voir_utilisateurs', 'ajouter_utilisateur', 'modifier_utilisateur', 'supprimer_utilisateur'],
+  '/user/CollecteTRS'  : 'faire_collecte',
+  '/user/SuiviTRS'     : 'suivre_trs',
+  '/user/Traitements'  : ['consulter_traitements', 'generer_traitements'],
+  '/user/PlanAction'   : 'voir_plan_action',
+
 }
 
 export async function middleware(request) {
@@ -25,13 +25,15 @@ export async function middleware(request) {
       try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET)
         const { payload } = await jwtVerify(token, secret)
-        if (payload.type === 'SUPER_ADMIN') {
-          return NextResponse.redirect(new URL('/superadmin/Dashboard', request.url))
-        } else {
+        if (payload.type === 'ADMIN') {
           return NextResponse.redirect(new URL('/admin/Dashboard', request.url))
+        } else if (payload.type === 'USER') {
+          return NextResponse.redirect(new URL(`/user/Dashboard`, request.url))
         }
       } catch {
-        return NextResponse.next()
+        const response = NextResponse.next()
+        response.cookies.delete('token')
+        return response
       }
     }
     return NextResponse.next()
@@ -39,6 +41,7 @@ export async function middleware(request) {
 
   // Pas de token → login
   if (!token) {
+    if (pathname === '/') return NextResponse.next()
     return NextResponse.redirect(new URL('/', request.url))
   }
 
@@ -48,20 +51,41 @@ export async function middleware(request) {
 
     // ADMIN → accès total aux pages /admin
     if (payload.type === 'ADMIN') {
+      if (pathname.startsWith('/user')) {
+        return NextResponse.redirect(new URL('/admin/Dashboard', request.url))
+      }
       return NextResponse.next()
     }
 
-    // USER → vérifier permissions selon la page
+    // USER → vérifier permissions depuis la DB
     if (payload.type === 'USER') {
-      const permissionRequise = pagePermissions[pathname]
-      
+      if (pathname.startsWith('/admin')) {
+        return NextResponse.redirect(new URL('/user/Dashboard', request.url))
+      }
+
+      const permissionRequise = userPagePermissions[pathname]
       if (permissionRequise) {
-        const hasPermission = payload.permissions?.includes(permissionRequise)
-        if (!hasPermission) {
-          // Pas de permission → rediriger vers Dashboard
-          return NextResponse.redirect(new URL('/admin/Dashboard', request.url))
+        // Vérifier depuis l'API profil (toujours à jour depuis la DB)
+        try {
+          const profilRes = await fetch(new URL('/api/user/profil', request.url), {
+            headers: { cookie: `token=${token}` }
+          })
+          if (!profilRes.ok) {
+            return NextResponse.redirect(new URL('/user/Dashboard', request.url))
+          }
+          const profil = await profilRes.json()
+          const hasPermission = Array.isArray(permissionRequise)
+            ? permissionRequise.some((perm) => profil.permissions?.includes(perm))
+            : profil.permissions?.includes(permissionRequise)
+          if (!hasPermission) {
+            return NextResponse.redirect(new URL('/user/Dashboard', request.url))
+          }
+        } catch {
+          return NextResponse.redirect(new URL('/user/Dashboard', request.url))
         }
       }
+
+      return NextResponse.next()
     }
 
     return NextResponse.next()
