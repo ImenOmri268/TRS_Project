@@ -49,9 +49,12 @@ export async function POST(req) {
     // Récupération de l'identité de l'admin via le token
     const token = req.cookies.get('token')?.value;
     let adminName = "L'administrateur";
+    let adminIdFromToken = null; // Storing admin ID to safely check against targetUserId
+
     if (token) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        adminIdFromToken = decoded.id;
         const dbAdmin = await prisma.user.findUnique({ where: { id: decoded.id } });
         if (dbAdmin) adminName = dbAdmin.name;
       } catch (tokenErr) {
@@ -81,14 +84,16 @@ export async function POST(req) {
       },
     });
 
-    // NOTIFICATION : L'admin crée et affecte directement une nouvelle action à un utilisateur
-    await prisma.notification.create({
-      data: {
-        message: `${adminName} vous a assigné une nouvelle action : "${title}"`,
-        userId: targetUserId, // Destinataire : L'utilisateur assigné
-        createdBy: adminName, // Expéditeur : L'admin courant
-      }
-    });
+    // NOTIFICATION : Générée uniquement si l'utilisateur assigné n'est pas l'admin lui-même
+    if (targetUserId !== adminIdFromToken) {
+      await prisma.notification.create({
+        data: {
+          message: `${adminName} vous a assigné une nouvelle action : "${title}"`,
+          userId: targetUserId, // Destinataire : L'utilisateur assigné
+          createdBy: adminName, // Expéditeur : L'admin courant
+        }
+      });
+    }
 
     return NextResponse.json(newAction);
   } catch (err) {

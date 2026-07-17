@@ -220,8 +220,8 @@ const Ishikawa = ({ ressourceId, activeWorkflow, onSaveStep }) => {
 
                   <svg className="absolute inset-0 w-full h-full pointer-events-none">
                     <line 
-                      x1="50%" y1={cat.pos === 'top' ? "25%" : "75%"} 
-                      x2="95%" y2={cat.pos === 'top' ? "100%" : "0%"} 
+                      x1="50%" y1={cat.pos === 'top' ? "5%" : "75%"} 
+                      x2="95%" y2={cat.pos === 'top' ? "100%" : "5%"} 
                       stroke={"#2563eb"} 
                       strokeWidth="2.5" strokeDasharray="5 4"
                     />

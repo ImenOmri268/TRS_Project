@@ -27,7 +27,7 @@ const ActionDetailsDrawer = ({ action, isOpen, onClose, priorityStyle, statusSty
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <FiInfo className="text-slate-400" size={18} />
-            <h3 className="text-base font-black text-slate-800 uppercase tracking-wide">Détails de l'Action</h3>
+            <h3 className="text-base font-black text-slate-800 uppercase tracking-wide">Détails de l&apos;Action</h3>
           </div>
           <button 
             onClick={onClose}

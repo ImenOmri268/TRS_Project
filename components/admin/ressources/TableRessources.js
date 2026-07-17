@@ -132,7 +132,7 @@ const TableRessources = ({ ressources, refresh }) => {
                     </span>
                   </td>
 
-                  <td className="py-5 px-6 text-right space-x-2">
+                  <td className="text-center space-x-1">
                     <button onClick={() => setSelectedResource(ressource)} className="p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all">
                       <FaRegEdit size={18} />
                     </button>

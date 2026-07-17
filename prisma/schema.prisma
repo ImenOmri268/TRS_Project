@@ -313,7 +313,7 @@ model Action {
   dateLimite   DateTime   // Added: limit date field
 
   planId       Int
-  plan         PlanAction @relation(fields: [planId], references: [id])
+  plan        PlanAction @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   userId       Int
   user         User       @relation(fields: [userId], references: [id])
@@ -326,7 +326,7 @@ model PromptIA {
   reponse String
 
   planId Int        @unique
-  plan   PlanAction @relation(fields: [planId], references: [id])
+  plan    PlanAction @relation(fields: [planId], references: [id], onDelete: Cascade)
 }
 
 

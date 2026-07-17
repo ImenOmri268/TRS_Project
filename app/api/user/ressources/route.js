@@ -132,15 +132,31 @@ export async function PUT(request) {
     const body = await request.json();
     const { id, dailyEntries, nom, type, description, statut, parameters } = body;
     const resourceId = parseInt(id);
+    const calculationDate = new Date();
 
     let notificationMessage = "";
 
     if (dailyEntries && dailyEntries.length > 0) {
+      const startOfDay = new Date(calculationDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(calculationDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // Delete existing calculations and values for the current day to avoid duplicates
+      await prisma.calculatedMetric.deleteMany({
+        where: { ressourceId: resourceId, date: { gte: startOfDay, lte: endOfDay } }
+      });
+
+      const paramIds = dailyEntries.map(e => parseInt(e.parameterId));
+      await prisma.dailyValue.deleteMany({
+        where: { parameterId: { in: paramIds }, date: { gte: startOfDay, lte: endOfDay } }
+      });
+
       await prisma.dailyValue.createMany({
         data: dailyEntries.map(entry => ({
           parameterId: parseInt(entry.parameterId),
           value: parseFloat(entry.value),
-          date: new Date()
+          date: calculationDate
         }))
       });
 
@@ -148,35 +164,106 @@ export async function PUT(request) {
         where: { ressourceId: resourceId }
       });
 
-      const categories = ['DISPONIBILITE', 'PERFORMANCE', 'QUALITE'];
-      
-      for (const cat of categories) {
-        const catParamIds = resourceParams
-          .filter(p => p.category === cat)
-          .map(p => p.id);
+      const getValsByCat = (cat) => {
+        const catParamIds = resourceParams.filter(p => p.category === cat).map(p => p.id);
+        return dailyEntries
+          .filter(e => catParamIds.includes(parseInt(e.parameterId)))
+          .map(e => parseFloat(e.value));
+      };
 
-        const relevantEntries = dailyEntries.filter(e => 
-          catParamIds.includes(parseInt(e.parameterId))
-        );
+      const dispVals = getValsByCat('DISPONIBILITE');
+      const perfVals = getValsByCat('PERFORMANCE');
+      const qualVals = getValsByCat('QUALITE');
+
+      let dispPct = null, perfPct = null, qualPct = null, trsPct = null;
+      let tempsFonct = null;
+
+      // 1. Availability calculation formula matching admin route logic
+      if (dispVals.length >= 2 && dispVals[0] !== 0) {
+        tempsFonct = dispVals[0] - dispVals[1];
+        dispPct = (tempsFonct / dispVals[0]) * 100;
+      }
+
+      // 2. Performance calculation formula matching admin route logic
+      if (tempsFonct !== null && perfVals.length >= 2 && perfVals[1] !== 0) {
+        const qteProduite   = perfVals[0];
+        const tempsUnitTheo = perfVals[1];
+        const prodTheorique = tempsFonct / tempsUnitTheo;
+        perfPct = prodTheorique !== 0 ? (qteProduite / prodTheorique) * 100 : 0;
+      }
+
+      // 3. Quality calculation formula matching admin route logic
+      if (qualVals.length >= 2 && qualVals[0] !== 0) {
+        const qteBonnes = qualVals[0] - qualVals[1];
+        qualPct = (qteBonnes / qualVals[0]) * 100;
+      }
+
+      // 4. Global OEE / TRS product formula multiplication matching admin route logic
+      if (dispPct !== null && perfPct !== null && qualPct !== null) {
+        trsPct = (dispPct / 100) * (perfPct / 100) * (qualPct / 100) * 100;
+      }
+
+      // Save DISPONIBILITE, PERFORMANCE, QUALITE metrics tracking values inside historical tables
+      const metricsToSave = [
+        { category: 'DISPONIBILITE', valeur: dispPct },
+        { category: 'PERFORMANCE',   valeur: perfPct },
+        { category: 'QUALITE',       valeur: qualPct },
+      ].filter(m => m.valeur !== null);
+
+      for (const metric of metricsToSave) {
+        await prisma.calculatedMetric.create({
+          data: {
+            ressourceId: resourceId,
+            category: metric.category,
+            valeur: parseFloat(metric.valeur.toFixed(2)),
+            date: calculationDate
+          }
+        });
+      }
+
+      // Sync and apply calculation updates over persistent structural TRS rows
+      if (trsPct !== null) {
+        const existingTRS = await prisma.tRS.findFirst({
+          where: { ressourceId: resourceId, type: 'INITIAL' }
+        });
         
-        if (relevantEntries.length >= 2) {
-          const v1 = parseFloat(relevantEntries[0].value);
-          const v2 = parseFloat(relevantEntries[1].value);
-
-          if (v1 !== 0) {
-            const resultPourcentage = ((v1 - v2) / v1) * 100;
-
-            await prisma.calculatedMetric.create({
-              data: {
-                ressourceId: resourceId,
-                category: cat,
-                valeur: parseFloat(resultPourcentage.toFixed(2)),
-                date: new Date()
-              }
+        if (existingTRS) {
+          await prisma.tRS.update({
+            where: { id: existingTRS.id },
+            data: { valeur: parseFloat(trsPct.toFixed(2)) }
+          });
+          if (existingTRS.disponibilite) {
+            await prisma.disponibilite.update({
+              where: { trsId: existingTRS.id },
+              data: { valeur: parseFloat(dispPct.toFixed(2)) }
             });
           }
+          if (existingTRS.performance) {
+            await prisma.performance.update({
+              where: { trsId: existingTRS.id },
+              data: { valeur: parseFloat(perfPct.toFixed(2)) }
+            });
+          }
+          if (existingTRS.qualite) {
+            await prisma.qualite.update({
+              where: { trsId: existingTRS.id },
+              data: { valeur: parseFloat(qualPct.toFixed(2)) }
+            });
+          }
+        } else {
+          await prisma.tRS.create({
+            data: {
+              type: 'INITIAL',
+              valeur: parseFloat(trsPct.toFixed(2)),
+              ressourceId: resourceId,
+              disponibilite: { create: { valeur: parseFloat(dispPct.toFixed(2)) } },
+              performance:   { create: { valeur: parseFloat(perfPct.toFixed(2)) } },
+              qualite:       { create: { valeur: parseFloat(qualPct.toFixed(2)) } },
+            }
+          });
         }
       }
+
       notificationMessage = "collecté de nouvelles données et mis à jour les indicateurs de";
     } else {
       notificationMessage = "mis à jour les informations de";
@@ -204,7 +291,6 @@ export async function PUT(request) {
       data: updateData
     });
 
-    // 🛠️ FIX: Fetch actor details down here safely
     try {
       const actor = await prisma.user.findUnique({
         where: { id: decoded.id },
@@ -245,7 +331,6 @@ export async function DELETE(request) {
       return NextResponse.json({ message: 'ID ressource invalide' }, { status: 400 });
     }
 
-    // 1. Get resource name and verification info BEFORE executing deletion cascade
     const targetResource = await prisma.ressource.findUnique({
       where: { id },
       select: { nom: true }
@@ -255,18 +340,15 @@ export async function DELETE(request) {
       return NextResponse.json({ message: 'Ressource introuvable' }, { status: 404 });
     }
 
-    // 2. Fetch actor profile tracking parameters
     const actor = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { name: true, adminId: true }
     });
 
-    // 3. Delete from Database
     await prisma.ressource.delete({
       where: { id }
     });
 
-    // 4. Record Notification row using local execution strings
     if (actor?.adminId) {
       try {
         await prisma.notification.create({

@@ -64,7 +64,6 @@ async function main() {
   // 3. CREATE ROLES
   // ====================================================================
   const adminRole = await prisma.role.create({ data: { name: 'Administrateur' } });
-  const techRole = await prisma.role.create({ data: { name: 'Technicien' } });
 
   // ====================================================================
   // 4. ASSIGN PERMISSIONS TO ADMIN ROLE
@@ -83,7 +82,7 @@ async function main() {
   const adminUser = await prisma.user.create({
     data: {
       name: 'Main Administrator',
-      email: 'admin@trs.com',
+      email: 'najjarmalek3@gmail.com',
       password: passwordHash,
       status: true,
       type: 'ADMIN', // Exactly matches UserType ENUM values
@@ -96,64 +95,10 @@ async function main() {
     data: { userId: adminUser.id, roleId: adminRole.id },
   });
 
-  console.log(`✅ Admin user created: ${adminUser.email}`);
+  console.log(`✅ Admin  created: ${adminUser.email}`);
 
-  // ====================================================================
-  // 6. CREATE SAMPLE DATA (Ressource, Legacy metrics, and Calculated Metric entries)
-  // ====================================================================
-  const ressource = await prisma.ressource.create({
-    data: {
-      nom: 'Ligne d\'Assemblage A1',
-      type: 'Automatisée',
-      description: 'Ligne principale pour le calcul du TRS initial',
-      adminId: adminUser.id,
-      statut: true,
-      initialDisponibilite: 85.0,
-      initialPerformance: 92.0,
-      initialQualite: 99.0,
-      initialTRS: 77.41,
-    },
-  });
 
-  // Create legacy core TRS node
-  const trs = await prisma.tRS.create({
-    data: {
-      type: 'INITIAL', // Matches your TRSType Enum values
-      valeur: 77.41,
-      ressourceId: ressource.id,
-    },
-  });
 
-  // Initialize sub components of legacy TRS structure
-  await prisma.disponibilite.create({ data: { valeur: 85.0, trsId: trs.id } });
-  await prisma.performance.create({ data: { valeur: 92.0, trsId: trs.id } });
-  await prisma.qualite.create({ data: { valeur: 99.0, trsId: trs.id } });
-
-  // FIXED: Seed historical points using uppercase ParameterCategory Enum values
-  await prisma.calculatedMetric.createMany({
-    data: [
-      {
-        category: 'DISPONIBILITE',
-        valeur: 85.0,
-        ressourceId: ressource.id,
-        date: new Date(),
-      },
-      {
-        category: 'PERFORMANCE',
-        valeur: 92.0,
-        ressourceId: ressource.id,
-        date: new Date(),
-      },
-      {
-        category: 'QUALITE',
-        valeur: 99.0,
-        ressourceId: ressource.id,
-        date: new Date(),
-      }
-    ],
-  });
-
-  console.log('✅ Sample metrics tracking & data points seeded successfully.');
   console.log('🎉 Seeding completed successfully!');
 }
 

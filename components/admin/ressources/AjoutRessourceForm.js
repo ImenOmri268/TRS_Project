@@ -6,6 +6,13 @@ import { HiPlus } from "react-icons/hi";
 import { IoReturnUpBack } from "react-icons/io5";
 import toast from "react-hot-toast";
 
+// Extracted the default configuration fields here to avoid duplication
+const INITIAL_PARAMETERS = {
+  DISPONIBILITE: ["Temps Prévu", "Temps d'arrêt"],
+  PERFORMANCE: ["Qté produite totale", "Temps unitaire théorique"],
+  QUALITE: ["Qté produite totale", "Qté rebuts"]
+};
+
 const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/ressources' }) => {
   const scrollContainerRef = useRef(null);
   const errorTimeoutRef = useRef(null);
@@ -20,11 +27,7 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/res
     initialQual: ""
   });
 
-  const [params, setParams] = useState({
-    DISPONIBILITE: ["Temps Prévu", "Temps d'arrêts"],
-    PERFORMANCE: ["Qté Produite Total", "Temps Unitaire Théorique"],
-    QUALITE: ["Qté Produite Total", "Qté Rebut"]
-  });
+  const [params, setParams] = useState(INITIAL_PARAMETERS);
 
   const handleInputChange = (field, value) => {
     if (error) setError("");
@@ -85,7 +88,10 @@ const AjoutRessourceForm = ({ isOpen, onClose, refresh, apiUrl = '/api/admin/res
         });
         refresh();
         onClose();
+        
+        // REINITIALIZE DATA FIELDS AND PARAMETERS HERE
         setFormData({ nom: "", type: "", description: "", initialTRS: "", initialDisp: "", initialPerf: "", initialQual: "" });
+        setParams(INITIAL_PARAMETERS); 
         setError("");
       } else {
         const errorData = await response.json();

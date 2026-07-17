@@ -59,7 +59,7 @@ const GoalsPage = () => {
             <p className="text-slate-500 font-medium">Fixez les valeurs cibles de TRS pour chaque ressource.</p>
           </div>
           
-          <AjoutButton setIsOpen={setIsOpen} title={'Nouvel Objectif'} />
+          <AjoutButton setIsOpen={setIsOpen} title={'Nouveau Objectif'} />
         </div>
 
         {/* Dynamic Goal List */}

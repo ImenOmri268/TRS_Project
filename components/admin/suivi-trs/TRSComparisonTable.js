@@ -37,7 +37,7 @@ const TRSComparisonTable = ({ machines, loading }) => {
                 const finalValue = item.trsFinal || 0;
                 const targetValue = item.objectif || 0;
                 
-                const progress = (finalValue - initialValue).toFixed(1);
+                const progress = (finalValue - initialValue).toFixed(2);
                 const isMeetingTarget = finalValue >= targetValue && targetValue > 0;
 
                 return (
@@ -48,8 +48,8 @@ const TRSComparisonTable = ({ machines, loading }) => {
                         <span className="text-[10px] text-slate-400 uppercase">{item.type}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-center text-sm text-slate-500">{initialValue}%</td>
-                    <td className="py-4 px-6 text-center text-sm font-bold text-blue-600">{finalValue}%</td>
+                    <td className="py-4 px-6 text-center text-sm text-slate-500">{initialValue.toFixed(2)}%</td>
+                    <td className="py-4 px-6 text-center text-sm font-bold text-blue-600">{finalValue.toFixed(2)}%</td>
                     <td className="py-4 px-6 text-center">
                       <span className={`inline-flex items-center gap-1 font-bold text-xs ${parseFloat(progress) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                         <HiOutlineArrowTrendingUp className={parseFloat(progress) < 0 ? "rotate-180" : ""} /> 

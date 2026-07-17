@@ -111,14 +111,12 @@ export async function POST(request) {
     try {
       await prisma.notification.create({
         data: {
-          // We use 'actor.name', request body 'title', and 'targetResource.nom' directly!
           message: `L'utilisateur ${actor.name} a créé un nouvel objectif (${title || 'Sans titre'}) pour la ressource ${targetResource?.nom || 'Indéfinie'}.`,
           userId: actor.adminId, 
           createdBy: actor.name,
           date: new Date(),
         },
       });
-      console.log("✅ Success: Notification written to DB using pre-cached variables.");
     } catch (notifError) {
       console.error('[POST_OBJECTIF_NOTIF_ERROR]', notifError.message);
     }

@@ -36,6 +36,7 @@ export async function POST(request) {
       `- ${a.type}: ${a.contenu}`
     ).join('\n') || 'Aucune analyse disponible'
 
+    // UPDATED: Instructing the model to include short impact-driven titles alongside descriptions
     const fullPrompt = `
 Tu es un expert en amélioration industrielle TRS (Taux de Rendement Synthétique).
 
@@ -45,12 +46,13 @@ ${analysesContext}
 Question/Demande de l'utilisateur :
 ${prompt}
 
-Génère des actions correctives concrètes et pratiques.
-Réponds UNIQUEMENT en JSON valide, sans texte avant ou après :
+Génère des actions correctives concrètes et pratiques sous forme de paires titre/description.
+Réponds UNIQUEMENT en JSON valide, sans texte d'accompagnement avant ou après :
 {
   "actions": [
     {
-      "description": "Action concrète et détaillée à effectuer"
+      "title": "Titre court et percutant de l'action",
+      "description": "Action concrète, technique et détaillée à effectuer"
     }
   ]
 }
@@ -80,6 +82,7 @@ Génère entre 3 et 6 actions pertinentes et réalisables.
       create: { contenu: prompt, reponse: rawText, planId: parseInt(planId) }
     })
 
+    // Returns the full array containing elements with both { title, description }
     return NextResponse.json({ actions: parsed.actions })
 
   } catch (error) {

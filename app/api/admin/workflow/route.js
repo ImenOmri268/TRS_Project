@@ -130,16 +130,11 @@ export async function DELETE(request) {
     }
 
     const workflowId = parseInt(idString, 10);
-    if (isNaN(workflowId)) {
-      return NextResponse.json(
-        { error: "L'identifiant fourni n'est pas valide." },
-        { status: 400 }
-      );
-    }
 
-    // 1. Verify existence before attempting deletion
+    // 1. Verify existence
     const existingWorkflow = await prisma.workflow.findUnique({
       where: { id: workflowId },
+      include: { planAction: true } // Include the plan to find its ID
     });
 
     if (!existingWorkflow) {
@@ -149,21 +144,31 @@ export async function DELETE(request) {
       );
     }
 
-    // 2. DEPENDENCY CASCADE PURGE:
-    // This cleans up your child data matrix records (PARETO, CINQ_POURQUOI, ISHIKAWA, etc.) 
-    // linked to this workflow mapping node before deleting the main entry.
-    // (Safe to keep even if your schema already defines onDelete: Cascade)
+    // 2. MULTI-LEVEL CASCADE PURGE
+    // Step A: Delete IA Prompts linked to the Action Plan of this workflow
+    if (existingWorkflow.planAction) {
+      await prisma.promptIA.deleteMany({
+        where: { planId: existingWorkflow.planAction.id },
+      });
+
+      // Step B: Delete the Action Plan itself
+      await prisma.planAction.delete({
+        where: { id: existingWorkflow.planAction.id },
+      });
+    }
+
+    // Step C: Delete all analysis steps (Pareto, Ishikawa, etc.)
     await prisma.analyse.deleteMany({
       where: { workflowId: workflowId },
     });
 
-    // 3. Remove the core workflow session entry
+    // 3. Finally, remove the core workflow session entry
     await prisma.workflow.delete({
       where: { id: workflowId },
     });
 
     return NextResponse.json(
-      { message: "Workflow et toutes les analyses associées supprimés avec succès." },
+      { message: "Workflow, plans d'actions et analyses supprimés avec succès." },
       { status: 200 }
     );
 

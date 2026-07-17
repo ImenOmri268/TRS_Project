@@ -47,8 +47,8 @@ const ActionTable = ({ actions, onActionClick, onEditClick, onDeleteClick }) => 
                 <td className="px-6 py-4" onClick={() => onActionClick(action)}>
                   <p className="text-xs font-bold text-slate-600">{action.user?.name || "Non assigné"}</p>
                 </td>
-                <td className="px-6 py-4 text-center" onClick={() => onActionClick(action)}>
-                  <span className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase border ${getStatusStyle(action.statut)}`}>
+                <td className=" text-center" onClick={() => onActionClick(action)}>
+                  <span className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase  ${getStatusStyle(action.statut)}`}>
                     {action.statut.replace('_', ' ')}
                   </span>
                 </td>

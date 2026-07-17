@@ -84,8 +84,8 @@ export async function GET(request) {
         nom: ressource.nom,
         type: ressource.type,
         statut: ressource.statut,
-        trsInitial: parseFloat(trsInitial.toFixed(1)),
-        trsFinal: parseFloat(trsFinal.toFixed(1)),
+        trsInitial: parseFloat(trsInitial.toFixed(2)),
+        trsFinal: parseFloat(trsFinal.toFixed(2)),
         // Map current metrics falling back to extracted setup values if history is empty
         disponibilite: finalSet?.d ?? fallbackDisp,
         performance: finalSet?.p ?? fallbackPerf,
@@ -97,7 +97,7 @@ export async function GET(request) {
     // 3. Global Stats using current visible metrics
     const trsValeurs = machinesData.map(m => m.trsFinal);
     const trsMoyen = trsValeurs.length > 0
-      ? (trsValeurs.reduce((a, b) => a + b, 0) / trsValeurs.length).toFixed(1)
+      ? (trsValeurs.reduce((a, b) => a + b, 0) / trsValeurs.length).toFixed(2)
       : 0;
 
     const nbActiveMachines = ressources.filter(r => r.statut === true).length;

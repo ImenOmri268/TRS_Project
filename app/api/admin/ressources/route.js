@@ -118,7 +118,7 @@ export async function PUT(request) {
 
       if (tempsFonct !== null && perfVals.length >= 2 && perfVals[1] !== 0) {
         const qteProduite   = perfVals[0]
-        const tempsUnitTheo = perfVals[1]
+        const tempsUnitTheo = perfVals[1] 
         const prodTheorique = tempsFonct / tempsUnitTheo
         perfPct = prodTheorique !== 0 ? (qteProduite / prodTheorique) * 100 : 0
       }
@@ -193,41 +193,6 @@ export async function PUT(request) {
       }
     }
 
-      const categories = ['DISPONIBILITE', 'PERFORMANCE', 'QUALITE'];
-      
-      for (const cat of categories) {
-        const catParamIds = resourceParams
-          .filter(p => p.category === cat)
-          .map(p => p.id);
-
-        const relevantEntries = dailyEntries.filter(e => 
-          catParamIds.includes(parseInt(e.parameterId))
-        );
-        
-        // Ensure we have both values (e.g., Total and Stopped) to calculate the %
-        if (relevantEntries.length >= 2) {
-          const v1 = parseFloat(relevantEntries[0].value);
-          const v2 = parseFloat(relevantEntries[1].value);
-
-          if (v1 !== 0  && v1>= v2) { // Prevent division by zero and ensure logical values
-            const resultPourcentage = ((v1 - v2) / v1) * 100;
-
-            // 3. Create CalculatedMetric with the shared calculationDate
-            await prisma.calculatedMetric.create({
-              data: {
-                ressourceId: resourceId,
-                category: cat,
-                valeur: parseFloat(resultPourcentage.toFixed(2)),
-                date: calculationDate // Linked to the same session
-              }
-            });
-          }
-        }
-      }
-    }
-
-    
-    // 4. Update the field names (labels) if modified in the interface
     if (parameters && Array.isArray(parameters)) {
       for (const param of parameters) {
         if (param.id) {

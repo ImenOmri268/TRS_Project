@@ -28,7 +28,7 @@ export async function middleware(request) {
         if (payload.type === 'ADMIN') {
           return NextResponse.redirect(new URL('/admin/Dashboard', request.url))
         } else if (payload.type === 'USER') {
-          return NextResponse.redirect(new URL('/user/Dashboard', request.url))
+          return NextResponse.redirect(new URL(`/user/Dashboard`, request.url))
         }
       } catch {
         const response = NextResponse.next()

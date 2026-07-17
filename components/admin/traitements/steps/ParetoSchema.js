@@ -196,12 +196,6 @@ const ParetoSchema = ({ ressourceId, activeWorkflow, onSaveStep }) => {
             })}
           </div>
           
-          {/* Target 80 Percent Visual Ceiling Threshold Separator Cutline */}
-          <div className="absolute left-0 right-0 border-t-2 border-dashed border-red-300 top-[180px] pointer-events-none opacity-40">
-             <span className="absolute right-6 -top-5 text-[9px] font-black text-red-500 uppercase tracking-widest bg-white px-2">
-               Seuil Critique Pareto (80%)
-             </span>
-          </div>
         </div>
 
         {/* Legend Panel and Sequence Checklist List */}
